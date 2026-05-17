@@ -20,7 +20,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # Node 22 ships with npm 10.9+, which fixes a known cross-platform
+          # optional-deps bug in `npm ci` (e.g. missing @esbuild/linux-x64
+          # entries when the lockfile is generated on macOS). Node 22 also
+          # matches Vercel's default for new projects.
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
