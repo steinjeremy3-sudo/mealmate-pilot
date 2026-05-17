@@ -1,9 +1,9 @@
 // Marketing landing (public). Phase 0 placeholder — the real landing arrives later.
 //
-// The three role-gated sections live at:
-//   /app       → diner
-//   /dashboard → merchant
-//   /admin     → ops
+// Role surfaces:
+//   /dashboard → merchant (this repo)
+//   /admin     → ops (this repo)
+//   diner      → native iOS/Android app (separate `mealmate-diner` repo, TBD)
 
 import Link from "next/link";
 
@@ -21,11 +21,11 @@ export default function Home() {
           Browse offers from independent Dallas restaurants. Claim one, eat,
           pay in the app, see the discount applied. The restaurant pays nothing.
         </p>
+        <p className="text-sm text-muted-foreground">
+          The diner app is coming to iOS and Android. For now, restaurant
+          operators and the MealMate ops team sign in below.
+        </p>
         <div className="flex items-center justify-center gap-4 pt-2 text-sm">
-          <Link href="/app" className="underline underline-offset-4">
-            Diner
-          </Link>
-          <span className="text-muted-foreground">·</span>
           <Link href="/dashboard" className="underline underline-offset-4">
             Merchant
           </Link>

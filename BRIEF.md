@@ -6,50 +6,62 @@ Reconstructed from prior planning conversations. Verify against any original BRI
 
 ## Product overview
 
-MealMate is a two-sided marketplace where independent Dallas restaurants offer time-bound, daypart-specific discounts to diners. Diners browse offers in a mobile-first web app, claim one, eat at the restaurant, pay in-app with a linked credit card, and see the discount applied at payment. A small platform fee is added to the discounted total, paid by the diner. The restaurant pays nothing.
+MealMate is a two-sided marketplace where independent Dallas restaurants offer time-bound, daypart-specific discounts to diners. Diners browse offers in a native iOS / Android app, claim one, eat at the restaurant, pay in-app with a linked credit card, and see the discount applied at payment. A small platform fee is added to the discounted total, paid by the diner. The restaurant pays nothing.
 
-Three audiences, one product:
+Three audiences, two surfaces:
 
-- **Diner (consumer)** — browses, claims, pays. Mobile-first iOS-style web app.
-- **Merchant** — restaurant operator creating and managing offers, monitoring redemptions, managing settlement. Desktop-friendly web app.
-- **Admin (ops)** — internal MealMate team approving merchants, reviewing flagged claims, monitoring fraud signals, reconciling payments.
+- **Diner (consumer)** — browses, claims, pays. **Native iOS + Android app** (Expo / React Native). Lives in a separate repo, `mealmate-diner` (TBD).
+- **Merchant** — restaurant operator creating and managing offers, monitoring redemptions, managing settlement. **Desktop-friendly web app** in this monorepo (`mealmate-pilot`) at `/dashboard`.
+- **Admin (ops)** — internal MealMate team approving merchants, reviewing flagged claims, monitoring fraud signals, reconciling payments. **Web app** in this monorepo at `/admin`.
 
 ---
 
 ## Architecture decisions (immutable — don't re-litigate)
 
-- **Single Next.js 15 monorepo.** Three role-gated sections under the app router:
-  - `/app` → diner
-  - `/dashboard` → merchant
-  - `/admin` → ops
-- **Shared auth, shared database.** Role is determined at sign-in and enforced at row level in Postgres.
-- **Project name:** `mealmate-pilot`
-- **Hosting:** Vercel (auto-deploy `main`)
+- **Two repos, one shared backend.**
+  - `mealmate-pilot` — Next.js 16 web app. Two role-gated sections under the app router:
+    - `/dashboard` → merchant
+    - `/admin` → ops
+    - `/` → marketing landing
+  - `mealmate-diner` — Expo / React Native mobile app for diners. Ships to App Store + Play Store. (Separate repo — to be created when we start Phase 1.5/2.)
+- **One Supabase project shared across both surfaces** (Postgres + Auth + Storage). Diner mobile app uses the Supabase JS SDK directly. Web uses `@supabase/ssr`.
+- Role is determined at sign-in and enforced at row level in Postgres. **Diner sign-up only happens via the mobile app.**
+- **Hosting:**
+  - Web: Vercel (auto-deploy `main` of `mealmate-pilot`)
+  - Mobile: Expo EAS Build → App Store + Play Store (separate pipeline)
 - **Stack is fixed (below). Don't propose substitutions.**
 
 ---
 
 ## Stack
 
-**Frontend**
-- Next.js 15 (App Router)
+**Web (merchant + ops + marketing) — `mealmate-pilot`**
+- Next.js 16 (App Router) (originally specced as Next 15; `create-next-app` shipped 16, accepted)
 - TypeScript (strict mode)
-- Tailwind CSS
+- Tailwind CSS v4
 - shadcn/ui for component primitives
 - Lucide for icons
 - Fonts: Fraunces (serif headlines), Inter (body), JetBrains Mono (eyebrows / labels)
 
-**Backend / data**
-- Next.js API routes + server actions
+**Mobile (diner) — `mealmate-diner` (separate repo, TBD)**
+- Expo (managed workflow) / React Native
+- TypeScript (strict mode)
+- NativeWind for Tailwind-like styling
+- expo-router for navigation
+- `@supabase/supabase-js` for backend access
+- Stripe React Native SDK for payments
+
+**Backend / data (shared)**
+- Next.js API routes + server actions (web side)
 - Supabase (Postgres + auth + storage + real-time) — hosted, not self-hosted
-- Drizzle ORM for type-safe database access
+- Drizzle ORM for type-safe database access (web side; mobile uses Supabase SDK)
 - Zod for runtime validation
 
-**Auth**
-- Supabase Auth
-- Magic link primary, email/password fallback
-- Social (Apple, Google) for diners only
+**Auth (shared Supabase Auth across web + mobile)**
+- Web (merchant + admin): magic link primary, email/password fallback. No social.
+- Mobile (diner): magic link via deep links, Sign in with Apple, Sign in with Google
 - Three roles: `diner`, `merchant`, `admin` — enforced via row-level security (RLS) in Postgres
+- **Diner sign-up exclusively through the mobile app.** A diner who hits the web has no sign-in path; the marketing landing points them to the App Store / Play Store.
 
 **Payments**
 - Stripe (simulated card-linked experience for v1)
@@ -222,24 +234,31 @@ Work through these in strict order. Stop at each phase's acceptance criteria and
 2. **RLS will block Phase 1.** Once RLS is on, every query returns zero rows until policies exist. Don't panic — that's expected.
 3. **Supabase free tier auto-pauses inactive projects after a week.** "Cannot reach database" after a few days off is usually this; hit Restore in the dashboard.
 
-### Phase 1 — Auth + basic shell (Day 3–5)
+### Phase 1 — Web auth + basic shell (Day 3–5)
 
-- Implement Supabase auth: magic link + email/password fallback
-- Auth UI for sign-up and sign-in
-- Three roles enforced: redirect after login based on `users.role`
-- RLS policies for each table
-- Basic app shell for each role (header, nav, empty state)
+Scope: **web only** (`mealmate-pilot`). Diner sign-up arrives in the separate `mealmate-diner` Expo project (its own phase plan, TBD).
+
+- Implement Supabase auth on the web: magic link + email/password fallback
+- Auth UI for merchant + admin sign-up and sign-in (no diner UI on web)
+- Two roles enforced on the web: redirect after login based on `users.role` (`merchant` → `/dashboard`, `admin` → `/admin`); a `diner` role hitting the web gets a friendly "get the app" page
+- RLS policies for each table (apply to all three roles, including `diner` for when the mobile app starts hitting these tables in Phase 1.5+)
+- Basic app shell for merchant + admin (header, nav, empty state)
 - Sign out
 
-**Phase 1 acceptance criteria:**
-- Can sign up as a diner, merchant, or admin (admin creation might be manual via Supabase dashboard)
-- Each role lands on its own section after sign-in
-- RLS policies: a diner can only read their own user row, a merchant can only read their own restaurant, admin can read everything
+**Phase 1 acceptance criteria (web only):**
+- Can sign up as a merchant or admin (admin creation might be manual via Supabase dashboard)
+- Merchants land on `/dashboard`, admins on `/admin` after sign-in
+- A user with role `diner` who somehow lands on the web sees a "use the mobile app" page (no sign-in path)
+- RLS policies: a merchant can only read their own restaurant, an admin can read everything
 - Sign out works
+
+### Phase 1.5 — Bootstrap `mealmate-diner` (Expo)
+
+New repo. Expo managed workflow, TypeScript strict, NativeWind, expo-router, `@supabase/supabase-js`. Diner sign-up + sign-in (magic link via deep link, plus Sign in with Apple / Google). Acceptance criteria TBD when we get there.
 
 ### Phase 2+ — TBD
 
-Define after Phase 1 review. Likely: merchant onboarding flow → offer creation → diner browse + claim → payment via Stripe → auto-approval rubric → admin review queue.
+Define after Phases 1 and 1.5 review. Likely: merchant onboarding flow → offer creation → diner browse + claim (in mobile app) → payment via Stripe → auto-approval rubric → admin review queue.
 
 ---
 
@@ -247,9 +266,9 @@ Define after Phase 1 review. Likely: merchant onboarding flow → offer creation
 
 Three static HTML/CSS/JS prototypes deployed on Vercel from separate repos. They're for investor demos and design-partner pitches. They have no backend, no auth, no real data, no payments.
 
-- **Consumer:** `mealmate-jet.vercel.app` (repo: `mealmate`) — 32 screens, Dallas-localized, Bishop Arts focus
-- **Merchant:** `mealmate-merchant.vercel.app` (repo: `mealmate-merchant`) — 10–11 screens, Lucia case study
-- **Admin:** `mealmate-admin.vercel.app` (repo: `mealmate-admin`) — 5 screens, Jordan Kim as ops persona
+- **Consumer:** `mealmate-jet.vercel.app` (repo: `mealmate`) — 32 screens, Dallas-localized, Bishop Arts focus. Visual reference for the **native `mealmate-diner` app**; the screens are HTML mockups of the iOS-style UI we'll rebuild in Expo / React Native.
+- **Merchant:** `mealmate-merchant.vercel.app` (repo: `mealmate-merchant`) — 10–11 screens, Lucia case study. Visual reference for `/dashboard` in this monorepo.
+- **Admin:** `mealmate-admin.vercel.app` (repo: `mealmate-admin`) — 5 screens, Jordan Kim as ops persona. Visual reference for `/admin` in this monorepo.
 
 Use these as visual reference for copy, layout, and UX flow when building. Don't try to port their HTML — the real build is React/Next.js. The prototypes capture intent; you're rebuilding intent properly.
 
