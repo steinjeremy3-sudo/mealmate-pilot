@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "db:push": "drizzle-kit push",
     "db:ping": "tsx scripts/db-ping.ts",
-    "db:enable-rls": "tsx scripts/enable-rls.ts"
+    "db:enable-rls": "tsx scripts/enable-rls.ts",
+    "setup:auth": "tsx scripts/setup-auth.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
