@@ -18,16 +18,22 @@ if (!url) {
 
 const sql = postgres(url, { prepare: false });
 
-try {
-  const rows = await sql<{ count: string }[]>`select count(*)::text as count from users`;
-  console.log(`OK — users table is reachable. count(*) = ${rows[0].count}`);
-  await sql.end();
-  process.exit(0);
-} catch (err) {
-  // Don't leak the connection string in error output.
-  const message = err instanceof Error ? err.message : String(err);
-  console.error("FAIL — could not query users:");
-  console.error(`  ${message}`);
-  await sql.end({ timeout: 1 }).catch(() => undefined);
-  process.exit(1);
+// Wrapped in main() because tsx compiles to CJS here (no "type":"module"),
+// and CJS doesn't support top-level await.
+async function main() {
+  try {
+    const rows = await sql<{ count: string }[]>`select count(*)::text as count from users`;
+    console.log(`OK — users table is reachable. count(*) = ${rows[0].count}`);
+    await sql.end();
+    process.exit(0);
+  } catch (err) {
+    // Don't leak the connection string in error output.
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("FAIL — could not query users:");
+    console.error(`  ${message}`);
+    await sql.end({ timeout: 1 }).catch(() => undefined);
+    process.exit(1);
+  }
 }
+
+void main();

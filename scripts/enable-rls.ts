@@ -35,20 +35,26 @@ const TABLES = [
 
 const sql = postgres(url, { prepare: false });
 
-try {
-  for (const table of TABLES) {
-    // sql.unsafe is required because table names can't be parameterized.
-    // The names are hard-coded above, so there's no injection risk.
-    await sql.unsafe(`alter table public."${table}" enable row level security;`);
-    console.log(`  RLS enabled on public.${table}`);
+// Wrapped in main() because tsx compiles to CJS here (no "type":"module"),
+// and CJS doesn't support top-level await.
+async function main() {
+  try {
+    for (const table of TABLES) {
+      // sql.unsafe is required because table names can't be parameterized.
+      // The names are hard-coded above, so there's no injection risk.
+      await sql.unsafe(`alter table public."${table}" enable row level security;`);
+      console.log(`  RLS enabled on public.${table}`);
+    }
+    console.log("OK — RLS enabled on all 8 tables.");
+    await sql.end();
+    process.exit(0);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("FAIL — could not enable RLS:");
+    console.error(`  ${message}`);
+    await sql.end({ timeout: 1 }).catch(() => undefined);
+    process.exit(1);
   }
-  console.log("OK — RLS enabled on all 8 tables.");
-  await sql.end();
-  process.exit(0);
-} catch (err) {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error("FAIL — could not enable RLS:");
-  console.error(`  ${message}`);
-  await sql.end({ timeout: 1 }).catch(() => undefined);
-  process.exit(1);
 }
+
+void main();

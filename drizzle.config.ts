@@ -22,6 +22,9 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
-  strict: true,
+  // strict: true would prompt on every push (requires a TTY). Off during
+  // Phase 0 so `npm run db:push` is non-interactive. Drizzle still asks
+  // before destructive changes (DROP, etc.) — turn this back on once we
+  // switch to `generate` + `migrate` before Phase 2.
   verbose: true,
 });
