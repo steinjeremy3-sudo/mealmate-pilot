@@ -4,7 +4,7 @@
 
 MealMate is a two-sided marketplace for restaurant discounts in Dallas. Diners browse offers, claim one, eat at the restaurant, pay in-app, and see the discount applied. The restaurant pays nothing — the diner pays a small platform fee on top of the discounted total.
 
-This repo is the **web side** of the product: a Next.js 16 app with two role-gated sections (`/dashboard` for merchants, `/admin` for ops) plus a marketing landing at `/`. The **diner experience is a native iOS / Android app** (Expo / React Native) that lives in a separate repo, `mealmate-diner` (TBD). Both surfaces share one Supabase project for auth + database.
+This repo is the real product build: one Next.js 16 monorepo with three role-gated sections (`/app` for diners, `/dashboard` for merchants, `/admin` for ops), shared auth, shared database.
 
 ## Read BRIEF.md first
 
@@ -42,11 +42,11 @@ We build in phases. Each phase has explicit acceptance criteria in BRIEF.md. **D
 ## Visual / UX reference
 
 Three static HTML prototypes live at:
-- Consumer: `https://mealmate-jet.vercel.app` — visual reference for the **native diner app** (not for this repo). Rebuilt in Expo/React Native, not Next.js.
-- Merchant: `https://mealmate-merchant.vercel.app` — visual reference for `/dashboard` in this repo.
-- Admin: `https://mealmate-admin.vercel.app` — visual reference for `/admin` in this repo.
+- Consumer: `https://mealmate-jet.vercel.app` — visual reference for `/app` (diner section).
+- Merchant: `https://mealmate-merchant.vercel.app` — visual reference for `/dashboard`.
+- Admin: `https://mealmate-admin.vercel.app` — visual reference for `/admin`.
 
-Use these for copy, layout, and UX flow. Don't try to port their HTML — they're vanilla static HTML and the real builds are React/Next.js (web) and Expo/React Native (mobile). The prototypes capture intent; we're rebuilding intent properly.
+Use these for copy, layout, and UX flow. Don't try to port their HTML — they're vanilla static HTML and the real build is React/Next.js. The prototypes capture intent; we're rebuilding intent properly.
 
 ## Canon
 

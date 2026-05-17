@@ -1,9 +1,9 @@
-// Marketing landing (public). Phase 0 placeholder — the real landing arrives later.
+// Marketing landing (public). Phase 0/1 placeholder — fuller landing arrives later.
 //
 // Role surfaces:
-//   /dashboard → merchant (this repo)
-//   /admin     → ops (this repo)
-//   diner      → native iOS/Android app (separate `mealmate-diner` repo, TBD)
+//   /app       → diner (claim offers)
+//   /dashboard → merchant (list offers, manage restaurant)
+//   /admin     → ops (approvals, fraud review)
 
 import Link from "next/link";
 
@@ -21,24 +21,26 @@ export default function Home() {
           Browse offers from independent Dallas restaurants. Claim one, eat,
           pay in the app, see the discount applied. The restaurant pays nothing.
         </p>
-        <p className="text-sm text-muted-foreground">
-          The diner app is coming to iOS and Android. For now, restaurant
-          operators and the MealMate ops team sign in below.
-        </p>
         <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
           <Link
-            href="/sign-in"
+            href="/sign-up?as=diner"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Sign in
+            Start as a diner
           </Link>
           <Link
-            href="/sign-up"
+            href="/sign-up?as=merchant"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary"
           >
-            Create merchant account
+            List your restaurant
           </Link>
         </div>
+        <p className="text-xs text-muted-foreground pt-1">
+          Already have an account?{" "}
+          <Link href="/sign-in" className="underline underline-offset-4">
+            Sign in
+          </Link>
+        </p>
       </div>
     </main>
   );

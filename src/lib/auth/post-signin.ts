@@ -9,17 +9,15 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Path a user with the given role should land on after signing in.
- * Diners on the web get a "use the mobile app" page — there's no
- * functional diner experience here.
  */
 export function homeForRole(role: "diner" | "merchant" | "admin"): string {
   switch (role) {
+    case "diner":
+      return "/app";
     case "merchant":
       return "/dashboard";
     case "admin":
       return "/admin";
-    case "diner":
-      return "/diner";
   }
 }
 

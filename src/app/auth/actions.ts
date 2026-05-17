@@ -63,12 +63,17 @@ export async function signIn(formData: FormData): Promise<void> {
 }
 
 // ----------------------------------------------------------------
-// Sign up (web → merchant only)
+// Sign up (web → diner or merchant; admin is manual)
 // ----------------------------------------------------------------
 export async function signUp(formData: FormData): Promise<void> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const displayName = String(formData.get("display_name") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  // Role from the form's radio toggle. Only `diner` and `merchant` are
+  // valid via the web — admin is created by hand in Supabase. Anything
+  // else gets normalized to `diner` as the safer default.
+  const rawRole = String(formData.get("role") ?? "diner");
+  const role: "diner" | "merchant" = rawRole === "merchant" ? "merchant" : "diner";
 
   if (!email) redirect(errParam("/sign-up", "Email is required."));
   if (!displayName) redirect(errParam("/sign-up", "Name is required."));
@@ -78,8 +83,7 @@ export async function signUp(formData: FormData): Promise<void> {
 
   // role + display_name go into auth.users.raw_user_meta_data and are
   // read out by the handle_new_user trigger to populate public.users.
-  // Web sign-up is merchant-only; admins are created by hand.
-  const metadata = { role: "merchant", display_name: displayName };
+  const metadata = { role, display_name: displayName };
 
   if (password.length > 0) {
     const { error } = await supabase.auth.signUp({

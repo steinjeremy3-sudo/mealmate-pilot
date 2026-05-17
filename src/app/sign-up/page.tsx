@@ -1,15 +1,23 @@
-// Sign-up page. Web sign-up is **merchant only** — admins are created by
-// hand in the Supabase dashboard. Diner sign-up only exists in the mobile
-// app (see BRIEF.md).
+// Sign-up page. Single form with a role toggle — Diner or Restaurant
+// operator (merchant). Admin accounts are created by hand in the
+// Supabase dashboard, not via this form.
 //
-// Server Component, same pattern as /sign-in: errors and confirmations
-// come back through searchParams.
+// Pre-select the role with `?as=diner` or `?as=merchant` (set by the
+// marketing landing's CTAs). Default = `diner`.
+//
+// Server Component. Errors and "check your email" confirmations come
+// back through searchParams.
 
 import Link from "next/link";
 
 import { signUp } from "@/app/auth/actions";
 
-type SearchParams = Promise<{ error?: string; sent?: string; email?: string }>;
+type SearchParams = Promise<{
+  error?: string;
+  sent?: string;
+  email?: string;
+  as?: string;
+}>;
 
 export default async function SignUpPage({
   searchParams,
@@ -20,18 +28,19 @@ export default async function SignUpPage({
   const error = params.error;
   const sent = params.sent;
   const sentEmail = params.email;
+  const preselected = params.as === "merchant" ? "merchant" : "diner";
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-2 text-center">
           <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            MealMate · Merchant
+            MealMate
           </p>
           <h1 className="font-serif text-3xl font-semibold">Create account</h1>
           <p className="text-sm text-muted-foreground">
-            For restaurant operators. You&apos;ll be able to add your
-            restaurant and create offers once you&apos;re signed in.
+            Sign up as a diner to claim offers, or as a restaurant operator
+            to list yours.
           </p>
         </div>
 
@@ -43,6 +52,32 @@ export default async function SignUpPage({
           </div>
         ) : (
           <form action={signUp} className="space-y-4">
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">I&apos;m signing up as a…</legend>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer has-checked:border-primary has-checked:bg-secondary/40">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="diner"
+                    defaultChecked={preselected === "diner"}
+                    className="accent-primary"
+                  />
+                  Diner
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer has-checked:border-primary has-checked:bg-secondary/40">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="merchant"
+                    defaultChecked={preselected === "merchant"}
+                    className="accent-primary"
+                  />
+                  Restaurant operator
+                </label>
+              </div>
+            </fieldset>
+
             <label className="block space-y-1.5">
               <span className="text-sm font-medium">Your name</span>
               <input
