@@ -1,0 +1,44 @@
+name: CI
+
+# Runs on every push to main and every pull request. Must stay green for
+# Phase 0 acceptance criterion #5.
+#
+# What runs: typecheck → lint → tests → production build. No DB access —
+# the `db-ping` script is a local-only manual check.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Public env vars baked into the build. Dummy values are fine for CI
+          # — no runtime calls happen during build.
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-key
