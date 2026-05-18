@@ -153,13 +153,36 @@ CREATE POLICY restaurants_delete_admin_only ON public.restaurants
 
 
 -- ====================================================================
--- 5. RLS policies — other tables (Phase 1: locked down)
+-- 5. RLS policies — audit_log (append-only)
 -- ====================================================================
--- For tables the web app doesn't yet read or write (offers, claims, cards,
--- payments, audit_log, stripe_events), Phase 1 leaves RLS enabled with NO
--- policies, which means: deny everything to authenticated users.
--- Service-role server code (admin client) bypasses RLS and still works.
--- Phase 2+ adds per-table policies as features come online.
+-- SELECT: admin only. The audit trail is an ops tool, not user-facing.
+-- INSERT: any authenticated session can write a row as themselves —
+--   actor_user_id must match auth.uid() and actor_role must match the
+--   user's actual role in public.users. Prevents a merchant from
+--   logging events as if they were admin, etc.
+-- UPDATE/DELETE: never (append-only). No policies = denied for users;
+--   service role can still mutate if we ever need to compact.
+
+DROP POLICY IF EXISTS audit_log_select_admin ON public.audit_log;
+CREATE POLICY audit_log_select_admin ON public.audit_log
+  FOR SELECT
+  USING (public.current_user_role() = 'admin');
+
+DROP POLICY IF EXISTS audit_log_insert_self ON public.audit_log;
+CREATE POLICY audit_log_insert_self ON public.audit_log
+  FOR INSERT
+  WITH CHECK (
+    actor_user_id = auth.uid()
+    AND actor_role::text = public.current_user_role()::text
+  );
+
+
+-- ====================================================================
+-- 6. RLS policies — other tables (Phase 1+: per-feature setup scripts)
+-- ====================================================================
+-- offers, claims, cards, payments, stripe_events each have their own
+-- setup script (scripts/{offer,claim,payment}-policies.sql). RLS is
+-- enabled on every table; policies are added per-feature as work lands.
 
 
 -- ====================================================================

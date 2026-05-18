@@ -4,15 +4,12 @@
 //
 // RLS policy payments_update_admin lets the admin's own session do the
 // UPDATE — no service role needed.
-//
-// TODO(audit-log): write a row to public.audit_log on every approve /
-// reject so the ops trail exists. Needs an audit_log INSERT policy
-// (or SECURITY DEFINER helper). Parked since Phase 2a.
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { logAuditEvent } from "@/lib/db/audit-log";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 async function reviewPayment(
@@ -38,6 +35,14 @@ async function reviewPayment(
       `/admin/payments/${paymentId}?error=${encodeURIComponent(error.message)}`,
     );
   }
+
+  await logAuditEvent({
+    actor: { id: profile.id, role: profile.role },
+    action: newStatus === "manual_approved" ? "payment.approved" : "payment.rejected",
+    subjectType: "payment",
+    subjectId: paymentId,
+    metadata: { new_status: newStatus },
+  });
 
   revalidatePath("/admin");
   revalidatePath(`/admin/payments/${paymentId}`);

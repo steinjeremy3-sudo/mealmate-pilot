@@ -6,10 +6,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { logAuditEvent } from "@/lib/db/audit-log";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function publishOffer(formData: FormData): Promise<void> {
-  await requireRole("merchant");
+  const profile = await requireRole("merchant");
   const offerId = String(formData.get("offer_id") ?? "");
   if (!offerId) redirect("/dashboard/offers");
 
@@ -27,6 +28,13 @@ export async function publishOffer(formData: FormData): Promise<void> {
       `/dashboard/offers/${offerId}?error=${encodeURIComponent(error.message)}`,
     );
   }
+
+  await logAuditEvent({
+    actor: { id: profile.id, role: profile.role },
+    action: "offer.published",
+    subjectType: "offer",
+    subjectId: offerId,
+  });
 
   revalidatePath("/dashboard/offers");
   revalidatePath(`/dashboard/offers/${offerId}`);
