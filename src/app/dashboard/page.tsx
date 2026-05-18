@@ -1,26 +1,93 @@
-// Merchant section landing. Phase 1: you're signed in, but the real
-// merchant tools (restaurant onboarding, offer creation, redemption
-// tracking) arrive in Phase 2+.
+// Merchant dashboard home. Phase 2a: shows the merchant's restaurant
+// with its current status. If no restaurant yet, redirects to the
+// onboarding flow.
+//
+// Phase 2b will add the offers list / creation flow once we know the
+// merchant has an approved restaurant.
+
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { getRestaurantForOwner, type RestaurantStatus } from "@/lib/db/restaurants";
+
+function StatusBadge({ status }: { status: RestaurantStatus }) {
+  const styles: Record<RestaurantStatus, string> = {
+    pending: "bg-yellow-100 text-yellow-900 border-yellow-200",
+    approved: "bg-emerald-100 text-emerald-900 border-emerald-200",
+    suspended: "bg-red-100 text-red-900 border-red-200",
+  };
+  const label: Record<RestaurantStatus, string> = {
+    pending: "Pending approval",
+    approved: "Approved",
+    suspended: "Suspended",
+  };
+  return (
+    <span
+      className={
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
+        styles[status]
+      }
+    >
+      {label[status]}
+    </span>
+  );
+}
 
 export default async function MerchantHome() {
-  // Layout already calls requireRole — this is duplicative but harmless,
-  // and it gives us the displayName here without prop-drilling.
   const profile = await requireRole("merchant");
+  const restaurant = await getRestaurantForOwner(profile.id);
+
+  if (!restaurant) {
+    redirect("/dashboard/onboarding");
+  }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-6">
-      <div className="max-w-md text-center space-y-3">
+    <main className="flex flex-1 items-start justify-center px-6 py-10">
+      <div className="w-full max-w-2xl space-y-6">
         <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-          You&apos;re signed in
+          Your restaurant
         </p>
-        <h1 className="font-serif text-3xl font-semibold">
-          Welcome, {profile.displayName}.
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Restaurant onboarding and offer creation arrive in Phase 2.
-        </p>
+
+        <div className="rounded-lg border border-border p-6 space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-semibold">
+                {restaurant.name}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {restaurant.cuisine} · {restaurant.neighborhood}, {restaurant.city}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {restaurant.address}
+              </p>
+            </div>
+            <StatusBadge status={restaurant.status} />
+          </div>
+
+          {restaurant.status === "pending" ? (
+            <p className="text-sm text-muted-foreground border-t pt-4">
+              The MealMate team typically approves new restaurants within a
+              business day. You&apos;ll be able to create offers once approved.
+            </p>
+          ) : null}
+
+          {restaurant.status === "approved" ? (
+            <p className="text-sm text-muted-foreground border-t pt-4">
+              You&apos;re approved. Offer creation arrives in Phase 2b.
+            </p>
+          ) : null}
+
+          {restaurant.status === "suspended" ? (
+            <p className="text-sm text-muted-foreground border-t pt-4">
+              Your restaurant is currently suspended. Reach out to{" "}
+              <Link href="mailto:ops@mealmate.co" className="underline">
+                ops@mealmate.co
+              </Link>{" "}
+              for help.
+            </p>
+          ) : null}
+        </div>
       </div>
     </main>
   );
