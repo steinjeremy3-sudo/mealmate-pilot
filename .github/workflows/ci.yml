@@ -47,7 +47,10 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Public env vars baked into the build. Dummy values are fine for CI
-          # — no runtime calls happen during build.
+          # Dummies for module-load-time env var checks. No runtime calls
+          # happen during build; these just satisfy throws in lib/stripe.ts
+          # and lib/supabase/server.ts.
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-key
+          STRIPE_SECRET_KEY: sk_test_dummy
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_dummy
