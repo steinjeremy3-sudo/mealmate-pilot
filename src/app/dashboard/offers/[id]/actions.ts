@@ -51,18 +51,30 @@ export async function endOffer(formData: FormData): Promise<void> {
   const supabase = await createSupabaseServerClient();
   // Active claims keep their hour to redeem; only the offer flips to
   // ended (stops being claimable, stops appearing on /app).
-  const { error } = await supabase
+  // .select() forces the UPDATE to return the affected rows so we can
+  // detect an RLS-filtered no-op (e.g. merchant doesn't own this offer).
+  const { data, error } = await supabase
     .from("offers")
     .update({
       status: "ended",
       ends_at: new Date().toISOString(),
     })
     .eq("id", offerId)
-    .in("status", ["draft", "scheduled", "live"]);
+    .in("status", ["draft", "scheduled", "live"])
+    .select("id");
 
   if (error) {
     redirect(
       `/dashboard/offers/${offerId}?error=${encodeURIComponent(error.message)}`,
+    );
+  }
+  if (!data || data.length === 0) {
+    // Either RLS blocked it (not your offer) or the offer wasn't in a
+    // status that allows ending. Tell the user.
+    redirect(
+      `/dashboard/offers/${offerId}?error=${encodeURIComponent(
+        "Couldn't end this offer. You may not own it, or it may already be ended.",
+      )}`,
     );
   }
 

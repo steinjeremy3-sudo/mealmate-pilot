@@ -126,15 +126,15 @@ export default async function MerchantOfferDetail({
                   Live and visible to diners.
                 </p>
               )}
-              <form action={endOffer}>
+              <form action={endOffer} className="pt-2">
                 <input type="hidden" name="offer_id" value={offer.id} />
                 <button
                   type="submit"
-                  className="text-xs text-destructive underline underline-offset-4"
+                  className="cursor-pointer rounded-md border border-destructive bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive hover:text-white"
                 >
                   End this offer
                 </button>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-2">
                   Active claims keep their hour to redeem. Ended offers
                   disappear from diner browse.
                 </p>
