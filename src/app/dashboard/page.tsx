@@ -53,26 +53,41 @@ export default async function MerchantHome() {
       <div className="w-full max-w-2xl space-y-6">
         {/* ===== Payout summary ===== */}
         {restaurant.status === "approved" ? (
-          <div className="rounded-lg border border-border p-6 space-y-3 bg-secondary/30">
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Pending payout
-            </p>
-            <p className="font-serif text-3xl font-semibold">
-              {centsToUsd(payouts.approvedPayoutCents)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              From {payouts.approvedPaymentCount} approved payment
-              {payouts.approvedPaymentCount === 1 ? "" : "s"}. Pilot payouts
-              are ACH&apos;d in batches by the MealMate ops team.
-              {payouts.flaggedPaymentCount > 0 ? (
-                <>
-                  {" "}Plus {centsToUsd(payouts.flaggedPayoutCents)} from{" "}
-                  {payouts.flaggedPaymentCount} flagged payment
-                  {payouts.flaggedPaymentCount === 1 ? "" : "s"} waiting on
-                  admin review.
-                </>
-              ) : null}
-            </p>
+          <div className="rounded-lg border border-border p-6 space-y-4 bg-secondary/30">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+                  Pending payout
+                </p>
+                <p className="font-serif text-3xl font-semibold">
+                  {centsToUsd(payouts.pendingPayoutCents)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {payouts.pendingPaymentCount} payment
+                  {payouts.pendingPaymentCount === 1 ? "" : "s"} waiting for ACH
+                </p>
+              </div>
+              <div>
+                <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+                  Paid out
+                </p>
+                <p className="font-serif text-3xl font-semibold">
+                  {centsToUsd(payouts.paidOutPayoutCents)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {payouts.paidOutPaymentCount} payment
+                  {payouts.paidOutPaymentCount === 1 ? "" : "s"} settled
+                </p>
+              </div>
+            </div>
+            {payouts.flaggedPaymentCount > 0 ? (
+              <p className="text-xs text-muted-foreground border-t pt-3">
+                Plus {centsToUsd(payouts.flaggedPayoutCents)} from{" "}
+                {payouts.flaggedPaymentCount} flagged payment
+                {payouts.flaggedPaymentCount === 1 ? "" : "s"} waiting on
+                admin review.
+              </p>
+            ) : null}
           </div>
         ) : null}
 

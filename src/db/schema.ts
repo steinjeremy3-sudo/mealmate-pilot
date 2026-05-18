@@ -218,6 +218,12 @@ export const payments = pgTable("payments", {
   reviewedByUserId: uuid("reviewed_by_user_id").references(() => users.id, { onDelete: "set null" }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 
+  // Payout tracking. Pending payments have paid_out_at IS NULL.
+  // payout_batch_id is a free-text reference (ACH confirmation, batch
+  // name, etc.) set by the admin "Mark batch as paid" action.
+  paidOutAt: timestamp("paid_out_at", { withTimezone: true }),
+  payoutBatchId: text("payout_batch_id"),
+
   ...timestamps,
 });
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { getPendingRestaurants } from "@/lib/db/restaurants";
-import { getFlaggedPayments } from "@/lib/db/payments";
+import { getFlaggedPayments, getPendingPayoutsByRestaurant } from "@/lib/db/payments";
 import { centsToUsd } from "@/lib/money";
 
 function formatDate(iso: string): string {
@@ -18,14 +18,42 @@ function formatDate(iso: string): string {
 
 export default async function AdminHome() {
   await requireRole("admin");
-  const [pendingRestaurants, flaggedPayments] = await Promise.all([
+  const [pendingRestaurants, flaggedPayments, pendingPayouts] = await Promise.all([
     getPendingRestaurants(),
     getFlaggedPayments(),
+    getPendingPayoutsByRestaurant(),
   ]);
+  const pendingPayoutTotalCents = pendingPayouts.reduce(
+    (sum, r) => sum + r.totalCents,
+    0,
+  );
 
   return (
     <main className="flex flex-1 items-start justify-center px-6 py-10">
       <div className="w-full max-w-3xl space-y-8">
+        {/* ===== Pending payouts (Phase 3.5) ===== */}
+        <section className="space-y-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+                Pending payouts
+              </p>
+              <h2 className="font-serif text-2xl font-semibold">
+                {pendingPayouts.length === 0
+                  ? "Nothing pending"
+                  : `${centsToUsd(pendingPayoutTotalCents)} across ${pendingPayouts.length} restaurant${pendingPayouts.length === 1 ? "" : "s"}`}
+              </h2>
+            </div>
+            {pendingPayouts.length > 0 ? (
+              <Link
+                href="/admin/payouts"
+                className="text-sm underline underline-offset-4 shrink-0 self-start"
+              >
+                Pay out →
+              </Link>
+            ) : null}
+          </div>
+        </section>
         {/* ===== Flagged payments queue (Phase 2e) ===== */}
         <section className="space-y-3">
           <div>
