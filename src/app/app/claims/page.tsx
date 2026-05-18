@@ -61,10 +61,10 @@ export default async function DinerClaimsPage() {
         {active.length > 0 && (
           <ul className="space-y-3">
             {active.map((c) => (
-              <li key={c.id}>
+              <li key={c.id} className="rounded-lg border border-emerald-200 bg-emerald-50">
                 <Link
                   href={c.offer ? `/app/offers/${c.offer.id}` : "/app"}
-                  className="block rounded-lg border border-emerald-200 bg-emerald-50 p-4 hover:bg-emerald-100"
+                  className="block p-4 hover:bg-emerald-100 rounded-t-lg"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -82,6 +82,14 @@ export default async function DinerClaimsPage() {
                     restaurant
                   </p>
                 </Link>
+                <div className="border-t border-emerald-200 p-3">
+                  <Link
+                    href={`/app/claims/${c.id}/pay`}
+                    className="block rounded-md bg-emerald-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
+                  >
+                    Pay
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

@@ -33,6 +33,12 @@ export default async function DinerLayout({
             >
               Claims
             </Link>
+            <Link
+              href="/app/cards"
+              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
+            >
+              Cards
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
