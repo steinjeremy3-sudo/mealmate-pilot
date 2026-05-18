@@ -9,7 +9,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { getMerchantPayoutSummary } from "@/lib/db/payments";
 import { getRestaurantForOwner, type RestaurantStatus } from "@/lib/db/restaurants";
+import { centsToUsd } from "@/lib/money";
 
 function StatusBadge({ status }: { status: RestaurantStatus }) {
   const styles: Record<RestaurantStatus, string> = {
@@ -42,9 +44,38 @@ export default async function MerchantHome() {
     redirect("/dashboard/onboarding");
   }
 
+  // Payout summary lives next to the restaurant card. Empty for new
+  // merchants — only meaningful once they have approved payments.
+  const payouts = await getMerchantPayoutSummary();
+
   return (
     <main className="flex flex-1 items-start justify-center px-6 py-10">
       <div className="w-full max-w-2xl space-y-6">
+        {/* ===== Payout summary ===== */}
+        {restaurant.status === "approved" ? (
+          <div className="rounded-lg border border-border p-6 space-y-3 bg-secondary/30">
+            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+              Pending payout
+            </p>
+            <p className="font-serif text-3xl font-semibold">
+              {centsToUsd(payouts.approvedPayoutCents)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              From {payouts.approvedPaymentCount} approved payment
+              {payouts.approvedPaymentCount === 1 ? "" : "s"}. Pilot payouts
+              are ACH&apos;d in batches by the MealMate ops team.
+              {payouts.flaggedPaymentCount > 0 ? (
+                <>
+                  {" "}Plus {centsToUsd(payouts.flaggedPayoutCents)} from{" "}
+                  {payouts.flaggedPaymentCount} flagged payment
+                  {payouts.flaggedPaymentCount === 1 ? "" : "s"} waiting on
+                  admin review.
+                </>
+              ) : null}
+            </p>
+          </div>
+        ) : null}
+
         <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
           Your restaurant
         </p>

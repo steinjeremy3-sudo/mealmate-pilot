@@ -115,3 +115,48 @@ export function expiresInMinutes(claim: Pick<Claim, "expires_at">): number {
   const ms = new Date(claim.expires_at).getTime() - Date.now();
   return Math.max(0, Math.ceil(ms / 60000));
 }
+
+// ----------------------------------------------------------------
+// Merchant-side queries
+// ----------------------------------------------------------------
+
+export type MerchantClaimRow = {
+  id: string;
+  claimed_at: string;
+  expires_at: string;
+  status: ClaimStatus;
+  offer: { id: string; title: string; discount_pct: number } | null;
+  diner: { display_name: string; email: string | null } | null;
+};
+
+/**
+ * Merchant's "tonight" view: claims made TODAY for offers from this
+ * merchant's restaurant. RLS (claims_select_merchant_own_restaurant)
+ * already scopes to the merchant; we just filter by claimed_at >= start
+ * of today (server's local TZ, fine for pilot).
+ */
+export async function getTodaysClaimsForMerchant(): Promise<MerchantClaimRow[]> {
+  const supabase = await createSupabaseServerClient();
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from("claims")
+    .select(
+      `id, claimed_at, expires_at, status,
+       offer:offers!offer_id(id, title, discount_pct),
+       diner:users!diner_user_id(display_name, email)`,
+    )
+    .gte("claimed_at", startOfToday.toISOString())
+    .order("claimed_at", { ascending: true });
+
+  if (error) {
+    console.error("getTodaysClaimsForMerchant:", error);
+    return [];
+  }
+  // Supabase's untyped client returns FK-joined fields as arrays even
+  // for one-to-one relationships. They are actually scalar objects at
+  // runtime, so we widen through unknown.
+  return (data ?? []) as unknown as MerchantClaimRow[];
+}

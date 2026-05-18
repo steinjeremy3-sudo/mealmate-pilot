@@ -11,6 +11,8 @@ import {
   type ClaimStatus,
 } from "@/lib/db/claims";
 
+import { cancelClaim } from "./actions";
+
 function StatusBadge({ status, active }: { status: ClaimStatus; active: boolean }) {
   if (active) {
     return (
@@ -82,13 +84,22 @@ export default async function DinerClaimsPage() {
                     restaurant
                   </p>
                 </Link>
-                <div className="border-t border-emerald-200 p-3">
+                <div className="border-t border-emerald-200 p-3 flex gap-2">
                   <Link
                     href={`/app/claims/${c.id}/pay`}
-                    className="block rounded-md bg-emerald-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
+                    className="flex-1 rounded-md bg-emerald-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
                   >
                     Pay
                   </Link>
+                  <form action={cancelClaim}>
+                    <input type="hidden" name="claim_id" value={c.id} />
+                    <button
+                      type="submit"
+                      className="rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
+                    >
+                      Cancel
+                    </button>
+                  </form>
                 </div>
               </li>
             ))}

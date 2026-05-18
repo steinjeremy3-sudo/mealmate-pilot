@@ -9,7 +9,7 @@ import { getActiveClaimCount } from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
 
-import { publishOffer } from "./actions";
+import { endOffer, publishOffer } from "./actions";
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
@@ -106,26 +106,43 @@ export default async function MerchantOfferDetail({
             </p>
           ) : null}
 
-          {offer.status === "draft" ? (
-            <form action={publishOffer} className="pt-2 border-t">
-              <input type="hidden" name="offer_id" value={offer.id} />
-              <button
-                type="submit"
-                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-              >
-                Publish
-              </button>
-              <p className="text-xs text-muted-foreground mt-2">
-                Once published, this offer becomes visible to diners.
-              </p>
-            </form>
+          {offer.status === "draft" || offer.status === "live" ? (
+            <div className="pt-2 border-t space-y-3">
+              {offer.status === "draft" ? (
+                <form action={publishOffer}>
+                  <input type="hidden" name="offer_id" value={offer.id} />
+                  <button
+                    type="submit"
+                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                  >
+                    Publish
+                  </button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Once published, this offer becomes visible to diners.
+                  </p>
+                </form>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Live and visible to diners.
+                </p>
+              )}
+              <form action={endOffer}>
+                <input type="hidden" name="offer_id" value={offer.id} />
+                <button
+                  type="submit"
+                  className="text-xs text-destructive underline underline-offset-4"
+                >
+                  End this offer
+                </button>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Active claims keep their hour to redeem. Ended offers
+                  disappear from diner browse.
+                </p>
+              </form>
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground pt-2 border-t">
-              {offer.status === "live"
-                ? "Live and visible to diners."
-                : offer.status === "ended"
-                  ? "This offer has ended."
-                  : "Scheduled."}
+              {offer.status === "ended" ? "This offer has ended." : "Scheduled."}
             </p>
           )}
         </div>

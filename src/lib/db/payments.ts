@@ -102,3 +102,66 @@ export async function getPaymentByIdWithRelations(id: string): Promise<PaymentWi
   }
   return data as PaymentWithRelations | null;
 }
+
+// ----------------------------------------------------------------
+// Merchant payout summary
+// ----------------------------------------------------------------
+
+export type PayoutSummary = {
+  /** Lifetime sum of payout_cents from approved (auto or manual) payments. */
+  approvedPayoutCents: number;
+  /** Count of approved payments contributing to the sum. */
+  approvedPaymentCount: number;
+  /** Sum of payout_cents from currently-flagged payments (not yet reviewed). */
+  flaggedPayoutCents: number;
+  /** Count of currently-flagged payments. */
+  flaggedPaymentCount: number;
+};
+
+/**
+ * Merchant payout running totals. RLS
+ * (payments_select_merchant_own_restaurant) already scopes payments to
+ * the calling merchant — no extra filter needed.
+ *
+ * Phase 3 has no "marked paid" state yet: every approved payment counts
+ * as pending ACH. A future admin tool will let ops flip individual
+ * payments to "paid out" and the math here will split.
+ */
+export async function getMerchantPayoutSummary(): Promise<PayoutSummary> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("payout_cents, auto_approval_status");
+
+  if (error) {
+    console.error("getMerchantPayoutSummary:", error);
+    return {
+      approvedPayoutCents: 0,
+      approvedPaymentCount: 0,
+      flaggedPayoutCents: 0,
+      flaggedPaymentCount: 0,
+    };
+  }
+
+  let approvedCents = 0;
+  let approvedCount = 0;
+  let flaggedCents = 0;
+  let flaggedCount = 0;
+  for (const p of data ?? []) {
+    if (p.auto_approval_status === "auto_approved" || p.auto_approval_status === "manual_approved") {
+      approvedCents += p.payout_cents;
+      approvedCount += 1;
+    } else if (p.auto_approval_status === "flagged") {
+      flaggedCents += p.payout_cents;
+      flaggedCount += 1;
+    }
+    // 'rejected' is dropped from both totals.
+  }
+
+  return {
+    approvedPayoutCents: approvedCents,
+    approvedPaymentCount: approvedCount,
+    flaggedPayoutCents: flaggedCents,
+    flaggedPaymentCount: flaggedCount,
+  };
+}
