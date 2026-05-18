@@ -14,7 +14,8 @@
     "db:ping": "tsx scripts/db-ping.ts",
     "db:enable-rls": "tsx scripts/enable-rls.ts",
     "setup:auth": "tsx scripts/setup-auth.ts",
-    "setup:offer-policies": "tsx scripts/setup-offer-policies.ts"
+    "setup:offer-policies": "tsx scripts/setup-offer-policies.ts",
+    "setup:claim-policies": "tsx scripts/setup-claim-policies.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

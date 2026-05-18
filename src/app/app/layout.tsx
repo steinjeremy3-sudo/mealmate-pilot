@@ -23,9 +23,17 @@ export default async function DinerLayout({
     <div className="flex flex-1 flex-col">
       <header className="border-b">
         <div className="mx-auto max-w-md flex items-center justify-between px-6 py-4">
-          <Link href="/app" className="font-mono text-xs tracking-widest uppercase">
-            MealMate
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link href="/app" className="font-mono text-xs tracking-widest uppercase">
+              MealMate
+            </Link>
+            <Link
+              href="/app/claims"
+              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
+            >
+              Claims
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
               {profile.displayName}

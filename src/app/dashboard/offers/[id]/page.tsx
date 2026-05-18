@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { getActiveClaimCount } from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
 
@@ -47,6 +48,10 @@ export default async function MerchantOfferDetail({
   const offer = await getOfferById(id);
   if (!offer) notFound();
 
+  // Only meaningful once the offer is live; for drafts this is always 0.
+  const activeClaimCount =
+    offer.status === "live" ? await getActiveClaimCount(offer.id) : 0;
+
   return (
     <main className="flex flex-1 items-start justify-center px-6 py-10">
       <div className="w-full max-w-2xl space-y-6">
@@ -83,6 +88,16 @@ export default async function MerchantOfferDetail({
 
             <dt className="text-muted-foreground">Ends</dt>
             <dd>{offer.ends_at ? new Date(offer.ends_at).toLocaleString() : "—"}</dd>
+
+            {offer.status === "live" ? (
+              <>
+                <dt className="text-muted-foreground">Active claims</dt>
+                <dd>
+                  <span className="font-medium">{activeClaimCount}</span>
+                  <span className="text-muted-foreground"> diner{activeClaimCount === 1 ? "" : "s"} holding right now</span>
+                </dd>
+              </>
+            ) : null}
           </dl>
 
           {error ? (

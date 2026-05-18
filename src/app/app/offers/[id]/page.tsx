@@ -1,16 +1,23 @@
-// Diner: offer detail. Phase 2b: read-only — claim flow lands in 2c.
+// Diner: offer detail with claim button.
 //
-// RLS lets diners see only `live` offers from `approved` restaurants;
-// anything else 404s.
+// Shows a Claim button when the diner doesn't have an active claim, or
+// an "already claimed — expires in N min" badge when they do.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import {
+  expiresInMinutes,
+  getActiveClaimForOffer,
+} from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
 
+import { claimOffer } from "./actions";
+
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ error?: string }>;
 
 function formatDays(days: string[]): string {
   const ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -28,7 +35,6 @@ function formatDays(days: string[]): string {
 }
 
 function formatTime(t: string): string {
-  // postgres time → "HH:MM" → human "5:00 PM".
   const [hStr, m] = t.split(":");
   const h = parseInt(hStr, 10);
   const ampm = h >= 12 ? "PM" : "AM";
@@ -38,12 +44,19 @@ function formatTime(t: string): string {
 
 export default async function DinerOfferDetail({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: SearchParams;
 }) {
   await requireRole("diner");
   const { id } = await params;
-  const offer = await getOfferById(id);
+  const { error } = await searchParams;
+
+  const [offer, activeClaim] = await Promise.all([
+    getOfferById(id),
+    getActiveClaimForOffer(id),
+  ]);
   if (!offer) notFound();
 
   return (
@@ -98,9 +111,43 @@ export default async function DinerOfferDetail({
           </div>
         </dl>
 
-        <p className="text-xs text-muted-foreground text-center pt-4 border-t">
-          Claim & pay flow arrives in Phase 2c.
-        </p>
+        {error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        {activeClaim ? (
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-center space-y-1">
+            <p className="font-medium text-emerald-900">
+              You&apos;ve claimed this offer.
+            </p>
+            <p className="text-xs text-emerald-700">
+              Expires in {expiresInMinutes(activeClaim)} min. Show this at
+              the restaurant to redeem.
+            </p>
+            <Link
+              href="/app/claims"
+              className="text-xs underline underline-offset-4 text-emerald-900"
+            >
+              See all your claims →
+            </Link>
+          </div>
+        ) : (
+          <form action={claimOffer}>
+            <input type="hidden" name="offer_id" value={offer.id} />
+            <button
+              type="submit"
+              className="w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Claim this offer
+            </button>
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Claims hold for 1 hour. Pay-at-restaurant flow arrives in
+              Phase 2d.
+            </p>
+          </form>
+        )}
       </div>
     </main>
   );
