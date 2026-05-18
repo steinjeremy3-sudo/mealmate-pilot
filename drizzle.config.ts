@@ -1,8 +1,10 @@
-// Drizzle Kit config. Used by `drizzle-kit push` (Phase 0) and later by
-// `generate` + `migrate` once we have real data and need file-based migrations.
+// Drizzle Kit config. Used by `npm run db:generate` (creates a new
+// migration file in drizzle/ from schema diffs) and `npm run db:migrate`
+// (applies pending migrations, tracked in drizzle.__drizzle_migrations).
 //
-// PHASE 0 NOTE: per BRIEF.md, `push` is fine while we have no production data.
-// Switch to `generate` + `migrate` BEFORE Phase 2.
+// Legacy `drizzle-kit push` was used during Phases 0–2e while the DB
+// schema was still fluid; we've switched to file-based migrations now
+// that data lives in the DB.
 
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
@@ -17,14 +19,14 @@ if (!process.env.DATABASE_URL) {
 
 export default defineConfig({
   schema: "./src/db/schema.ts",
-  out: "./drizzle",                  // future migration files land here
+  out: "./drizzle",                  // generated migrations + journal land here
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
-  // strict: true would prompt on every push (requires a TTY). Off during
-  // Phase 0 so `npm run db:push` is non-interactive. Drizzle still asks
-  // before destructive changes (DROP, etc.) — turn this back on once we
-  // switch to `generate` + `migrate` before Phase 2.
+  // strict: true asks before applying destructive changes. We're past the
+  // push-prompt era now — schema changes go through `generate` + `migrate`,
+  // not interactive `push`. See `npm run db:generate` / `db:migrate`.
+  strict: true,
   verbose: true,
 });

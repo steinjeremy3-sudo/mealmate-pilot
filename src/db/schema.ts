@@ -7,12 +7,12 @@
 // Conventions per BRIEF.md:
 //   - All primary keys are uuid default gen_random_uuid()
 //   - Every table has created_at + updated_at (timestamptz, default now())
-//   - RLS is enabled on every table (done via scripts/enable-rls.ts in Phase 0;
-//     actual RLS policies arrive in Phase 1 alongside auth)
+//   - RLS is enabled on every table (scripts/enable-rls.ts); per-table
+//     policies live in scripts/{auth,offer,claim,payment}-policies.sql.
 //
-// PHASE 0 NOTE: schema reaches the DB via `drizzle-kit push` (no migration
-// files yet). Per the brief, switch to `generate` + `migrate` before Phase 2,
-// once real data exists.
+// Workflow: schema changes go through `npm run db:generate` (creates a
+// migration file in drizzle/) followed by `npm run db:migrate` (applies
+// it). The legacy `drizzle-kit push` is no longer used.
 
 import {
   pgEnum,
