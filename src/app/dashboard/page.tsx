@@ -73,9 +73,14 @@ export default async function MerchantHome() {
           ) : null}
 
           {restaurant.status === "approved" ? (
-            <p className="text-sm text-muted-foreground border-t pt-4">
-              You&apos;re approved. Offer creation arrives in Phase 2b.
-            </p>
+            <div className="border-t pt-4">
+              <Link
+                href="/dashboard/offers"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Manage offers →
+              </Link>
+            </div>
           ) : null}
 
           {restaurant.status === "suspended" ? (
