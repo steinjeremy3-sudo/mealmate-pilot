@@ -25,6 +25,7 @@ import { computePrice } from "@/lib/pricing";
 import { usdToCents } from "@/lib/money";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe";
+import { evaluateRubric } from "@/lib/rubric";
 
 function errParam(claimId: string, message: string): string {
   return `/app/claims/${claimId}/pay?error=${encodeURIComponent(message)}`;
@@ -43,13 +44,16 @@ export async function payClaim(formData: FormData): Promise<void> {
 
   const supabase = await createSupabaseServerClient();
 
-  // Load the claim + the offer it references (for discount + min spend).
+  // Load claim + offer + restaurant. We pull the extra offer/restaurant
+  // fields (valid_*, mcc) here so the rubric evaluator further down can
+  // run without a second roundtrip.
   const { data: claim, error: claimErr } = await supabase
     .from("claims")
     .select(
       `*, offer:offers!offer_id(
         id, title, discount_pct, min_spend_cents,
-        restaurant:restaurants!restaurant_id(id, name)
+        valid_days, valid_start_time, valid_end_time, max_claims_per_diner,
+        restaurant:restaurants!restaurant_id(id, name, mcc)
       )`,
     )
     .eq("id", claimId)
@@ -117,8 +121,31 @@ export async function payClaim(formData: FormData): Promise<void> {
     redirect(errParam(claimId, message));
   }
 
-  // Persist the payment record. auto_approval_status defaults to
-  // 'auto_approved' for now — Phase 2e wires the actual 6-check rubric.
+  // ----- 6-check rubric (Phase 2e) -----
+  // Count this diner's prior + current claims on this offer. Cancelled
+  // claims don't count against the per-diner cap.
+  const { count: dinerOfferClaims } = await supabase
+    .from("claims")
+    .select("*", { count: "exact", head: true })
+    .eq("offer_id", claim.offer.id)
+    .eq("diner_user_id", profile.id)
+    .neq("status", "cancelled");
+
+  const rubric = evaluateRubric({
+    claimedAt: new Date(claim.claimed_at),
+    offerValidStartTime: claim.offer.valid_start_time,
+    offerValidEndTime: claim.offer.valid_end_time,
+    offerValidDays: claim.offer.valid_days,
+    offerMinSpendCents: claim.offer.min_spend_cents,
+    offerMaxClaimsPerDiner: claim.offer.max_claims_per_diner,
+    subtotalCents: price.subtotalCents,
+    restaurantMcc: claim.offer.restaurant?.mcc ?? "",
+    totalDinerClaimsOnOffer: dinerOfferClaims ?? 0,
+    // v1 always charges the diner's own saved card, so this is implicit.
+    cardBelongsToDiner: true,
+  });
+
+  // Persist the payment record. Flagged → admin review queue.
   const { error: payErr } = await supabase.from("payments").insert({
     claim_id: claimId,
     card_id: card.id,
@@ -128,7 +155,8 @@ export async function payClaim(formData: FormData): Promise<void> {
     platform_fee_cents: price.platformFeeCents,
     total_cents: price.totalCents,
     payout_cents: price.payoutCents,
-    auto_approval_status: "auto_approved",
+    auto_approval_status: rubric.passed ? "auto_approved" : "flagged",
+    flagged_reasons: rubric.passed ? null : rubric.failedChecks,
   });
 
   if (payErr) {

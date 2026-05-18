@@ -80,10 +80,13 @@ CREATE POLICY payments_insert_diner_own_claim ON public.payments
     )
   );
 
--- UPDATE: payments are immutable from user sessions. The Stripe webhook
--- handler bypasses RLS via the service role to update reconciliation
--- fields (auto_approval_status, flagged_reasons, reviewed_*). Admin can
--- update via service role too. No user-facing UPDATE policy.
+-- UPDATE: diner / merchant sessions cannot mutate payments. Admins can
+-- (review queue: approve / reject flagged payments). The webhook handler
+-- bypasses RLS via the service role.
+DROP POLICY IF EXISTS payments_update_admin ON public.payments;
+CREATE POLICY payments_update_admin ON public.payments
+  FOR UPDATE
+  USING (public.current_user_role() = 'admin');
 
 -- DELETE: never from user sessions.
 
