@@ -6,16 +6,37 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
 
 export default async function DinerHome() {
-  await requireRole("diner");
-  const offers = await getLiveOffers();
+  const profile = await requireRole("diner");
+  const [offers, rebateBanner] = await Promise.all([
+    getLiveOffers(),
+    getDinerRebateBannerSummary(profile.id),
+  ]);
+  const showRebateSetupBanner =
+    !rebateBanner.hasDestination && rebateBanner.initiatedCents > 0;
 
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-6">
       <div className="w-full max-w-md space-y-4">
+        {showRebateSetupBanner ? (
+          <Link
+            href="/app/rebates/setup"
+            className="block rounded-md border border-emerald-300 bg-emerald-50 p-4 hover:bg-emerald-100"
+          >
+            <p className="font-medium text-emerald-900">
+              You have {centsToUsd(rebateBanner.initiatedCents)} in rebates
+              waiting.
+            </p>
+            <p className="text-xs text-emerald-800 mt-1">
+              Pick a checking account to receive them →
+            </p>
+          </Link>
+        ) : null}
+
         <div className="space-y-1">
           <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
             Live offers in Dallas
