@@ -13,6 +13,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
+import { deriveStripeAccountStatus } from "@/lib/db/stripe-accounts";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -59,10 +60,47 @@ export async function POST(request: NextRequest) {
     payload: event as unknown as Record<string, unknown>,
   });
 
-  // Connect dispatch will live here. Phase 4a wires account.updated;
-  // Phase 4e wires invoice.paid / invoice.payment_failed; Phase 4d
-  // wires transfer.* events for rebate confirmations.
-  console.log(`[stripe-webhook] received ${event.type} (${event.id})`);
+  switch (event.type) {
+    case "account.updated": {
+      const account = event.data.object as Stripe.Account;
+      const status = deriveStripeAccountStatus({
+        detailsSubmitted: account.details_submitted ?? false,
+        chargesEnabled: account.charges_enabled ?? false,
+        payoutsEnabled: account.payouts_enabled ?? false,
+      });
+      // Mirror Stripe's three booleans + derived status onto our row,
+      // keyed by stripe_account_id. If no matching restaurant row,
+      // it's a stale account we created in a different env — log and skip.
+      const { error: updateErr, data: updated } = await supabase
+        .from("restaurant_stripe_accounts")
+        .update({
+          details_submitted: account.details_submitted ?? false,
+          charges_enabled: account.charges_enabled ?? false,
+          payouts_enabled: account.payouts_enabled ?? false,
+          status,
+        })
+        .eq("stripe_account_id", account.id)
+        .select("restaurant_id");
+      if (updateErr) {
+        console.error(`[stripe-webhook] account.updated ${account.id}:`, updateErr);
+      } else if (!updated || updated.length === 0) {
+        console.warn(
+          `[stripe-webhook] account.updated ${account.id} — no matching restaurant_stripe_accounts row`,
+        );
+      } else {
+        console.log(
+          `[stripe-webhook] account.updated ${account.id} -> ${status}`,
+        );
+      }
+      break;
+    }
+    // Phase 4d will add transfer.* events for rebate confirmations.
+    // Phase 4e will add invoice.paid / invoice.payment_failed for
+    // weekly settlement collection.
+    default: {
+      console.log(`[stripe-webhook] no-op for ${event.type} (${event.id})`);
+    }
+  }
 
   return new NextResponse("ok", { status: 200 });
 }

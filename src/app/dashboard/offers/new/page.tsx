@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
+import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 
 import { createOffer } from "./actions";
 
@@ -36,6 +37,14 @@ export default async function NewOfferPage({
   }
   if (restaurant.status !== "approved") {
     redirect("/dashboard?error=approval-required");
+  }
+
+  // Gate: restaurant must have a verified Stripe Connect account so
+  // MealMate can pull the weekly settlement. Otherwise bounce home and
+  // show the "set up payouts" card.
+  const stripeAccount = await getStripeAccountForRestaurant(restaurant.id);
+  if (!stripeAccount || stripeAccount.status !== "active") {
+    redirect("/dashboard?error=stripe-not-active");
   }
 
   const { error } = await searchParams;

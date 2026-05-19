@@ -18,6 +18,7 @@
     "setup:auth": "tsx scripts/setup-auth.ts",
     "setup:offer-policies": "tsx scripts/setup-offer-policies.ts",
     "setup:claim-policies": "tsx scripts/setup-claim-policies.ts",
+    "setup:stripe-account-policies": "tsx scripts/setup-stripe-account-policies.ts",
     "setup:payment-policies": "tsx scripts/setup-payment-policies.ts",
     "seed": "tsx scripts/seed.ts"
   },

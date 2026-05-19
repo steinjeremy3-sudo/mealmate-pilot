@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
+import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { usdToCents } from "@/lib/money";
 
@@ -30,6 +31,12 @@ export async function createOffer(formData: FormData): Promise<void> {
   }
   if (restaurant.status !== "approved") {
     redirect(errParam("You can only create offers from an approved restaurant."));
+  }
+
+  // Same gate as the form page: Stripe Connect must be verified.
+  const stripeAccount = await getStripeAccountForRestaurant(restaurant.id);
+  if (!stripeAccount || stripeAccount.status !== "active") {
+    redirect(errParam("Set up Stripe Connect before creating offers."));
   }
 
   // Required strings
