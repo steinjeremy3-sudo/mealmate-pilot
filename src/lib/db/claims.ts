@@ -9,7 +9,12 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export type ClaimStatus = "claimed" | "consumed" | "expired" | "cancelled";
+export type ClaimStatus =
+  | "claimed"
+  | "matched"      // rebate-model success state
+  | "consumed"     // legacy success state from v1 in-app payment; still in enum
+  | "expired"
+  | "cancelled";
 
 export type Claim = {
   id: string;
@@ -28,7 +33,7 @@ export type ClaimWithOffer = Claim & {
     title: string;
     description?: string;
     discount_pct: number;
-    min_spend_cents: number;
+    min_check_cents: number;
     valid_days: string[];
     valid_start_time: string;
     valid_end_time: string;
@@ -48,7 +53,7 @@ export async function getClaimsForDiner(): Promise<ClaimWithOffer[]> {
     .from("claims")
     .select(
       `*, offer:offers!offer_id(
-        id, title, discount_pct, min_spend_cents,
+        id, title, discount_pct, min_check_cents,
         valid_days, valid_start_time, valid_end_time,
         restaurant:restaurants!restaurant_id(id, name, neighborhood, address)
       )`,
@@ -68,7 +73,7 @@ export async function getClaimByIdForDiner(id: string): Promise<ClaimWithOffer |
     .from("claims")
     .select(
       `*, offer:offers!offer_id(
-        id, title, description, discount_pct, min_spend_cents,
+        id, title, description, discount_pct, min_check_cents,
         valid_days, valid_start_time, valid_end_time,
         restaurant:restaurants!restaurant_id(id, name, neighborhood, address)
       )`,

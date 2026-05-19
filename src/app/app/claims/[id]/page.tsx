@@ -1,13 +1,15 @@
-// Diner claim detail / receipt.
+// Diner claim detail.
 //
 // Adapts to the claim's state:
-//   - claimed + not expired  -> active card with Pay + Cancel actions
-//   - claimed + past expiry  -> "expired" + offer info
-//   - consumed (paid)        -> full receipt with subtotal/discount/fee/total
-//                                + payout batch reference if ACH'd
-//   - cancelled              -> "cancelled" + offer info
+//   - claimed + not expired      → active card with Cancel action
+//   - matched / consumed         → "redeemed; rebate processing"
+//                                   (full rebate detail lands in Phase 4d
+//                                   once matched_transactions data flows)
+//   - claimed + past expiry      → "expired"
+//   - cancelled                  → "cancelled"
 //
-// Reached from /app/claims (list) or directly via deep link.
+// In the rebate model the diner pays at the POS — there is no in-app
+// pay step here.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -18,8 +20,6 @@ import {
   getClaimByIdForDiner,
   isClaimActive,
 } from "@/lib/db/claims";
-import { getPaymentForClaim } from "@/lib/db/payments";
-import { centsToUsd } from "@/lib/money";
 
 import { cancelClaim } from "../actions";
 
@@ -43,16 +43,13 @@ export default async function DinerClaimDetail({
   await requireRole("diner");
   const { id } = await params;
 
-  const [claim, payment] = await Promise.all([
-    getClaimByIdForDiner(id),
-    getPaymentForClaim(id),
-  ]);
+  const claim = await getClaimByIdForDiner(id);
   if (!claim || !claim.offer) notFound();
 
   const isActive = isClaimActive(claim);
-  const isPaid = claim.status === "consumed" && payment != null;
+  const isRedeemed = claim.status === "matched" || claim.status === "consumed";
   const isCancelled = claim.status === "cancelled";
-  const isExpired = !isActive && !isPaid && !isCancelled;
+  const isExpired = !isActive && !isRedeemed && !isCancelled;
 
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-6">
@@ -84,66 +81,31 @@ export default async function DinerClaimDetail({
               Claim active — expires in {expiresInMinutes(claim)} min
             </p>
             <p className="text-xs text-emerald-700">
-              Show this at {claim.offer.restaurant?.name ?? "the restaurant"} to
-              redeem.
+              Eat at {claim.offer.restaurant?.name ?? "the restaurant"} and
+              pay with your linked card. We&apos;ll match the transaction
+              and rebate you within 1–2 business days.
             </p>
-            <div className="flex gap-2 pt-2 border-t border-emerald-200">
-              <Link
-                href={`/app/claims/${claim.id}/pay`}
-                className="flex-1 rounded-md bg-emerald-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
+            <form action={cancelClaim} className="pt-2 border-t border-emerald-200">
+              <input type="hidden" name="claim_id" value={claim.id} />
+              <button
+                type="submit"
+                className="cursor-pointer rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
               >
-                Pay
-              </Link>
-              <form action={cancelClaim}>
-                <input type="hidden" name="claim_id" value={claim.id} />
-                <button
-                  type="submit"
-                  className="cursor-pointer rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
+                Cancel this claim
+              </button>
+            </form>
           </div>
         ) : null}
 
-        {isPaid && payment ? (
-          <div className="rounded-lg border border-border p-4 space-y-3">
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Receipt
+        {isRedeemed ? (
+          <div className="rounded-md border border-sky-200 bg-sky-50 p-4 space-y-2">
+            <p className="font-medium text-sky-900">Rebate on its way</p>
+            <p className="text-xs text-sky-800">
+              We matched your visit to this offer. The cash-back rebate
+              posts to your linked card within 1–2 business days.
             </p>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Subtotal</dt>
-                <dd>{centsToUsd(payment.subtotal_cents)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">
-                  Discount ({claim.offer.discount_pct}%)
-                </dt>
-                <dd>− {centsToUsd(payment.discount_cents)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Platform fee</dt>
-                <dd>+ {centsToUsd(payment.platform_fee_cents)}</dd>
-              </div>
-              <div className="flex justify-between border-t pt-2 font-medium">
-                <dt>You paid</dt>
-                <dd>{centsToUsd(payment.total_cents)}</dd>
-              </div>
-            </dl>
-            <p className="text-xs text-muted-foreground border-t pt-2">
-              Paid {formatDateTime(payment.created_at)} ·{" "}
-              <span className="font-mono break-all">
-                {payment.stripe_payment_intent_id}
-              </span>
-            </p>
-            {payment.paid_out_at ? (
-              <p className="text-xs text-emerald-700 border-t pt-2">
-                Restaurant paid out {formatDateTime(payment.paid_out_at)}
-                {payment.payout_batch_id ? ` · ${payment.payout_batch_id}` : ""}.
-              </p>
-            ) : null}
+            {/* Phase 4d: render rebate breakdown (discount, fee, net) +
+                Visa Direct status from matched_transactions + rebates. */}
           </div>
         ) : null}
 
@@ -151,8 +113,8 @@ export default async function DinerClaimDetail({
           <div className="rounded-md border border-border p-4 text-center text-sm">
             <p className="font-medium">Claim expired</p>
             <p className="text-xs text-muted-foreground pt-1">
-              You didn&apos;t pay within the 1-hour window. If the offer is
-              still live, you can claim it again.
+              The transaction didn&apos;t come through in time. Re-claim
+              from the offer page if it&apos;s still live.
             </p>
             <Link
               href={`/app/offers/${claim.offer.id}`}
@@ -167,8 +129,8 @@ export default async function DinerClaimDetail({
           <div className="rounded-md border border-border p-4 text-center text-sm">
             <p className="font-medium">Claim cancelled</p>
             <p className="text-xs text-muted-foreground pt-1">
-              You cancelled this before paying. Re-claim from the offer page
-              if it&apos;s still live.
+              You cancelled this claim. Re-claim from the offer page if
+              it&apos;s still live.
             </p>
             <Link
               href={`/app/offers/${claim.offer.id}`}
@@ -179,7 +141,7 @@ export default async function DinerClaimDetail({
           </div>
         ) : null}
 
-        {/* ===== Offer details (always show, below state block) ===== */}
+        {/* ===== Offer details (always show) ===== */}
         <div className="rounded-md border border-border p-4 space-y-2 text-sm">
           {claim.offer.description ? (
             <p className="text-sm">{claim.offer.description}</p>

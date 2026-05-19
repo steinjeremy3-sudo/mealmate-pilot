@@ -90,25 +90,46 @@ export default async function NewOfferPage({
                 type="number"
                 name="discount_pct"
                 required
-                min={1}
-                max={99}
+                min={15}
+                max={50}
                 defaultValue={25}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
+              <span className="text-xs text-muted-foreground">15–50%</span>
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Min spend ($)</span>
+              <span className="text-sm font-medium">Min check ($)</span>
               <input
                 type="number"
-                name="min_spend"
+                name="min_check"
                 step="0.01"
                 min={0}
-                defaultValue={0}
+                defaultValue={40}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
+              <span className="text-xs text-muted-foreground">
+                Floor that qualifies — typical pilot value $40–$50
+              </span>
             </label>
           </div>
+
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">Monthly budget ($)</span>
+            <input
+              type="number"
+              name="monthly_budget"
+              step="0.01"
+              min={0}
+              defaultValue={2000}
+              required
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <span className="text-xs text-muted-foreground">
+              Cap on total discount spend per month. Offer auto-pauses when
+              hit; resets on the 1st.
+            </span>
+          </label>
 
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Valid days</legend>

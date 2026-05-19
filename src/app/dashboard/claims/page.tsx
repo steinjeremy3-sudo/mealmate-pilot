@@ -27,12 +27,17 @@ function StatusBadge({
   }
   const styles: Record<ClaimStatus, string> = {
     claimed: "bg-neutral-100 text-neutral-500 border-neutral-200",
+    matched: "bg-sky-100 text-sky-900 border-sky-200",
     consumed: "bg-sky-100 text-sky-900 border-sky-200",
     expired: "bg-neutral-100 text-neutral-500 border-neutral-200",
     cancelled: "bg-neutral-100 text-neutral-500 border-neutral-200",
   };
   const label =
-    status === "claimed" ? "expired" : status === "consumed" ? "paid" : status;
+    status === "claimed"
+      ? "expired"
+      : status === "matched" || status === "consumed"
+        ? "redeemed"
+        : status;
   return (
     <span
       className={

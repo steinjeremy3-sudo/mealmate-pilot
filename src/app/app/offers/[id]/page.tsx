@@ -81,10 +81,10 @@ export default async function DinerOfferDetail({
         </div>
 
         <dl className="space-y-2 text-sm">
-          {offer.min_spend_cents > 0 ? (
+          {offer.min_check_cents > 0 ? (
             <div className="flex justify-between gap-4 border-b pb-2">
               <dt className="text-muted-foreground">Minimum spend</dt>
-              <dd>{centsToUsd(offer.min_spend_cents)}</dd>
+              <dd>{centsToUsd(offer.min_check_cents)}</dd>
             </div>
           ) : null}
 

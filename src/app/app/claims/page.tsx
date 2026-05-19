@@ -23,12 +23,19 @@ function StatusBadge({ status, active }: { status: ClaimStatus; active: boolean 
   }
   const styles: Record<ClaimStatus, string> = {
     claimed: "bg-neutral-100 text-neutral-500 border-neutral-200",
-    consumed: "bg-sky-100 text-sky-900 border-sky-200",
+    matched: "bg-sky-100 text-sky-900 border-sky-200",
+    consumed: "bg-sky-100 text-sky-900 border-sky-200", // legacy
     expired: "bg-neutral-100 text-neutral-500 border-neutral-200",
     cancelled: "bg-neutral-100 text-neutral-500 border-neutral-200",
   };
   // A `claimed` row that didn't pass isClaimActive must be past-expiry.
-  const label = status === "claimed" ? "expired" : status;
+  // `matched` / `consumed` both surface as "redeemed" to the diner.
+  const label =
+    status === "claimed"
+      ? "expired"
+      : status === "matched" || status === "consumed"
+        ? "redeemed"
+        : status;
   return (
     <span
       className={
@@ -84,20 +91,14 @@ export default async function DinerClaimsPage() {
                     restaurant
                   </p>
                 </Link>
-                <div className="border-t border-emerald-200 p-3 flex gap-2">
-                  <Link
-                    href={`/app/claims/${c.id}/pay`}
-                    className="flex-1 rounded-md bg-emerald-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-emerald-800"
-                  >
-                    Pay
-                  </Link>
+                <div className="border-t border-emerald-200 p-3">
                   <form action={cancelClaim}>
                     <input type="hidden" name="claim_id" value={c.id} />
                     <button
                       type="submit"
-                      className="rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
+                      className="w-full rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50"
                     >
-                      Cancel
+                      Cancel claim
                     </button>
                   </form>
                 </div>

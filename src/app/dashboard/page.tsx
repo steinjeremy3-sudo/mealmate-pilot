@@ -1,17 +1,16 @@
-// Merchant dashboard home. Phase 2a: shows the merchant's restaurant
-// with its current status. If no restaurant yet, redirects to the
-// onboarding flow.
+// Merchant dashboard home. Shows the merchant's restaurant + status.
+// If no restaurant yet, redirects to the onboarding flow.
 //
-// Phase 2b will add the offers list / creation flow once we know the
-// merchant has an approved restaurant.
+// The Phase 3.5 "Pending payout" / "Paid out" card was removed when we
+// switched to the rebate model — the direction inverted (restaurants
+// owe MealMate, not vice versa). Phase 4e will reintroduce a weekly
+// settlement summary card pointing the other way.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { getMerchantPayoutSummary } from "@/lib/db/payments";
 import { getRestaurantForOwner, type RestaurantStatus } from "@/lib/db/restaurants";
-import { centsToUsd } from "@/lib/money";
 
 function StatusBadge({ status }: { status: RestaurantStatus }) {
   const styles: Record<RestaurantStatus, string> = {
@@ -44,53 +43,9 @@ export default async function MerchantHome() {
     redirect("/dashboard/onboarding");
   }
 
-  // Payout summary lives next to the restaurant card. Empty for new
-  // merchants — only meaningful once they have approved payments.
-  const payouts = await getMerchantPayoutSummary();
-
   return (
     <main className="flex flex-1 items-start justify-center px-6 py-10">
       <div className="w-full max-w-2xl space-y-6">
-        {/* ===== Payout summary ===== */}
-        {restaurant.status === "approved" ? (
-          <div className="rounded-lg border border-border p-6 space-y-4 bg-secondary/30">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-                  Pending payout
-                </p>
-                <p className="font-serif text-3xl font-semibold">
-                  {centsToUsd(payouts.pendingPayoutCents)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {payouts.pendingPaymentCount} payment
-                  {payouts.pendingPaymentCount === 1 ? "" : "s"} waiting for ACH
-                </p>
-              </div>
-              <div>
-                <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-                  Paid out
-                </p>
-                <p className="font-serif text-3xl font-semibold">
-                  {centsToUsd(payouts.paidOutPayoutCents)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {payouts.paidOutPaymentCount} payment
-                  {payouts.paidOutPaymentCount === 1 ? "" : "s"} settled
-                </p>
-              </div>
-            </div>
-            {payouts.flaggedPaymentCount > 0 ? (
-              <p className="text-xs text-muted-foreground border-t pt-3">
-                Plus {centsToUsd(payouts.flaggedPayoutCents)} from{" "}
-                {payouts.flaggedPaymentCount} flagged payment
-                {payouts.flaggedPaymentCount === 1 ? "" : "s"} waiting on
-                admin review.
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-
         <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
           Your restaurant
         </p>

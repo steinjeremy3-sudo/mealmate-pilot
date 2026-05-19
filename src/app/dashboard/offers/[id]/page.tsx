@@ -73,7 +73,7 @@ export default async function MerchantOfferDetail({
             <dd>{offer.discount_pct}% off</dd>
 
             <dt className="text-muted-foreground">Minimum spend</dt>
-            <dd>{centsToUsd(offer.min_spend_cents)}</dd>
+            <dd>{centsToUsd(offer.min_check_cents)}</dd>
 
             <dt className="text-muted-foreground">Days</dt>
             <dd>{formatDays(offer.valid_days)}</dd>

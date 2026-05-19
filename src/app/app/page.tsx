@@ -52,9 +52,9 @@ export default async function DinerHome() {
                       <p className="text-xs text-muted-foreground">off</p>
                     </div>
                   </div>
-                  {o.min_spend_cents > 0 ? (
+                  {o.min_check_cents > 0 ? (
                     <p className="text-xs text-muted-foreground pt-2 border-t mt-3">
-                      Min spend {centsToUsd(o.min_spend_cents)}
+                      Min spend {centsToUsd(o.min_check_cents)}
                     </p>
                   ) : null}
                 </Link>

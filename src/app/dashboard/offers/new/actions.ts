@@ -13,6 +13,10 @@ import { usdToCents } from "@/lib/money";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
+// Bounds per BRIEF.md offer constraints (rebate model).
+const DISCOUNT_MIN_PCT = 15;
+const DISCOUNT_MAX_PCT = 50;
+
 function errParam(message: string): string {
   return `/dashboard/offers/new?error=${encodeURIComponent(message)}`;
 }
@@ -34,18 +38,35 @@ export async function createOffer(formData: FormData): Promise<void> {
   if (!title) redirect(errParam("Title is required."));
   if (!description) redirect(errParam("Description is required."));
 
-  // Discount % (1–99, integer)
+  // Discount % — 15–50 per BRIEF.md (DB also enforces CHECK).
   const discountPct = parseInt(String(formData.get("discount_pct") ?? ""), 10);
-  if (!Number.isFinite(discountPct) || discountPct < 1 || discountPct > 99) {
-    redirect(errParam("Discount must be between 1 and 99 percent."));
+  if (
+    !Number.isFinite(discountPct) ||
+    discountPct < DISCOUNT_MIN_PCT ||
+    discountPct > DISCOUNT_MAX_PCT
+  ) {
+    redirect(
+      errParam(
+        `Discount must be between ${DISCOUNT_MIN_PCT} and ${DISCOUNT_MAX_PCT} percent.`,
+      ),
+    );
   }
 
-  // Min spend (dollars → cents)
-  const minSpendUsd = parseFloat(String(formData.get("min_spend") ?? "0"));
-  if (!Number.isFinite(minSpendUsd) || minSpendUsd < 0) {
-    redirect(errParam("Minimum spend must be a non-negative number."));
+  // Min check size (dollars → cents). Floor the offer applies to.
+  const minCheckUsd = parseFloat(String(formData.get("min_check") ?? "0"));
+  if (!Number.isFinite(minCheckUsd) || minCheckUsd < 0) {
+    redirect(errParam("Minimum check size must be a non-negative number."));
   }
-  const minSpendCents = usdToCents(minSpendUsd);
+  const minCheckCents = usdToCents(minCheckUsd);
+
+  // Monthly budget cap (dollars → cents). Auto-pause when exhausted.
+  const monthlyBudgetUsd = parseFloat(
+    String(formData.get("monthly_budget") ?? "0"),
+  );
+  if (!Number.isFinite(monthlyBudgetUsd) || monthlyBudgetUsd < 0) {
+    redirect(errParam("Monthly budget must be a non-negative number."));
+  }
+  const monthlyBudgetCents = usdToCents(monthlyBudgetUsd);
 
   // Valid days (multi-checkbox: at least one)
   const validDays = DAYS.filter((d) => formData.get(`day_${d}`) === "on");
@@ -80,9 +101,10 @@ export async function createOffer(formData: FormData): Promise<void> {
     title,
     description,
     discount_pct: discountPct,
-    min_spend_cents: minSpendCents,
+    min_check_cents: minCheckCents,
+    monthly_budget_cents: monthlyBudgetCents,
+    monthly_spent_cents: 0,
     valid_days: validDays,
-    // Postgres time columns accept "HH:MM" and pad to "HH:MM:00".
     valid_start_time: validStartTime,
     valid_end_time: validEndTime,
     max_claims_per_diner: 1,

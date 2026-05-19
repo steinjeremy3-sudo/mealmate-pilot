@@ -1,10 +1,13 @@
-// Stripe webhook endpoint. Stripe POSTs every account event here; we
-// verify the signature, dedupe by event.id (Postgres PK on stripe_events),
-// then dispatch.
+// Stripe webhook endpoint.
 //
-// In Phase 2d the happy-path payment flow is entirely synchronous in
-// payClaim, so the webhook is largely a reconciliation safety net.
-// Phase 2e+ will lean on it for async events (refunds, disputes, retries).
+// Phase 4a+ will route Stripe Connect events here (account.updated,
+// invoice.paid, transfer.created, etc.) to keep our mirrors in
+// restaurant_stripe_accounts + settlements + rebates in sync.
+//
+// Right now this is a stub: it verifies the signature, dedupes by
+// event.id (Postgres PK on stripe_events), records the event, and
+// no-ops on the dispatch. Switch statements get filled in as each
+// sub-phase needs them.
 
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
@@ -12,7 +15,6 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-// Stripe needs the unparsed body to verify the signature.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -24,8 +26,6 @@ export async function POST(request: NextRequest) {
 
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
-    // We don't have the signing secret yet (or it's not set in this env).
-    // Refuse loudly so Stripe retries until we configure it.
     return new NextResponse("Webhook not configured", { status: 500 });
   }
 
@@ -56,35 +56,13 @@ export async function POST(request: NextRequest) {
   await supabase.from("stripe_events").insert({
     id: event.id,
     type: event.type,
-    // jsonb column — passing the full event preserves Stripe's full payload
-    // for future debugging / reconciliation.
     payload: event as unknown as Record<string, unknown>,
   });
 
-  // Dispatch. In Phase 2d we just log — the payClaim server action does
-  // the real DB write synchronously. Phase 2e and beyond will move work
-  // here as flows become async (refunds, disputes, retried 3DS).
-  switch (event.type) {
-    case "payment_intent.succeeded": {
-      const pi = event.data.object as Stripe.PaymentIntent;
-      console.log(
-        `[stripe-webhook] payment_intent.succeeded: ${pi.id} (claim ${pi.metadata?.claim_id ?? "?"})`,
-      );
-      break;
-    }
-    case "payment_intent.payment_failed": {
-      const pi = event.data.object as Stripe.PaymentIntent;
-      console.log(
-        `[stripe-webhook] payment_intent.payment_failed: ${pi.id} — ${pi.last_payment_error?.message ?? "no message"}`,
-      );
-      break;
-    }
-    default: {
-      // Other events arrive (charge.succeeded, etc.); we just record them
-      // in stripe_events for audit and move on.
-      break;
-    }
-  }
+  // Connect dispatch will live here. Phase 4a wires account.updated;
+  // Phase 4e wires invoice.paid / invoice.payment_failed; Phase 4d
+  // wires transfer.* events for rebate confirmations.
+  console.log(`[stripe-webhook] received ${event.type} (${event.id})`);
 
   return new NextResponse("ok", { status: 200 });
 }

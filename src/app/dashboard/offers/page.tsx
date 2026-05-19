@@ -79,7 +79,7 @@ export default async function MerchantOffersPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {o.discount_pct}% off · min spend{" "}
-                      {centsToUsd(o.min_spend_cents)}
+                      {centsToUsd(o.min_check_cents)}
                     </p>
                   </div>
                   <StatusBadge status={o.status} />

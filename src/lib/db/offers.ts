@@ -17,7 +17,7 @@ export type Offer = {
   title: string;
   description: string;
   discount_pct: number;
-  min_spend_cents: number;
+  min_check_cents: number;
   valid_days: string[];
   valid_start_time: string; // "HH:MM:SS"
   valid_end_time: string;

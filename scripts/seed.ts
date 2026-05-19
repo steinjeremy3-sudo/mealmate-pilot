@@ -127,7 +127,7 @@ type SeedOffer = {
   title: string;
   description: string;
   discountPct: number;
-  minSpendCents: number;
+  minCheckCents: number;
   validDays: string[];
   validStartTime: string;
   validEndTime: string;
@@ -142,7 +142,7 @@ const OFFERS: SeedOffer[] = [
     title: "25% off dinner",
     description: "Enjoy 25% off your check, Tuesday through Thursday dinner.",
     discountPct: 25,
-    minSpendCents: 0,
+    minCheckCents: 0,
     validDays: ["tue", "wed", "thu"],
     validStartTime: "17:00",
     validEndTime: "22:00",
@@ -153,7 +153,7 @@ const OFFERS: SeedOffer[] = [
     title: "20% off lunch",
     description: "Cantina lunch, Monday through Friday, 20% off your order.",
     discountPct: 20,
-    minSpendCents: 1500,
+    minCheckCents: 1500,
     validDays: ["mon", "tue", "wed", "thu", "fri"],
     validStartTime: "11:00",
     validEndTime: "14:00",
@@ -164,7 +164,7 @@ const OFFERS: SeedOffer[] = [
     title: "30% off Sunday BBQ",
     description: "Brisket, ribs, and sides. Sundays only.",
     discountPct: 30,
-    minSpendCents: 2500,
+    minCheckCents: 2500,
     validDays: ["sun"],
     validStartTime: "12:00",
     validEndTime: "21:00",
@@ -175,7 +175,7 @@ const OFFERS: SeedOffer[] = [
     title: "15% off taco trios",
     description: "Any trio of tacos, all week, 15% off.",
     discountPct: 15,
-    minSpendCents: 0,
+    minCheckCents: 0,
     validDays: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
     validStartTime: "11:00",
     validEndTime: "23:00",
@@ -186,7 +186,7 @@ const OFFERS: SeedOffer[] = [
     title: "Half-price wine flights",
     description: "Tuesday flights, 5pm–9pm only.",
     discountPct: 50,
-    minSpendCents: 1500,
+    minCheckCents: 1500,
     validDays: ["tue"],
     validStartTime: "17:00",
     validEndTime: "21:00",
@@ -197,7 +197,7 @@ const OFFERS: SeedOffer[] = [
     title: "25% off mezze platters",
     description: "Mid-week mezze. Wed and Thu, dinner only.",
     discountPct: 25,
-    minSpendCents: 2000,
+    minCheckCents: 2000,
     validDays: ["wed", "thu"],
     validStartTime: "17:00",
     validEndTime: "22:00",
@@ -208,7 +208,7 @@ const OFFERS: SeedOffer[] = [
     title: "20% off raw bar",
     description: "Oysters, crudo, ceviche. Mon–Wed evening.",
     discountPct: 20,
-    minSpendCents: 1800,
+    minCheckCents: 1800,
     validDays: ["mon", "tue", "wed"],
     validStartTime: "17:00",
     validEndTime: "22:00",
@@ -219,7 +219,7 @@ const OFFERS: SeedOffer[] = [
     title: "30% off small plates",
     description: "Thu–Sat happy hour, 30% off the small plates menu.",
     discountPct: 30,
-    minSpendCents: 1000,
+    minCheckCents: 1000,
     validDays: ["thu", "fri", "sat"],
     validStartTime: "16:00",
     validEndTime: "19:00",
@@ -288,7 +288,9 @@ async function main() {
       title: o.title,
       description: o.description,
       discount_pct: o.discountPct,
-      min_spend_cents: o.minSpendCents,
+      min_check_cents: o.minCheckCents,
+      monthly_budget_cents: 200000, // $2,000 / month default for seed offers
+      monthly_spent_cents: 0,
       valid_days: o.validDays,
       valid_start_time: o.validStartTime,
       valid_end_time: o.validEndTime,

@@ -15,6 +15,13 @@
       "when": 1779077532341,
       "tag": "0001_ancient_ogun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779158982356,
+      "tag": "0002_rebate_model",
+      "breakpoints": true
     }
   ]
 }

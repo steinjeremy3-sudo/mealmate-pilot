@@ -1,18 +1,20 @@
-// MealMate database schema (Phase 0).
+// MealMate database schema (rebate model — see BRIEF.md).
 //
-// Source of truth: BRIEF.md → "Database schema" section.
-// All 8 tables, with Postgres ENUM types for every status field and explicit
-// foreign keys so referential integrity lives in the database, not just in TS.
-//
-// Conventions per BRIEF.md:
-//   - All primary keys are uuid default gen_random_uuid()
+// Conventions:
+//   - All primary keys are uuid default gen_random_uuid() unless noted
 //   - Every table has created_at + updated_at (timestamptz, default now())
-//   - RLS is enabled on every table (scripts/enable-rls.ts); per-table
-//     policies live in scripts/{auth,offer,claim,payment}-policies.sql.
+//     unless explicitly omitted (audit_log, stripe_events keep their own)
+//   - RLS is enabled on every table; per-table policies live in
+//     scripts/{auth,offer,claim,plaid,match,settlement}-policies.sql
 //
-// Workflow: schema changes go through `npm run db:generate` (creates a
-// migration file in drizzle/) followed by `npm run db:migrate` (applies
-// it). The legacy `drizzle-kit push` is no longer used.
+// Workflow: schema changes go through `npm run db:generate` then
+// `npm run db:migrate`. drizzle-kit push is no longer used.
+//
+// Major revision 2026-05-18: in-app payment (Stripe PaymentIntents)
+// removed; rebate model added (Plaid + Visa Direct + Stripe Connect).
+// `cards` and `payments` tables dropped. New tables: plaid_items,
+// plaid_card_accounts, matched_transactions, rebates, settlements,
+// restaurant_stripe_accounts.
 
 import {
   pgEnum,
@@ -28,35 +30,99 @@ import {
 } from "drizzle-orm/pg-core";
 
 // === Enum types ====================================================
-// One Postgres ENUM per status field. Drizzle generates the CREATE TYPE.
 
 export const userRoleEnum = pgEnum("user_role", ["diner", "merchant", "admin"]);
 export const userStatusEnum = pgEnum("user_status", ["active", "suspended", "deleted"]);
 export const restaurantStatusEnum = pgEnum("restaurant_status", ["pending", "approved", "suspended"]);
-export const offerStatusEnum = pgEnum("offer_status", ["draft", "scheduled", "live", "ended"]);
-export const claimStatusEnum = pgEnum("claim_status", ["claimed", "consumed", "expired", "cancelled"]);
+
+// `paused` added for offers that hit monthly_budget_cents.
+export const offerStatusEnum = pgEnum("offer_status", [
+  "draft",
+  "scheduled",
+  "live",
+  "paused",
+  "ended",
+]);
+
+// `matched` is the rebate-model success state, replacing the older
+// `consumed`. `consumed` stays in the enum as a legacy value (Postgres
+// can't easily drop enum values once data may reference them); new code
+// uses `matched`.
+export const claimStatusEnum = pgEnum("claim_status", [
+  "claimed",
+  "matched",
+  "consumed",
+  "expired",
+  "cancelled",
+]);
+
 export const autoApprovalStatusEnum = pgEnum("auto_approval_status", [
   "auto_approved",
   "flagged",
   "rejected",
   "manual_approved",
 ]);
+
+// Kept around purely so the migration generator doesn't try to resolve
+// the dropped `cards` table's enum as a rename of one of the new ones.
+// No table references it after the rebate-model rewrite; drop in a
+// later migration when convenient.
 export const cardStatusEnum = pgEnum("card_status", ["active", "expired", "removed"]);
 
-// actor_role extends user_role with `system` for system-emitted audit events
-// (cron jobs, webhooks, etc. that aren't attributable to a human user).
+// Plaid item / account lifecycle.
+export const plaidItemStatusEnum = pgEnum("plaid_item_status", ["active", "error", "removed"]);
+export const plaidCardStatusEnum = pgEnum("plaid_card_status", ["active", "removed"]);
+
+// Transaction match confidence — output of the matcher.
+export const matchConfidenceEnum = pgEnum("match_confidence", [
+  "high",
+  "medium",
+  "low",
+  "none",
+]);
+
+// Rebate lifecycle (Visa Direct / push payouts).
+export const rebateStatusEnum = pgEnum("rebate_status", [
+  "initiated",
+  "sent",
+  "failed",
+  "settled",
+]);
+export const rebateProviderEnum = pgEnum("rebate_provider", [
+  "stripe",
+  "dwolla",
+  "visa_direct",
+]);
+
+// Weekly settlement lifecycle (Stripe Connect invoice).
+export const settlementStatusEnum = pgEnum("settlement_status", [
+  "pending",
+  "invoiced",
+  "paid",
+  "overdue",
+]);
+
+// Stripe Connect account state mirror.
+export const stripeAccountStatusEnum = pgEnum("stripe_account_status", [
+  "pending",
+  "restricted",
+  "active",
+]);
+
+// actor_role extends user_role with `system` for system-emitted audit
+// events (cron jobs, webhooks, scripts).
 export const actorRoleEnum = pgEnum("actor_role", ["diner", "merchant", "admin", "system"]);
 
-// Shared timestamp columns. Spread into every table per BRIEF.md.
+// Shared timestamp columns. Spread into every table that follows the
+// pattern.
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 };
 
 // === users =========================================================
-// Application-level user record. In Phase 1 this will be linked to
-// auth.users (Supabase Auth's managed table) so that signup auto-creates
-// a row here. For Phase 0 we just create the table per BRIEF.md.
+// Linked to auth.users (Supabase Auth) via the handle_new_user trigger
+// in scripts/auth-setup.sql — public.users.id matches auth.users.id.
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -64,10 +130,8 @@ export const users = pgTable("users", {
   displayName: text("display_name").notNull(),
   phone: text("phone"),
 
-  // Only populated for diners (used to charge their linked card via Stripe).
-  stripeCustomerId: text("stripe_customer_id"),
-
-  // Only meaningful for diners: A+, A, B, etc. Drives fraud/auto-approval signals.
+  // Trust score for diners — informs fraud weighting in the matcher and
+  // auto-approval rubric. A+, A, B, etc.
   trustScore: text("trust_score"),
 
   status: userStatusEnum("status").notNull().default("active"),
@@ -78,8 +142,6 @@ export const users = pgTable("users", {
 export const restaurants = pgTable("restaurants", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  // The merchant user who owns this restaurant. Restrict delete: you can't
-  // delete a user who owns a restaurant — suspend it first.
   ownerUserId: uuid("owner_user_id")
     .notNull()
     .references(() => users.id, { onDelete: "restrict" }),
@@ -90,11 +152,33 @@ export const restaurants = pgTable("restaurants", {
   city: text("city").notNull(),
   cuisine: text("cuisine").notNull(),
 
-  // Merchant category code — used by the auto-approval rubric to verify
-  // a charge's MCC matches the offer's eligible category.
+  // Merchant category code — used by the matcher to verify a Plaid
+  // transaction's merchant category aligns with the restaurant's
+  // declared MCC.
   mcc: text("mcc").notNull(),
 
   status: restaurantStatusEnum("status").notNull().default("pending"),
+  ...timestamps,
+});
+
+// === restaurant_stripe_accounts ====================================
+// One Stripe Connect account per restaurant. Created during merchant
+// onboarding (Phase 4a). Mirror of Stripe-side state for cheap reads
+// without hitting Stripe's API on every page load.
+export const restaurantStripeAccounts = pgTable("restaurant_stripe_accounts", {
+  // PK is restaurant_id (1:1 with restaurants).
+  restaurantId: uuid("restaurant_id")
+    .primaryKey()
+    .references(() => restaurants.id, { onDelete: "cascade" }),
+
+  stripeAccountId: text("stripe_account_id").notNull().unique(),
+
+  detailsSubmitted: boolean("details_submitted").notNull().default(false),
+  chargesEnabled: boolean("charges_enabled").notNull().default(false),
+  payoutsEnabled: boolean("payouts_enabled").notNull().default(false),
+
+  status: stripeAccountStatusEnum("status").notNull().default("pending"),
+
   ...timestamps,
 });
 
@@ -102,7 +186,6 @@ export const restaurants = pgTable("restaurants", {
 export const offers = pgTable("offers", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  // If a restaurant is removed, cascade-delete its offers.
   restaurantId: uuid("restaurant_id")
     .notNull()
     .references(() => restaurants.id, { onDelete: "cascade" }),
@@ -110,44 +193,47 @@ export const offers = pgTable("offers", {
   title: text("title").notNull(),
   description: text("description").notNull(),
 
-  // 1–99 (whole-number percent). CHECK constraint TODO — Drizzle's pg-core
-  // doesn't have a first-class check() yet; add via raw SQL in Phase 1.
+  // 15–50 (whole-number percent). Bounds enforced in the form layer +
+  // a Postgres CHECK constraint added in the migration.
   discountPct: integer("discount_pct").notNull(),
 
-  // Minimum subtotal that qualifies for the discount, in cents.
-  minSpendCents: integer("min_spend_cents").notNull(),
+  // Minimum check size to qualify (post-tax total, in cents). Restaurant
+  // sets this; typical pilot values are $40–$50.
+  minCheckCents: integer("min_check_cents").notNull(),
 
-  // e.g. ['mon','tue','wed']. Stored as text[] in Postgres.
+  // Monthly budget cap (in cents). When monthly_spent_cents >=
+  // monthly_budget_cents the offer auto-pauses (status='paused') until
+  // the next reset.
+  monthlyBudgetCents: integer("monthly_budget_cents").notNull(),
+  monthlySpentCents: integer("monthly_spent_cents").notNull().default(0),
+
+  // e.g. ['mon','tue','wed']. Stored as text[].
   validDays: text("valid_days").array().notNull(),
 
   validStartTime: time("valid_start_time").notNull(),
   validEndTime: time("valid_end_time").notNull(),
 
-  // One-off dates the offer is NOT redeemable (holidays, private events).
+  // One-off dates the offer is NOT redeemable.
   blackoutDates: date("blackout_dates").array(),
 
-  // Null = unlimited. Capacity cap across all diners.
-  maxClaimsTotal: integer("max_claims_total"),
-
-  // Per-diner cap. Default 1 means each diner can claim this offer once.
+  // Per-diner cap. Default 1 means each diner can claim this offer
+  // once per period.
   maxClaimsPerDiner: integer("max_claims_per_diner").notNull().default(1),
 
   status: offerStatusEnum("status").notNull().default("draft"),
 
   startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
-
-  // Null = open-ended (offer runs until manually ended).
   endsAt: timestamp("ends_at", { withTimezone: true }),
 
   ...timestamps,
 });
 
 // === claims ========================================================
-// A claim is a diner reserving an offer before showing up to redeem it.
+// A claim is a diner's intent to use an offer. Sits open until a Plaid
+// transaction matches (status → matched), the diner cancels, or expires.
 export const claims = pgTable("claims", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  // Don't allow deleting an offer that has historical claims.
   offerId: uuid("offer_id")
     .notNull()
     .references(() => offers.id, { onDelete: "restrict" }),
@@ -157,88 +243,169 @@ export const claims = pgTable("claims", {
     .references(() => users.id, { onDelete: "restrict" }),
 
   claimedAt: timestamp("claimed_at", { withTimezone: true }).defaultNow().notNull(),
+  // Typically 24h after claim — gives Plaid time to surface the
+  // transaction (most charges post within 1–3 days).
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 
   status: claimStatusEnum("status").notNull().default("claimed"),
   ...timestamps,
 });
 
-// === cards =========================================================
-// Defined BEFORE `payments` so payments can FK to it.
-// A diner's linked credit card, stored as a Stripe payment method.
-export const cards = pgTable("cards", {
+// === plaid_items ===================================================
+// A Plaid Item = one bank/issuer connection a diner has. Holds the
+// access token (server-only secret) we use to fetch transactions.
+export const plaidItems = pgTable("plaid_items", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  // If a user is removed, cascade-remove their cards.
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
 
-  // The Stripe-side identifier we use to actually charge.
-  stripePaymentMethodId: text("stripe_payment_method_id").notNull(),
+  plaidItemId: text("plaid_item_id").notNull().unique(),
+  // SERVER-ONLY. Access tokens grant transaction-read on the diner's
+  // accounts. NEVER expose to a client. RLS denies SELECT to any
+  // non-service-role caller (policy in plaid-policies.sql, Phase 4b).
+  accessToken: text("access_token").notNull(),
 
-  last4: text("last4").notNull(),
-  brand: text("brand").notNull(),
-  expMonth: integer("exp_month").notNull(),
-  expYear: integer("exp_year").notNull(),
+  institutionName: text("institution_name"),
 
-  isDefault: boolean("is_default").notNull().default(false),
-  status: cardStatusEnum("status").notNull().default("active"),
+  status: plaidItemStatusEnum("status").notNull().default("active"),
   ...timestamps,
 });
 
-// === payments ======================================================
-export const payments = pgTable("payments", {
+// === plaid_card_accounts ===========================================
+// Specific card accounts inside a Plaid Item that the diner linked to
+// MealMate. We match Plaid transactions against accounts here.
+export const plaidCardAccounts = pgTable("plaid_card_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  claimId: uuid("claim_id")
+  plaidItemId: uuid("plaid_item_id")
     .notNull()
-    .references(() => claims.id, { onDelete: "restrict" }),
-  cardId: uuid("card_id")
+    .references(() => plaidItems.id, { onDelete: "cascade" }),
+
+  plaidAccountId: text("plaid_account_id").notNull().unique(),
+
+  name: text("name"),           // Plaid's friendly label
+  officialName: text("official_name"), // bank's full name
+  mask: text("mask"),           // last 4
+  brand: text("brand"),         // 'visa', 'mastercard', etc.
+
+  isDefault: boolean("is_default").notNull().default(false),
+  status: plaidCardStatusEnum("status").notNull().default("active"),
+  ...timestamps,
+});
+
+// === matched_transactions ==========================================
+// One row per Plaid transaction we ingest (matched or not). Replaces
+// the v1 `payments` table in the rebate model — money math now lives
+// here instead of being snapshotted at in-app-pay time.
+export const matchedTransactions = pgTable("matched_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  // Null until / unless we resolve it to an active claim.
+  claimId: uuid("claim_id").references(() => claims.id, { onDelete: "set null" }),
+
+  // Which card the diner used (and therefore which Plaid Item).
+  plaidCardAccountId: uuid("plaid_card_account_id")
     .notNull()
-    .references(() => cards.id, { onDelete: "restrict" }),
+    .references(() => plaidCardAccounts.id, { onDelete: "restrict" }),
 
-  // Stripe PaymentIntent id, e.g. "pi_3MqK...". Used for refunds & reconciliation.
-  stripePaymentIntentId: text("stripe_payment_intent_id").notNull(),
+  // Plaid's transaction id (idempotency key).
+  plaidTransactionId: text("plaid_transaction_id").notNull().unique(),
 
-  // Money columns in cents (integers — never floats for money).
-  subtotalCents: integer("subtotal_cents").notNull(), // pre-discount
-  discountCents: integer("discount_cents").notNull(),
-  platformFeeCents: integer("platform_fee_cents").notNull(),
-  totalCents: integer("total_cents").notNull(),       // what the diner paid
-  payoutCents: integer("payout_cents").notNull(),     // what the restaurant receives
+  merchantNameRaw: text("merchant_name_raw").notNull(),
+  merchantNameNormalized: text("merchant_name_normalized"),
 
-  // Output of the 6-rubric auto-approval check (see BRIEF.md).
-  autoApprovalStatus: autoApprovalStatusEnum("auto_approval_status").notNull(),
+  // Null when unmatched.
+  restaurantId: uuid("restaurant_id").references(() => restaurants.id, { onDelete: "set null" }),
 
-  // Which rubrics failed, if any. e.g. ["timing","min_spend"]
+  amountCents: integer("amount_cents").notNull(),
+  transactionDate: date("transaction_date").notNull(),
+
+  matchConfidence: matchConfidenceEnum("match_confidence").notNull().default("none"),
+
+  // Snapshotted from the offer at match time so historical analysis
+  // doesn't depend on the offer being unchanged.
+  discountPctAtMatch: integer("discount_pct_at_match"),
+  discountCents: integer("discount_cents"),
+  platformFeeCents: integer("platform_fee_cents"),
+  rebateCents: integer("rebate_cents"),
+
+  autoApprovalStatus: autoApprovalStatusEnum("auto_approval_status"),
   flaggedReasons: text("flagged_reasons").array(),
-
-  // Set when an admin reviews a flagged payment.
   reviewedByUserId: uuid("reviewed_by_user_id").references(() => users.id, { onDelete: "set null" }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 
-  // Payout tracking. Pending payments have paid_out_at IS NULL.
-  // payout_batch_id is a free-text reference (ACH confirmation, batch
-  // name, etc.) set by the admin "Mark batch as paid" action.
-  paidOutAt: timestamp("paid_out_at", { withTimezone: true }),
-  payoutBatchId: text("payout_batch_id"),
+  ...timestamps,
+});
+
+// === rebates =======================================================
+// Visa Direct / Mastercard Send push tracking. One row per matched
+// transaction that's been queued for rebate.
+export const rebates = pgTable("rebates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  matchedTransactionId: uuid("matched_transaction_id")
+    .notNull()
+    .unique()
+    .references(() => matchedTransactions.id, { onDelete: "restrict" }),
+
+  plaidCardAccountId: uuid("plaid_card_account_id")
+    .notNull()
+    .references(() => plaidCardAccounts.id, { onDelete: "restrict" }),
+
+  amountCents: integer("amount_cents").notNull(),
+
+  provider: rebateProviderEnum("provider").notNull(),
+  providerTransferId: text("provider_transfer_id").unique(),
+
+  status: rebateStatusEnum("status").notNull().default("initiated"),
+
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  settledAt: timestamp("settled_at", { withTimezone: true }),
+  errorMessage: text("error_message"),
+
+  ...timestamps,
+});
+
+// === settlements ===================================================
+// Weekly invoice batch. One row per (restaurant, period) — restaurant
+// owes MealMate the sum of discount_cents for matched transactions in
+// that period.
+export const settlements = pgTable("settlements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  restaurantId: uuid("restaurant_id")
+    .notNull()
+    .references(() => restaurants.id, { onDelete: "restrict" }),
+
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
+
+  totalDiscountCents: integer("total_discount_cents").notNull(),
+  transactionCount: integer("transaction_count").notNull(),
+
+  stripeInvoiceId: text("stripe_invoice_id").unique(),
+
+  status: settlementStatusEnum("status").notNull().default("pending"),
+
+  invoicedAt: timestamp("invoiced_at", { withTimezone: true }),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
 
   ...timestamps,
 });
 
 // === audit_log =====================================================
-// Append-only event log. Immutability is enforced via RLS in Phase 1
-// (a "no UPDATE / no DELETE" policy), not by schema shape.
+// Append-only event log. Immutability enforced via RLS (no UPDATE, no
+// DELETE policies).
 export const auditLog = pgTable("audit_log", {
   id: uuid("id").primaryKey().defaultRandom(),
 
-  // Nullable for system-emitted events (cron, webhooks, scripts).
   actorUserId: uuid("actor_user_id").references(() => users.id, { onDelete: "set null" }),
   actorRole: actorRoleEnum("actor_role").notNull(),
 
-  action: text("action").notNull(),         // e.g. "offer.created", "payment.succeeded"
-  subjectType: text("subject_type").notNull(), // "offer" | "payment" | "restaurant" | ...
+  action: text("action").notNull(),
+  subjectType: text("subject_type").notNull(),
   subjectId: uuid("subject_id").notNull(),
   metadata: jsonb("metadata"),
 
@@ -249,11 +416,11 @@ export const auditLog = pgTable("audit_log", {
 });
 
 // === stripe_events =================================================
-// Webhook idempotency table. Primary key is Stripe's own event id, so
-// re-deliveries become no-op upserts. Per BRIEF.md this table does NOT
-// have created_at / updated_at — processed_at carries the timestamp.
+// Webhook idempotency table. PK is Stripe's own event id. In the
+// rebate model we receive Connect events here (account.updated,
+// invoice.paid, transfer.created) rather than PaymentIntent events.
 export const stripeEvents = pgTable("stripe_events", {
-  id: text("id").primaryKey(),              // Stripe event id, e.g. "evt_1MqK..."
+  id: text("id").primaryKey(),
   type: text("type").notNull(),
   payload: jsonb("payload").notNull(),
   processedAt: timestamp("processed_at", { withTimezone: true }).defaultNow().notNull(),
