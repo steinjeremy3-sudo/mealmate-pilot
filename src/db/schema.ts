@@ -301,6 +301,27 @@ export const plaidCardAccounts = pgTable("plaid_card_accounts", {
   ...timestamps,
 });
 
+// === diner_dwolla_accounts =========================================
+// Per-diner Dwolla state. One row per diner, populated lazily the
+// first time the diner visits /app/rebates/setup. dwolla_customer_url
+// is created via the Dwolla API; default_card_funding_source_url is
+// set once the diner adds a debit card via the Dwolla.js iframe.
+//
+// We don't store the card itself (PAN, expiry, CVV) — those live with
+// Dwolla, behind the iframe. We only hold the URL Dwolla gives us to
+// reference that card when initiating transfers.
+export const dinerDwollaAccounts = pgTable("diner_dwolla_accounts", {
+  // PK is user_id (1:1 with users).
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  dwollaCustomerUrl: text("dwolla_customer_url").notNull().unique(),
+  defaultCardFundingSourceUrl: text("default_card_funding_source_url"),
+
+  ...timestamps,
+});
+
 // === matched_transactions ==========================================
 // One row per Plaid transaction we ingest (matched or not). Replaces
 // the v1 `payments` table in the rebate model — money math now lives
