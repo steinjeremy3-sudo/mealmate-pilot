@@ -17,6 +17,7 @@ import "server-only";
 
 import { logAuditEvent } from "@/lib/db/audit-log";
 import { computeRebate } from "@/lib/pricing";
+import { createRebateForMatch } from "@/lib/rebates/issue";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export type ApprovalKind = "auto_approved" | "manual_approved";
@@ -127,6 +128,12 @@ export async function applyApprovedSnapshot(
       },
     });
   }
+
+  // Kick off the rebate state machine. createRebateForMatch is
+  // idempotent (UNIQUE on matched_transaction_id) so re-approval is
+  // safe. No real money moves yet — Phase 4d.2 adds the Dwolla
+  // transfer call.
+  await createRebateForMatch(input.matchedTransactionId);
 
   return snapshot;
 }
