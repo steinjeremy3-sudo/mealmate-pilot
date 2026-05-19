@@ -26,6 +26,7 @@ export type ClaimWithOffer = Claim & {
   offer: {
     id: string;
     title: string;
+    description?: string;
     discount_pct: number;
     min_spend_cents: number;
     valid_days: string[];
@@ -58,6 +59,29 @@ export async function getClaimsForDiner(): Promise<ClaimWithOffer[]> {
     return [];
   }
   return (data ?? []) as ClaimWithOffer[];
+}
+
+/** Full claim + offer + restaurant for the diner detail page. */
+export async function getClaimByIdForDiner(id: string): Promise<ClaimWithOffer | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("claims")
+    .select(
+      `*, offer:offers!offer_id(
+        id, title, description, discount_pct, min_spend_cents,
+        valid_days, valid_start_time, valid_end_time,
+        restaurant:restaurants!restaurant_id(id, name, neighborhood, address)
+      )`,
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    if (error.code !== "PGRST116") {
+      console.error("getClaimByIdForDiner:", error);
+    }
+    return null;
+  }
+  return data as ClaimWithOffer | null;
 }
 
 /**

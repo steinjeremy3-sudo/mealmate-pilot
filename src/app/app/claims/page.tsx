@@ -113,20 +113,22 @@ export default async function DinerClaimsPage() {
             </h2>
             <ul className="space-y-2">
               {past.map((c) => (
-                <li
-                  key={c.id}
-                  className="flex items-start justify-between gap-3 rounded-md border border-border p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {c.offer?.title ?? "Offer"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {c.offer?.restaurant?.name ?? "—"} ·{" "}
-                      {new Date(c.claimed_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <StatusBadge status={c.status} active={false} />
+                <li key={c.id}>
+                  <Link
+                    href={`/app/claims/${c.id}`}
+                    className="flex items-start justify-between gap-3 rounded-md border border-border p-3 hover:bg-secondary/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {c.offer?.title ?? "Offer"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {c.offer?.restaurant?.name ?? "—"} ·{" "}
+                        {new Date(c.claimed_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <StatusBadge status={c.status} active={false} />
+                  </Link>
                 </li>
               ))}
             </ul>
