@@ -54,3 +54,5 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-key
           STRIPE_SECRET_KEY: sk_test_dummy
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_dummy
+          PLAID_CLIENT_ID: ci_dummy
+          PLAID_SECRET: ci_dummy
