@@ -269,6 +269,12 @@ export const plaidItems = pgTable("plaid_items", {
 
   institutionName: text("institution_name"),
 
+  // Plaid transactionsSync cursor. NULL on first sync — Plaid then
+  // returns the full history (capped server-side). After each sync we
+  // store the returned `next_cursor` so the next call gets only the
+  // delta. Phase 4c: see src/lib/plaid/sync-transactions.ts.
+  transactionsCursor: text("transactions_cursor"),
+
   status: plaidItemStatusEnum("status").notNull().default("active"),
   ...timestamps,
 });
