@@ -33,6 +33,7 @@ import {
   splitDisplayName,
 } from "@/lib/dwolla";
 import { plaid } from "@/lib/plaid";
+import { sendInitiatedRebates } from "@/lib/rebates/send";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function setRebateDestination(formData: FormData): Promise<void> {
@@ -124,6 +125,15 @@ export async function setRebateDestination(formData: FormData): Promise<void> {
       funding_source_url: fundingSourceUrl,
     },
   });
+
+  // Clear any rebate backlog that was waiting on this diner having
+  // a destination. Failures here don't fail the setup action —
+  // they're logged and the next cron tick retries.
+  try {
+    await sendInitiatedRebates({ dinerUserId: profile.id });
+  } catch (err) {
+    console.error("setRebateDestination: backlog send failed:", err);
+  }
 
   revalidatePath("/app/rebates/setup");
   redirect("/app/rebates/setup");

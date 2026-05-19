@@ -13,6 +13,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { autoApproveHighMatches } from "@/lib/matching/auto-approve";
 import { matchPendingTransactions } from "@/lib/matching/match";
 import { syncAllActiveItems } from "@/lib/plaid/sync-transactions";
+import { sendInitiatedRebates } from "@/lib/rebates/send";
 
 // Vercel-specific: Plaid SDK is Node-only (uses node-fetch internally),
 // and audit logging hits the service-role client. Both rule out edge.
@@ -63,6 +64,12 @@ export async function GET(request: NextRequest) {
   // it. (Medium/low/flagged rows wait in the admin review queue.)
   const autoApproval = await autoApproveHighMatches();
 
+  // Push every 'initiated' rebate whose diner has a destination set.
+  // Diners earn rebates via auto-approval above; this step actually
+  // moves the money. (Diners without /app/rebates/setup completed
+  // are counted as 'skippedNoDestination' and stay 'initiated'.)
+  const issuance = await sendInitiatedRebates();
+
   const durationMs = Date.now() - startedAt;
 
   console.log(
@@ -76,18 +83,22 @@ export async function GET(request: NextRequest) {
       `match_low=${matching.matchedLow} match_unmatched=${matching.unmatched} ` +
       `match_errors=${matching.errors} ` +
       `approved=${autoApproval.approved} flagged=${autoApproval.flagged} ` +
-      `approval_errors=${autoApproval.errors} duration_ms=${durationMs}`,
+      `approval_errors=${autoApproval.errors} ` +
+      `rebate_sent=${issuance.sent} rebate_skipped_no_dest=${issuance.skippedNoDestination} ` +
+      `rebate_failed=${issuance.failed} duration_ms=${durationMs}`,
   );
 
   return NextResponse.json({
     ok:
       ingestTotals.errors === 0 &&
       matching.errors === 0 &&
-      autoApproval.errors === 0,
+      autoApproval.errors === 0 &&
+      issuance.failed === 0,
     items: results.length,
     ingest: ingestTotals,
     matching,
     autoApproval,
+    issuance,
     durationMs,
   });
 }
