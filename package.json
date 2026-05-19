@@ -24,7 +24,8 @@
     "setup:rebates-policies": "tsx scripts/setup-rebates-policies.ts",
     "setup:dwolla-policies": "tsx scripts/setup-dwolla-policies.ts",
     "setup:payment-policies": "tsx scripts/setup-payment-policies.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "seed:sandbox": "tsx scripts/seed-sandbox-merchants.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
