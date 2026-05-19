@@ -80,3 +80,74 @@ export function locationOf(response: unknown): string {
   if (!loc) throw new Error("Dwolla response missing Location header");
   return loc;
 }
+
+// ====================================================================
+// Customer + funding-source helpers
+// ====================================================================
+
+export type DinerProfileForDwolla = {
+  email: string;
+  /** Best-effort split of users.display_name. */
+  firstName: string;
+  lastName: string;
+};
+
+/**
+ * Split a free-form display_name into first/last for Dwolla. Dwolla
+ * requires both fields even for receive-only customers. If the name
+ * has no space we duplicate it — not ideal but pragmatic for pilot.
+ */
+export function splitDisplayName(displayName: string): {
+  firstName: string;
+  lastName: string;
+} {
+  const trimmed = displayName.trim();
+  if (!trimmed) return { firstName: "MealMate", lastName: "Diner" };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: parts[0] };
+  }
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+/**
+ * Create a Dwolla 'receive-only' Customer. Receive-only customers can
+ * accept transfers but can't send — exactly what we need for rebate
+ * recipients. No SSN, no address, no DOB required.
+ *
+ * Returns the new customer URL (Location header from Dwolla). Caller
+ * persists this on diner_dwolla_accounts.
+ */
+export async function createReceiveOnlyCustomer(
+  profile: DinerProfileForDwolla,
+): Promise<string> {
+  const resp = await dwolla.post("customers", {
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    type: "receive-only",
+  });
+  return locationOf(resp);
+}
+
+/**
+ * Attach a Plaid-linked bank account to a Dwolla customer using a
+ * Plaid processor token. No card details, no PCI — Plaid has already
+ * verified the account via the diner's bank login.
+ *
+ * Returns the new funding source URL.
+ */
+export async function attachPlaidFundingSource(args: {
+  customerUrl: string;
+  plaidProcessorToken: string;
+  name: string;
+}): Promise<string> {
+  const resp = await dwolla.post(`${args.customerUrl}/funding-sources`, {
+    plaidToken: args.plaidProcessorToken,
+    name: args.name,
+  });
+  return locationOf(resp);
+}

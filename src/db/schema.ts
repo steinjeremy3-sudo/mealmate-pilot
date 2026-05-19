@@ -296,6 +296,11 @@ export const plaidCardAccounts = pgTable("plaid_card_accounts", {
   mask: text("mask"),           // last 4
   brand: text("brand"),         // 'visa', 'mastercard', etc.
 
+  // Plaid's account subtype: 'credit card' or 'checking' in our flows.
+  // Used by /app/rebates/setup to filter rebate-eligible (checking)
+  // accounts. Nullable for rows linked before Phase 4d.2.
+  subtype: text("subtype"),
+
   isDefault: boolean("is_default").notNull().default(false),
   status: plaidCardStatusEnum("status").notNull().default("active"),
   ...timestamps,

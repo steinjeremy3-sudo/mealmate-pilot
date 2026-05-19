@@ -39,7 +39,11 @@ export async function createLinkToken(): Promise<{ linkToken: string }> {
   const response = await plaid.linkTokenCreate({
     user: { client_user_id: profile.id },
     client_name: "MealMate",
-    products: [Products.Transactions],
+    // Transactions: read history so the matcher can attribute charges.
+    // Auth: mint Dwolla processor tokens for ACH rebate destinations
+    // (Phase 4d.2). Asking for both at link time means the diner
+    // grants access once, not twice.
+    products: [Products.Transactions, Products.Auth],
     country_codes: [CountryCode.Us],
     language: "en",
     // Accept credit cards OR checking accounts. Checking is where a
@@ -150,6 +154,9 @@ export async function exchangePublicToken(
       // official_name when needed. Phase 4c can populate this from
       // transaction metadata.
       brand: null,
+      // 'credit card' or 'checking' — used by /app/rebates/setup to
+      // filter rebate-eligible accounts (Phase 4d.2).
+      subtype: acc.subtype ?? null,
       is_default: hasNoCardsYet && savedCount === 0,
       status: "active",
     });
