@@ -16,7 +16,10 @@ import {
   type StripeAccountStatus,
 } from "@/lib/db/stripe-accounts";
 
-import { startStripeOnboarding } from "./onboarding/stripe/actions";
+import {
+  refreshStripeAccountStatus,
+  startStripeOnboarding,
+} from "./onboarding/stripe/actions";
 
 function StatusBadge({ status }: { status: RestaurantStatus }) {
   const styles: Record<RestaurantStatus, string> = {
@@ -72,10 +75,21 @@ export default async function MerchantHome() {
     redirect("/dashboard/onboarding");
   }
 
-  const stripeAccount =
+  let stripeAccount =
     restaurant.status === "approved"
       ? await getStripeAccountForRestaurant(restaurant.id)
       : null;
+
+  // Self-heal stale mirrors: if a webhook delivery was missed (the
+  // subscription was added after onboarding finished, or the event
+  // bounced), pull fresh state directly from Stripe.
+  if (stripeAccount && stripeAccount.status !== "active") {
+    await refreshStripeAccountStatus(
+      stripeAccount.restaurant_id,
+      stripeAccount.stripe_account_id,
+    );
+    stripeAccount = await getStripeAccountForRestaurant(restaurant.id);
+  }
 
   const canCreateOffers =
     restaurant.status === "approved" && stripeAccount?.status === "active";

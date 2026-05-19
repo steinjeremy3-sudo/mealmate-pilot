@@ -36,6 +36,43 @@ async function getOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
+/**
+ * Pull the current Stripe Account state and write it into our mirror.
+ * Self-healing: if a webhook was missed (e.g. event wasn't subscribed
+ * when onboarding completed), the dashboard calls this on render for
+ * any non-active account so the merchant doesn't get stuck on "Setup
+ * in progress" forever.
+ *
+ * Safe to call from a Server Component — no redirect, no form action.
+ */
+export async function refreshStripeAccountStatus(
+  restaurantId: string,
+  stripeAccountId: string,
+): Promise<void> {
+  try {
+    const account = await stripe.accounts.retrieve(stripeAccountId);
+    const status = deriveStripeAccountStatus({
+      detailsSubmitted: account.details_submitted ?? false,
+      chargesEnabled: account.charges_enabled ?? false,
+      payoutsEnabled: account.payouts_enabled ?? false,
+    });
+    const admin = createSupabaseAdminClient();
+    await admin
+      .from("restaurant_stripe_accounts")
+      .update({
+        details_submitted: account.details_submitted ?? false,
+        charges_enabled: account.charges_enabled ?? false,
+        payouts_enabled: account.payouts_enabled ?? false,
+        status,
+      })
+      .eq("restaurant_id", restaurantId);
+  } catch (err) {
+    // Don't break dashboard render if Stripe is temporarily unreachable —
+    // the merchant just sees the stale state for now.
+    console.error("refreshStripeAccountStatus:", err);
+  }
+}
+
 export async function startStripeOnboarding(): Promise<void> {
   const profile = await requireRole("merchant");
   const restaurant = await getRestaurantForOwner(profile.id);
