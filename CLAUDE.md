@@ -2,7 +2,9 @@
 
 ## What this project is
 
-MealMate is a two-sided marketplace for restaurant discounts in Dallas. Diners browse offers, claim one, eat at the restaurant, pay in-app, and see the discount applied. The restaurant pays nothing — the diner pays a small platform fee on top of the discounted total.
+MealMate is a two-sided marketplace for restaurant discounts in Dallas. Diners link a card via Plaid, browse offers, claim one, eat at the restaurant, **pay normally at the POS with their linked card**, then receive a cash-back **rebate** to that card 1–2 days later via Visa Direct. The restaurant settles the discount portion to MealMate weekly via Stripe Connect.
+
+This is the **rebate model** (Dosh-style). The Phase 2d "simulated card-linked / in-app payment" approach has been retired — see BRIEF.md for the full architecture.
 
 This repo is the real product build: one Next.js 16 monorepo with three role-gated sections (`/app` for diners, `/dashboard` for merchants, `/admin` for ops), shared auth, shared database.
 
