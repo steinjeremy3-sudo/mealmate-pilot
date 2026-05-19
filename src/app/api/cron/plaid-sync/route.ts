@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
+import { autoApproveHighMatches } from "@/lib/matching/auto-approve";
 import { matchPendingTransactions } from "@/lib/matching/match";
 import { syncAllActiveItems } from "@/lib/plaid/sync-transactions";
 
@@ -57,6 +58,11 @@ export async function GET(request: NextRequest) {
   // matchable data and the cron quota is per-route, not per-call.
   const matching = await matchPendingTransactions();
 
+  // Auto-approve any rows the matcher promoted to 'high' + claim. The
+  // matcher writes the verdict; the rubric decides whether to act on
+  // it. (Medium/low/flagged rows wait in the admin review queue.)
+  const autoApproval = await autoApproveHighMatches();
+
   const durationMs = Date.now() - startedAt;
 
   console.log(
@@ -68,14 +74,20 @@ export async function GET(request: NextRequest) {
       `match_examined=${matching.examined} ` +
       `match_high=${matching.matchedHigh} match_medium=${matching.matchedMedium} ` +
       `match_low=${matching.matchedLow} match_unmatched=${matching.unmatched} ` +
-      `match_errors=${matching.errors} duration_ms=${durationMs}`,
+      `match_errors=${matching.errors} ` +
+      `approved=${autoApproval.approved} flagged=${autoApproval.flagged} ` +
+      `approval_errors=${autoApproval.errors} duration_ms=${durationMs}`,
   );
 
   return NextResponse.json({
-    ok: ingestTotals.errors === 0 && matching.errors === 0,
+    ok:
+      ingestTotals.errors === 0 &&
+      matching.errors === 0 &&
+      autoApproval.errors === 0,
     items: results.length,
     ingest: ingestTotals,
     matching,
+    autoApproval,
     durationMs,
   });
 }
