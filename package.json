@@ -20,6 +20,7 @@
     "setup:claim-policies": "tsx scripts/setup-claim-policies.ts",
     "setup:stripe-account-policies": "tsx scripts/setup-stripe-account-policies.ts",
     "setup:plaid-policies": "tsx scripts/setup-plaid-policies.ts",
+    "setup:matched-transactions-policies": "tsx scripts/setup-matched-transactions-policies.ts",
     "setup:payment-policies": "tsx scripts/setup-payment-policies.ts",
     "seed": "tsx scripts/seed.ts"
   },
