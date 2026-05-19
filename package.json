@@ -22,6 +22,7 @@
     "setup:plaid-policies": "tsx scripts/setup-plaid-policies.ts",
     "setup:matched-transactions-policies": "tsx scripts/setup-matched-transactions-policies.ts",
     "setup:rebates-policies": "tsx scripts/setup-rebates-policies.ts",
+    "setup:dwolla-policies": "tsx scripts/setup-dwolla-policies.ts",
     "setup:payment-policies": "tsx scripts/setup-payment-policies.ts",
     "seed": "tsx scripts/seed.ts"
   },
@@ -34,6 +35,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
+    "dwolla-v2": "^3.4.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "plaid": "^42.2.0",
