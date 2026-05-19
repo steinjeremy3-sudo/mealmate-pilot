@@ -57,3 +57,5 @@ jobs:
           PLAID_CLIENT_ID: ci_dummy
           PLAID_SECRET: ci_dummy
           CRON_SECRET: ci_dummy
+          DWOLLA_KEY: ci_dummy
+          DWOLLA_SECRET: ci_dummy
