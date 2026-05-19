@@ -97,13 +97,28 @@ export default async function AdminHome() {
           </Link>
         </section>
 
-        {/* ===== Rebate-model placeholders =====
-            Phase 4d   → rebate issuance status (Visa Direct push)
-            Phase 4e   → weekly settlement batches (Stripe Connect)
-        */}
+        {/* ===== Rebates ===== */}
+        <section className="space-y-3">
+          <div>
+            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+              Rebates · Dwolla
+            </p>
+            <h2 className="font-serif text-2xl font-semibold">
+              Issuance status
+            </h2>
+          </div>
+          <Link
+            href="/admin/rebates"
+            className="inline-block text-sm underline underline-offset-4"
+          >
+            Open rebates →
+          </Link>
+        </section>
+
+        {/* ===== Phase 4e placeholder ===== */}
         <section className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground text-center">
-          Rebate issuance status and weekly settlement queues will land
-          here as Phase 4d/4e ship.
+          Weekly settlement batches (Stripe Connect invoices to
+          restaurants) will land here as Phase 4e ships.
         </section>
       </div>
     </main>
