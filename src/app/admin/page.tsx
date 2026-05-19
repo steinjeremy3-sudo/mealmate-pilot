@@ -11,6 +11,7 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { getPendingReviewMatches } from "@/lib/db/matched-transactions";
 import { getPendingRestaurants } from "@/lib/db/restaurants";
 
 function formatDate(iso: string): string {
@@ -23,7 +24,10 @@ function formatDate(iso: string): string {
 
 export default async function AdminHome() {
   await requireRole("admin");
-  const pendingRestaurants = await getPendingRestaurants();
+  const [pendingRestaurants, pendingMatches] = await Promise.all([
+    getPendingRestaurants(),
+    getPendingReviewMatches(),
+  ]);
 
   return (
     <main className="flex flex-1 items-start justify-center px-6 py-10">
@@ -73,14 +77,33 @@ export default async function AdminHome() {
           )}
         </section>
 
+        {/* ===== Plaid match review queue ===== */}
+        <section className="space-y-3">
+          <div>
+            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+              Plaid match review
+            </p>
+            <h2 className="font-serif text-2xl font-semibold">
+              {pendingMatches.length === 0
+                ? "Queue is empty"
+                : `${pendingMatches.length} pending`}
+            </h2>
+          </div>
+          <Link
+            href="/admin/matches"
+            className="inline-block text-sm underline underline-offset-4"
+          >
+            Open review queue →
+          </Link>
+        </section>
+
         {/* ===== Rebate-model placeholders =====
-            Phase 4b/4c → unmatched transactions queue
-            Phase 4d   → rebate issuance status
-            Phase 4e   → weekly settlement batches
+            Phase 4d   → rebate issuance status (Visa Direct push)
+            Phase 4e   → weekly settlement batches (Stripe Connect)
         */}
         <section className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground text-center">
-          Unmatched transactions, rebate issuance status, and weekly
-          settlement queues will land here as Phase 4 sub-phases ship.
+          Rebate issuance status and weekly settlement queues will land
+          here as Phase 4d/4e ship.
         </section>
       </div>
     </main>

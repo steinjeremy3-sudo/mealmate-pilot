@@ -22,9 +22,17 @@ export default async function AdminLayout({
     <div className="flex flex-1 flex-col">
       <header className="border-b">
         <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-4">
-          <Link href="/admin" className="font-mono text-xs tracking-widest uppercase">
-            MealMate · Ops
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link href="/admin" className="font-mono text-xs tracking-widest uppercase">
+              MealMate · Ops
+            </Link>
+            <Link
+              href="/admin/matches"
+              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
+            >
+              Matches
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
               {profile.displayName}

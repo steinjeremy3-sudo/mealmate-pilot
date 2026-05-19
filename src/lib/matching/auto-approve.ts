@@ -23,9 +23,10 @@
 import "server-only";
 
 import { logAuditEvent } from "@/lib/db/audit-log";
-import { computeRebate } from "@/lib/pricing";
 import { evaluateRubric, type RubricInput } from "@/lib/rubric";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+import { applyApprovedSnapshot } from "./approve";
 
 export type AutoApprovalSummary = {
   examined: number;
@@ -120,22 +121,13 @@ async function processOne(row: PendingRow): Promise<"approved" | "flagged"> {
   const rubric = evaluateRubric(rubricInput);
 
   if (rubric.passed) {
-    const breakdown = computeRebate(row.amount_cents, ctx.discountPct);
-    const { error } = await admin
-      .from("matched_transactions")
-      .update({
-        discount_pct_at_match: ctx.discountPct,
-        discount_cents: breakdown.discountCents,
-        platform_fee_cents: breakdown.platformFeeCents,
-        rebate_cents: breakdown.rebateCents,
-        auto_approval_status: "auto_approved",
-        flagged_reasons: null,
-      })
-      .eq("id", row.id);
-    if (error) throw new Error(`update matched_txn: ${error.message}`);
-
-    await markClaimMatched(row.claim_id);
-    await addToOfferMonthlySpent(ctx.offerId, breakdown.discountCents);
+    const snapshot = await applyApprovedSnapshot({
+      matchedTransactionId: row.id,
+      amountCents: row.amount_cents,
+      claimId: row.claim_id,
+      reviewerUserId: null, // system-driven; no human reviewer
+      kind: "auto_approved",
+    });
 
     await logAuditEvent({
       actor: { id: "system", role: "system" },
@@ -144,10 +136,10 @@ async function processOne(row: PendingRow): Promise<"approved" | "flagged"> {
       subjectId: row.id,
       metadata: {
         claim_id: row.claim_id,
-        discount_pct: ctx.discountPct,
-        discount_cents: breakdown.discountCents,
-        platform_fee_cents: breakdown.platformFeeCents,
-        rebate_cents: breakdown.rebateCents,
+        discount_pct: snapshot.discountPct,
+        discount_cents: snapshot.discountCents,
+        platform_fee_cents: snapshot.platformFeeCents,
+        rebate_cents: snapshot.rebateCents,
       },
     });
     return "approved";
@@ -256,64 +248,3 @@ async function loadRubricContext(claimId: string): Promise<RubricContext | null>
   };
 }
 
-async function markClaimMatched(claimId: string): Promise<void> {
-  const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("claims")
-    .update({ status: "matched" })
-    .eq("id", claimId)
-    .eq("status", "claimed"); // race-safe; don't overwrite a later state
-  if (error) console.error("markClaimMatched:", error);
-}
-
-/**
- * Add `discountCents` to offers.monthly_spent_cents. If the new total
- * would meet/exceed monthly_budget_cents, auto-pause the offer so the
- * diner-facing browse stops surfacing it.
- *
- * Race-prone in concurrent settings but Phase 4c only writes from the
- * single cron route — good enough for pilot.
- */
-async function addToOfferMonthlySpent(
-  offerId: string,
-  discountCents: number,
-): Promise<void> {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("offers")
-    .select("monthly_spent_cents, monthly_budget_cents, status")
-    .eq("id", offerId)
-    .maybeSingle();
-  if (error || !data) {
-    console.error("addToOfferMonthlySpent: load:", error);
-    return;
-  }
-  const next = data.monthly_spent_cents + discountCents;
-  const shouldPause =
-    data.status === "active" && next >= data.monthly_budget_cents;
-
-  const { error: updErr } = await admin
-    .from("offers")
-    .update({
-      monthly_spent_cents: next,
-      ...(shouldPause ? { status: "paused" } : {}),
-    })
-    .eq("id", offerId);
-  if (updErr) {
-    console.error("addToOfferMonthlySpent: update:", updErr);
-    return;
-  }
-
-  if (shouldPause) {
-    await logAuditEvent({
-      actor: { id: "system", role: "system" },
-      action: "offer.auto_paused_budget_exhausted",
-      subjectType: "offer",
-      subjectId: offerId,
-      metadata: {
-        monthly_spent_cents: next,
-        monthly_budget_cents: data.monthly_budget_cents,
-      },
-    });
-  }
-}
