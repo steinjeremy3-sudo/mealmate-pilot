@@ -58,7 +58,7 @@ export async function getPendingReviewMatches(): Promise<ReviewRow[]> {
       claims (
         id,
         offers ( id, title, discount_pct ),
-        diner:users!claims_diner_user_id_fkey ( id, display_name, email )
+        diner:users!claims_diner_user_id_users_id_fk ( id, display_name, email )
       )
       `,
     )
@@ -89,7 +89,7 @@ export async function getReviewMatchDetail(
       claims (
         id,
         offers ( id, title, discount_pct, min_check_cents ),
-        diner:users!claims_diner_user_id_fkey ( id, display_name, email )
+        diner:users!claims_diner_user_id_users_id_fk ( id, display_name, email )
       )
       `,
     )
