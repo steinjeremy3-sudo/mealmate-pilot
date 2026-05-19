@@ -59,3 +59,4 @@ jobs:
           CRON_SECRET: ci_dummy
           DWOLLA_KEY: ci_dummy
           DWOLLA_SECRET: ci_dummy
+          DWOLLA_WEBHOOK_SECRET: ci_dummy
