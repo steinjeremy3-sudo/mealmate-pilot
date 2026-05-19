@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
+import { matchPendingTransactions } from "@/lib/matching/match";
 import { syncAllActiveItems } from "@/lib/plaid/sync-transactions";
 
 // Vercel-specific: Plaid SDK is Node-only (uses node-fetch internally),
@@ -33,9 +34,8 @@ export async function GET(request: NextRequest) {
 
   const startedAt = Date.now();
   const results = await syncAllActiveItems();
-  const durationMs = Date.now() - startedAt;
 
-  const totals = results.reduce(
+  const ingestTotals = results.reduce(
     (acc, r) => ({
       added: acc.added + r.added,
       modified: acc.modified + r.modified,
@@ -53,17 +53,29 @@ export async function GET(request: NextRequest) {
     },
   );
 
+  // Run the matcher in the same tick — fresh ingestion has the most
+  // matchable data and the cron quota is per-route, not per-call.
+  const matching = await matchPendingTransactions();
+
+  const durationMs = Date.now() - startedAt;
+
   console.log(
-    `[cron/plaid-sync] items=${results.length} added=${totals.added} ` +
-      `modified=${totals.modified} skipped_non_food=${totals.skippedNonFood} ` +
-      `skipped_unknown_account=${totals.skippedUnknownAccount} ` +
-      `errors=${totals.errors} duration_ms=${durationMs}`,
+    `[cron/plaid-sync] items=${results.length} ` +
+      `added=${ingestTotals.added} modified=${ingestTotals.modified} ` +
+      `skipped_non_food=${ingestTotals.skippedNonFood} ` +
+      `skipped_unknown_account=${ingestTotals.skippedUnknownAccount} ` +
+      `ingest_errors=${ingestTotals.errors} ` +
+      `match_examined=${matching.examined} ` +
+      `match_high=${matching.matchedHigh} match_medium=${matching.matchedMedium} ` +
+      `match_low=${matching.matchedLow} match_unmatched=${matching.unmatched} ` +
+      `match_errors=${matching.errors} duration_ms=${durationMs}`,
   );
 
   return NextResponse.json({
-    ok: totals.errors === 0,
+    ok: ingestTotals.errors === 0 && matching.errors === 0,
     items: results.length,
-    totals,
+    ingest: ingestTotals,
+    matching,
     durationMs,
   });
 }

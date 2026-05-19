@@ -162,7 +162,7 @@ export async function syncItem(plaidItemRowId: string): Promise<SyncItemResult> 
   }
 
   await logAuditEvent({
-    actor: { id: item.user_id, role: "diner" },
+    actor: { id: "system", role: "system" },
     action: "plaid.sync_completed",
     subjectType: "plaid_item",
     subjectId: item.id,

@@ -7,12 +7,22 @@
 
 import "server-only";
 
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import type { UserRole } from "@/lib/auth/require-role";
 
+/**
+ * `system` is for events emitted outside a user session (cron jobs,
+ * webhook handlers, scheduled tasks). The audit_log INSERT policy
+ * requires actor_user_id == auth.uid(), which is null in those
+ * contexts — so we use the service-role client to bypass RLS and
+ * record `actor_user_id = NULL, actor_role = 'system'` instead.
+ */
+export type AuditActorRole = UserRole | "system";
+
 export type AuditEvent = {
-  actor: { id: string; role: UserRole };
+  actor: { id: string; role: AuditActorRole };
   /** Dot-namespaced action, e.g. `restaurant.approved`, `payment.flagged`. */
   action: string;
   /** Subject table name, e.g. `restaurant`, `offer`, `payment`. */
@@ -25,9 +35,12 @@ export type AuditEvent = {
 
 export async function logAuditEvent(event: AuditEvent): Promise<void> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const isSystem = event.actor.role === "system";
+    const supabase = isSystem
+      ? createSupabaseAdminClient()
+      : await createSupabaseServerClient();
     const { error } = await supabase.from("audit_log").insert({
-      actor_user_id: event.actor.id,
+      actor_user_id: isSystem ? null : event.actor.id,
       actor_role: event.actor.role,
       action: event.action,
       subject_type: event.subjectType,
