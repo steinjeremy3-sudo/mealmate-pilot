@@ -8,6 +8,8 @@ import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { usePlaidLink } from "react-plaid-link";
 
+import { Button } from "@/components/brand";
+
 import { exchangePublicToken } from "./actions";
 
 export function PlaidLinkButton({ linkToken }: { linkToken: string }) {
@@ -40,14 +42,15 @@ export function PlaidLinkButton({ linkToken }: { linkToken: string }) {
 
   return (
     <div className="space-y-2">
-      <button
+      <Button
         type="button"
+        size="lg"
+        className="w-full"
         onClick={() => open()}
         disabled={!ready || pending}
-        className="cursor-pointer w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
       >
         {pending ? "Saving…" : "Link a card"}
-      </button>
+      </Button>
       {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}

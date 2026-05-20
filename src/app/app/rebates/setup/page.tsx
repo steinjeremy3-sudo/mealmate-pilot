@@ -13,6 +13,7 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -35,15 +36,19 @@ export default async function RebatesSetupPage() {
     !!account?.defaultCardFundingSourceUrl && cards.length > 0;
 
   return (
-    <main className="flex flex-1 items-start justify-center px-4 py-6">
-      <div className="w-full max-w-md space-y-5">
-        <div className="space-y-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Rebate destination
-          </p>
-          <h1 className="font-serif text-2xl font-semibold">
-            {isConfigured ? "You're set up" : "Pick a checking account"}
-          </h1>
+    <main className="flex flex-1 items-start justify-center px-4 py-8">
+      <div className="w-full max-w-md space-y-6">
+        <div className="space-y-1.5">
+          <Eyebrow>Rebate destination</Eyebrow>
+          <Heading as="h1" size="display">
+            {isConfigured ? (
+              <>
+                You&apos;re <em>set</em>
+              </>
+            ) : (
+              "Pick a checking account"
+            )}
+          </Heading>
           <p className="text-sm text-muted-foreground">
             MealMate sends your cash-back rebates via ACH to a linked
             checking account. Funds arrive in 1–2 business days.
@@ -51,62 +56,57 @@ export default async function RebatesSetupPage() {
         </div>
 
         {cards.length === 0 ? (
-          <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground space-y-2 text-center">
+          <Card className="space-y-2 border-dashed text-center text-sm text-muted-foreground">
             <p>
               You haven&apos;t linked a checking account yet. Link one
               first, then come back here.
             </p>
             <Link
               href="/app/cards"
-              className="inline-block text-sm underline underline-offset-4 text-foreground"
+              className="inline-block text-sm text-orange underline underline-offset-4"
             >
-              Go to /app/cards →
+              Go to your cards →
             </Link>
-          </div>
+          </Card>
         ) : (
           <ul className="space-y-2">
             {cards.map((card) => (
-              <li
-                key={card.id}
-                className="rounded-md border border-border p-4 flex items-start justify-between gap-3"
-              >
-                <div>
-                  <p className="font-medium">
-                    {card.institutionName ?? card.name ?? "Checking"}
-                    {card.mask ? <> ···· {card.mask}</> : null}
-                  </p>
-                  {card.name ? (
-                    <p className="text-xs text-muted-foreground">
-                      {card.name}
+              <li key={card.id}>
+                <Card className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium">
+                      {card.institutionName ?? card.name ?? "Checking"}
+                      {card.mask ? <> ···· {card.mask}</> : null}
                     </p>
-                  ) : null}
-                </div>
-                <form action={setRebateDestination}>
-                  <input
-                    type="hidden"
-                    name="plaid_card_account_id"
-                    value={card.id}
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-                  >
-                    Use this
-                  </button>
-                </form>
+                    {card.name ? (
+                      <p className="text-xs text-muted-foreground">
+                        {card.name}
+                      </p>
+                    ) : null}
+                  </div>
+                  <form action={setRebateDestination}>
+                    <input
+                      type="hidden"
+                      name="plaid_card_account_id"
+                      value={card.id}
+                    />
+                    <Button type="submit" size="sm">
+                      Use this
+                    </Button>
+                  </form>
+                </Card>
               </li>
             ))}
           </ul>
         )}
 
         {isConfigured ? (
-          <p className="text-xs text-emerald-700 border border-emerald-200 rounded-md p-3">
-            Pending rebates will start flowing within the next sync
-            cycle.
-          </p>
+          <Card className="border-sage/40 bg-sage-tint text-xs text-ink/80">
+            Pending rebates will start flowing within the next sync cycle.
+          </Card>
         ) : null}
 
-        <p className="text-xs text-muted-foreground border-t pt-3">
+        <p className="border-t border-border pt-3 text-xs text-muted-foreground">
           Want instant rebates straight to your debit card? That&apos;s
           coming in a later phase — for now ACH is the path.
         </p>

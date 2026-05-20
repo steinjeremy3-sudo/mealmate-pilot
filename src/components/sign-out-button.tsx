@@ -9,7 +9,9 @@ export function SignOutButton({ className = "" }: { className?: string }) {
       <button
         type="submit"
         className={
-          "rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-secondary " +
+          "cursor-pointer rounded-full border border-border bg-transparent px-3.5 py-1.5 " +
+          "text-xs font-medium text-muted-foreground transition-colors " +
+          "hover:bg-cream-warm hover:text-foreground " +
           className
         }
       >

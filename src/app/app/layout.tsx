@@ -4,8 +4,7 @@
 // Phase 1: enforces role=diner. Unauthenticated -> /sign-in. Wrong role ->
 // bounced to their own home.
 //
-// Visual reference for the eventual full diner experience:
-// https://mealmate-jet.vercel.app (Bishop Arts-focused static prototype).
+// Visual reference: design-reference/consumer.html (warm/editorial system).
 
 import Link from "next/link";
 
@@ -20,41 +19,46 @@ export default async function DinerLayout({
   const profile = await requireRole("diner");
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b">
-        <div className="mx-auto max-w-md flex items-center justify-between px-6 py-4">
+    <div className="flex flex-1 flex-col bg-background">
+      <header className="border-b border-border bg-cream-soft">
+        <div className="mx-auto flex max-w-md items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-5">
-            <Link href="/app" className="font-mono text-xs tracking-widest uppercase">
-              MealMate
-            </Link>
             <Link
-              href="/app/claims"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
+              href="/app"
+              className="font-serif text-lg font-medium tracking-tight text-foreground"
             >
-              Claims
+              Meal<span className="text-orange">Mate</span>
             </Link>
-            <Link
-              href="/app/cards"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Cards
-            </Link>
-            <Link
-              href="/app/rebates/setup"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Rebates
-            </Link>
+            <nav className="flex items-center gap-4">
+              <Link
+                href="/app/claims"
+                className="text-sm text-muted-foreground transition-colors hover:text-orange"
+              >
+                Claims
+              </Link>
+              <Link
+                href="/app/cards"
+                className="text-sm text-muted-foreground transition-colors hover:text-orange"
+              >
+                Cards
+              </Link>
+              <Link
+                href="/app/rebates/setup"
+                className="text-sm text-muted-foreground transition-colors hover:text-orange"
+              >
+                Rebates
+              </Link>
+            </nav>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">
+            <span className="hidden text-xs text-muted-foreground sm:inline">
               {profile.displayName}
             </span>
             <SignOutButton />
           </div>
         </div>
       </header>
-      <div className="flex-1 flex">{children}</div>
+      <div className="flex flex-1">{children}</div>
     </div>
   );
 }
