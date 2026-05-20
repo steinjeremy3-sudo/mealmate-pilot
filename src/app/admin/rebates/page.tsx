@@ -4,9 +4,11 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getAllRebates } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
+
+import { retryRebate } from "./actions";
 
 function StatusBadge({ status }: { status: string }) {
   const tone =
@@ -92,7 +94,7 @@ export default async function AdminRebatesPage() {
                       </p>
                     ) : null}
                   </div>
-                  <div className="shrink-0 space-y-0.5 text-right">
+                  <div className="shrink-0 space-y-1 text-right">
                     <p className="font-medium">
                       {centsToUsd(r.amountCents)}
                     </p>
@@ -102,10 +104,18 @@ export default async function AdminRebatesPage() {
                     </p>
                     <Link
                       href={`/admin/matches/${r.matchedTransactionId}`}
-                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
+                      className="block text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
                     >
                       match details →
                     </Link>
+                    {r.status === "failed" ? (
+                      <form action={retryRebate}>
+                        <input type="hidden" name="rebate_id" value={r.id} />
+                        <Button type="submit" size="sm">
+                          Retry
+                        </Button>
+                      </form>
+                    ) : null}
                   </div>
                 </div>
               </div>

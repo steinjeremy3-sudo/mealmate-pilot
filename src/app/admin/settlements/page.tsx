@@ -5,6 +5,8 @@
 // status. The weekly cron creates these; the Stripe webhook advances
 // them invoiced → paid / overdue.
 
+import Link from "next/link";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getAllSettlements } from "@/lib/db/settlements";
@@ -63,7 +65,11 @@ export default async function AdminSettlementsPage() {
         ) : (
           <Card flush className="divide-y divide-border overflow-hidden">
             {settlements.map((s) => (
-              <div key={s.id} className="p-4">
+              <Link
+                key={s.id}
+                href={`/admin/settlements/${s.id}`}
+                className="block p-4 transition-colors hover:bg-cream-warm"
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="font-medium">
@@ -98,7 +104,7 @@ export default async function AdminSettlementsPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </Card>
         )}
