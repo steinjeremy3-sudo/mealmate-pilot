@@ -115,10 +115,22 @@ export default async function AdminHome() {
           </Link>
         </section>
 
-        {/* ===== Phase 4e placeholder ===== */}
-        <section className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground text-center">
-          Weekly settlement batches (Stripe Connect invoices to
-          restaurants) will land here as Phase 4e ships.
+        {/* ===== Settlements ===== */}
+        <section className="space-y-3">
+          <div>
+            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+              Settlements · weekly
+            </p>
+            <h2 className="font-serif text-2xl font-semibold">
+              Restaurant invoicing
+            </h2>
+          </div>
+          <Link
+            href="/admin/settlements"
+            className="inline-block text-sm underline underline-offset-4"
+          >
+            Open settlements →
+          </Link>
         </section>
       </div>
     </main>

@@ -38,6 +38,12 @@ export default async function AdminLayout({
             >
               Rebates
             </Link>
+            <Link
+              href="/admin/settlements"
+              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
+            >
+              Settlements
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
