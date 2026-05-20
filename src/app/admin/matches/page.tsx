@@ -11,23 +11,44 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getPendingReviewMatches } from "@/lib/db/matched-transactions";
 import { centsToUsd } from "@/lib/money";
+
+function ConfidenceBadge({ confidence }: { confidence: string }) {
+  const tone =
+    confidence === "high"
+      ? "border-sage/40 bg-sage-tint text-sage"
+      : confidence === "medium"
+        ? "border-orange/30 bg-orange-tint text-orange-deep"
+        : "border-border bg-cream-warm text-muted-foreground";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
+    >
+      {confidence}
+    </span>
+  );
+}
 
 export default async function AdminMatchesPage() {
   await requireRole("admin");
   const rows = await getPendingReviewMatches();
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-3xl space-y-6">
-        <div className="space-y-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Plaid matches · review queue
-          </p>
-          <h1 className="font-serif text-2xl font-semibold">
-            {rows.length === 0 ? "All caught up" : `${rows.length} pending`}
-          </h1>
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
+        <div className="space-y-1.5">
+          <Eyebrow>Plaid matches · review queue</Eyebrow>
+          <Heading as="h1" size="page">
+            {rows.length === 0 ? (
+              "All caught up"
+            ) : (
+              <>
+                <em>{rows.length}</em> pending
+              </>
+            )}
+          </Heading>
           <p className="text-sm text-muted-foreground">
             Medium- and low-confidence matches, plus high-confidence
             matches that the rubric flagged. Decide each one.
@@ -35,71 +56,57 @@ export default async function AdminMatchesPage() {
         </div>
 
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground border border-dashed rounded-md p-6 text-center">
-            Nothing in the queue. Cron runs every 30 min.
-          </p>
+          <Card className="border-dashed text-center text-sm text-muted-foreground">
+            Nothing in the queue. The matcher runs on the daily cron.
+          </Card>
         ) : (
-          <ul className="divide-y divide-border border border-border rounded-md">
+          <Card flush className="divide-y divide-border overflow-hidden">
             {rows.map((row) => (
-              <li key={row.id}>
-                <Link
-                  href={`/admin/matches/${row.id}`}
-                  className="block p-4 hover:bg-secondary/40"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <p className="font-medium">{row.merchantNameRaw}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {row.restaurant ? (
-                          <>guess: {row.restaurant.name} · </>
-                        ) : (
-                          <>no restaurant guess · </>
-                        )}
-                        {row.claim?.diner?.displayName ?? "no diner claim"}
-                        {row.claim?.offer ? (
-                          <> · {row.claim.offer.title}</>
-                        ) : null}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        <Badge confidence={row.matchConfidence} />
-                        {row.autoApprovalStatus === "flagged" ? (
-                          <>
-                            {" "}
-                            · <span className="text-amber-700">flagged</span>
-                            {row.flaggedReasons?.length ? (
-                              <>: {row.flaggedReasons.join(", ")}</>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-medium">
-                        {centsToUsd(row.amountCents)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {row.transactionDate}
-                      </p>
-                    </div>
+              <Link
+                key={row.id}
+                href={`/admin/matches/${row.id}`}
+                className="block p-4 transition-colors hover:bg-cream-warm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <p className="font-medium">{row.merchantNameRaw}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {row.restaurant ? (
+                        <>guess: {row.restaurant.name} · </>
+                      ) : (
+                        <>no restaurant guess · </>
+                      )}
+                      {row.claim?.diner?.displayName ?? "no diner claim"}
+                      {row.claim?.offer ? (
+                        <> · {row.claim.offer.title}</>
+                      ) : null}
+                    </p>
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <ConfidenceBadge confidence={row.matchConfidence} />
+                      {row.autoApprovalStatus === "flagged" ? (
+                        <span className="text-destructive">
+                          flagged
+                          {row.flaggedReasons?.length
+                            ? `: ${row.flaggedReasons.join(", ")}`
+                            : ""}
+                        </span>
+                      ) : null}
+                    </p>
                   </div>
-                </Link>
-              </li>
+                  <div className="shrink-0 text-right">
+                    <p className="font-medium">
+                      {centsToUsd(row.amountCents)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {row.transactionDate}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             ))}
-          </ul>
+          </Card>
         )}
       </div>
-    </main>
+    </div>
   );
-}
-
-function Badge({ confidence }: { confidence: string }) {
-  const color =
-    confidence === "high"
-      ? "text-emerald-700"
-      : confidence === "medium"
-      ? "text-blue-700"
-      : confidence === "low"
-      ? "text-zinc-600"
-      : "text-zinc-400";
-  return <span className={`font-mono uppercase ${color}`}>{confidence}</span>;
 }

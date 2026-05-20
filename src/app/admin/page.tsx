@@ -1,16 +1,10 @@
-// Admin / ops home.
-//
-// Currently shows the restaurant approval queue. Phase 4 sub-phases
-// will reintroduce richer dashboards:
-//   - 4b/4c: unmatched / low-confidence transaction review queue
-//   - 4d: rebate issuance status (Visa Direct push state machine)
-//   - 4e: weekly settlement batches owed by restaurants
-// The Phase 2e flagged-payments and Phase 3.5 payouts sections were
-// removed when the in-app payment model was retired.
+// Admin / ops home — restaurant approval queue + quick links into the
+// match review, rebate, and settlement sections.
 
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getPendingReviewMatches } from "@/lib/db/matched-transactions";
 import { getPendingRestaurants } from "@/lib/db/restaurants";
 
@@ -22,6 +16,30 @@ function formatDate(iso: string): string {
   });
 }
 
+function SectionLink({
+  href,
+  eyebrow,
+  title,
+  hint,
+}: {
+  href: string;
+  eyebrow: string;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <Link href={href} className="block">
+      <Card className="h-full space-y-1 transition-colors hover:bg-cream-warm">
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <p className="font-serif text-lg font-medium tracking-tight">
+          {title}
+        </p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      </Card>
+    </Link>
+  );
+}
+
 export default async function AdminHome() {
   await requireRole("admin");
   const [pendingRestaurants, pendingMatches] = await Promise.all([
@@ -30,109 +48,87 @@ export default async function AdminHome() {
   ]);
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-3xl space-y-8">
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-3xl space-y-8">
+        <div className="space-y-1.5">
+          <Eyebrow>Ops</Eyebrow>
+          <Heading as="h1" size="page">
+            Control room
+          </Heading>
+        </div>
+
         {/* ===== Restaurant approval queue ===== */}
         <section className="space-y-3">
-          <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Restaurant approvals
-            </p>
-            <h2 className="font-serif text-2xl font-semibold">
-              {pendingRestaurants.length === 0
-                ? "All caught up"
-                : `${pendingRestaurants.length} pending`}
-            </h2>
+          <div className="space-y-1">
+            <Eyebrow>Restaurant approvals</Eyebrow>
+            <Heading size="section">
+              {pendingRestaurants.length === 0 ? (
+                "All caught up"
+              ) : (
+                <>
+                  <em>{pendingRestaurants.length}</em> pending
+                </>
+              )}
+            </Heading>
           </div>
 
           {pendingRestaurants.length === 0 ? (
-            <p className="text-sm text-muted-foreground border border-dashed rounded-md p-4 text-center">
+            <Card className="border-dashed text-center text-sm text-muted-foreground">
               No restaurants waiting.
-            </p>
+            </Card>
           ) : (
-            <ul className="divide-y divide-border border border-border rounded-md">
+            <Card flush className="divide-y divide-border overflow-hidden">
               {pendingRestaurants.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/admin/restaurants/${r.id}`}
-                    className="flex items-start justify-between gap-4 p-4 hover:bg-secondary/40"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-medium">{r.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {r.cuisine} · {r.neighborhood}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {r.owner?.display_name ?? "Unknown owner"} ·{" "}
-                        {r.owner?.email ?? "no email"}
-                      </p>
-                    </div>
-                    <div className="text-right text-xs text-muted-foreground shrink-0">
-                      submitted {formatDate(r.created_at)}
-                    </div>
-                  </Link>
-                </li>
+                <Link
+                  key={r.id}
+                  href={`/admin/restaurants/${r.id}`}
+                  className="flex items-start justify-between gap-4 p-4 transition-colors hover:bg-cream-warm"
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium">{r.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.cuisine} · {r.neighborhood}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.owner?.display_name ?? "Unknown owner"} ·{" "}
+                      {r.owner?.email ?? "no email"}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right text-xs text-muted-foreground">
+                    submitted {formatDate(r.created_at)}
+                  </div>
+                </Link>
               ))}
-            </ul>
+            </Card>
           )}
         </section>
 
-        {/* ===== Plaid match review queue ===== */}
-        <section className="space-y-3">
-          <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Plaid match review
-            </p>
-            <h2 className="font-serif text-2xl font-semibold">
-              {pendingMatches.length === 0
-                ? "Queue is empty"
-                : `${pendingMatches.length} pending`}
-            </h2>
-          </div>
-          <Link
+        {/* ===== Section links ===== */}
+        <section className="grid gap-3 sm:grid-cols-3">
+          <SectionLink
             href="/admin/matches"
-            className="inline-block text-sm underline underline-offset-4"
-          >
-            Open review queue →
-          </Link>
-        </section>
-
-        {/* ===== Rebates ===== */}
-        <section className="space-y-3">
-          <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Rebates · Dwolla
-            </p>
-            <h2 className="font-serif text-2xl font-semibold">
-              Issuance status
-            </h2>
-          </div>
-          <Link
+            eyebrow="Plaid matches"
+            title={
+              pendingMatches.length === 0
+                ? "Queue empty"
+                : `${pendingMatches.length} to review`
+            }
+            hint="Medium / low confidence + flagged matches"
+          />
+          <SectionLink
             href="/admin/rebates"
-            className="inline-block text-sm underline underline-offset-4"
-          >
-            Open rebates →
-          </Link>
-        </section>
-
-        {/* ===== Settlements ===== */}
-        <section className="space-y-3">
-          <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Settlements · weekly
-            </p>
-            <h2 className="font-serif text-2xl font-semibold">
-              Restaurant invoicing
-            </h2>
-          </div>
-          <Link
+            eyebrow="Rebates · Dwolla"
+            title="Issuance status"
+            hint="Cash-back pushed to diners"
+          />
+          <SectionLink
             href="/admin/settlements"
-            className="inline-block text-sm underline underline-offset-4"
-          >
-            Open settlements →
-          </Link>
+            eyebrow="Settlements"
+            title="Restaurant invoicing"
+            hint="Weekly Stripe invoices"
+          />
         </section>
       </div>
-    </main>
+    </div>
   );
 }

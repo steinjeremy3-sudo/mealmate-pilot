@@ -1,14 +1,30 @@
-// Admin rebate visibility.
-//
-// Phase 4d.1: pure read-only list. Every approved match creates a
-// rebates row in 'initiated' state; this page is where ops sees them.
-// No issuance button yet — Phase 4d.2 adds the Dwolla "send now" flow.
+// Admin rebate visibility — read-only list of every rebate and its
+// Dwolla state (initiated → sent → settled / failed).
 
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getAllRebates } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
+
+function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === "settled"
+      ? "border-sage/40 bg-sage-tint text-sage"
+      : status === "sent"
+        ? "border-orange/30 bg-orange-tint text-orange-deep"
+        : status === "failed"
+          ? "border-destructive/40 bg-rose/15 text-destructive"
+          : "border-border bg-cream-warm text-muted-foreground";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
+    >
+      {status}
+    </span>
+  );
+}
 
 export default async function AdminRebatesPage() {
   await requireRole("admin");
@@ -20,15 +36,19 @@ export default async function AdminRebatesPage() {
   );
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-4xl space-y-6">
-        <div className="space-y-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Rebates · Dwolla
-          </p>
-          <h1 className="font-serif text-2xl font-semibold">
-            {rebates.length === 0 ? "No rebates yet" : `${rebates.length} total`}
-          </h1>
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <div className="space-y-1.5">
+          <Eyebrow>Rebates · Dwolla</Eyebrow>
+          <Heading as="h1" size="page">
+            {rebates.length === 0 ? (
+              "No rebates yet"
+            ) : (
+              <>
+                <em>{rebates.length}</em> total
+              </>
+            )}
+          </Heading>
           <p className="text-sm text-muted-foreground">
             {counts.initiated ? `${counts.initiated} initiated · ` : ""}
             {counts.sent ? `${counts.sent} sent · ` : ""}
@@ -39,14 +59,14 @@ export default async function AdminRebatesPage() {
         </div>
 
         {rebates.length === 0 ? (
-          <p className="text-sm text-muted-foreground border border-dashed rounded-md p-6 text-center">
+          <Card className="border-dashed text-center text-sm text-muted-foreground">
             No rebates created yet. They&apos;ll show up once approved
             matches start landing.
-          </p>
+          </Card>
         ) : (
-          <ul className="divide-y divide-border border border-border rounded-md">
+          <Card flush className="divide-y divide-border overflow-hidden">
             {rebates.map((r) => (
-              <li key={r.id} className="p-4">
+              <div key={r.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="font-medium">
@@ -57,11 +77,13 @@ export default async function AdminRebatesPage() {
                       {r.diner?.email ?? "no email"}
                       {r.cardMask ? <> · card ····{r.cardMask}</> : null}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      <Badge status={r.status} />
-                      {" · "}provider {r.provider}
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <StatusBadge status={r.status} />
+                      <span>provider {r.provider}</span>
                       {r.providerTransferId ? (
-                        <> · transfer {r.providerTransferId.slice(0, 12)}…</>
+                        <span>
+                          · transfer {r.providerTransferId.slice(0, 12)}…
+                        </span>
                       ) : null}
                     </p>
                     {r.errorMessage ? (
@@ -70,43 +92,27 @@ export default async function AdminRebatesPage() {
                       </p>
                     ) : null}
                   </div>
-                  <div className="text-right shrink-0 space-y-0.5">
-                    <p className="font-medium">{centsToUsd(r.amountCents)}</p>
+                  <div className="shrink-0 space-y-0.5 text-right">
+                    <p className="font-medium">
+                      {centsToUsd(r.amountCents)}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      created {new Date(r.createdAt).toLocaleDateString()}
+                      created{" "}
+                      {new Date(r.createdAt).toLocaleDateString()}
                     </p>
                     <Link
                       href={`/admin/matches/${r.matchedTransactionId}`}
-                      className="text-xs underline underline-offset-4 text-muted-foreground"
+                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
                     >
                       match details →
                     </Link>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </Card>
         )}
-
-        <p className="text-xs text-muted-foreground border-t pt-3">
-          Phase 4d.1: rebate rows are created in &apos;initiated&apos;
-          state and don&apos;t move automatically yet. Phase 4d.2 adds
-          the Dwolla transfer call + webhook to advance them through
-          sent → settled / failed.
-        </p>
       </div>
-    </main>
+    </div>
   );
-}
-
-function Badge({ status }: { status: string }) {
-  const color =
-    status === "settled"
-      ? "text-emerald-700"
-      : status === "sent"
-      ? "text-blue-700"
-      : status === "failed"
-      ? "text-destructive"
-      : "text-zinc-600";
-  return <span className={`font-mono uppercase ${color}`}>{status}</span>;
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getRestaurantById } from "@/lib/db/restaurants";
 
 import { approveRestaurant } from "./actions";
@@ -29,26 +30,28 @@ export default async function AdminRestaurantReview({
   }
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-2xl space-y-6">
-        <Link href="/admin" className="text-xs text-muted-foreground underline underline-offset-4">
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <Link
+          href="/admin"
+          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+        >
           ← Back to queue
         </Link>
 
-        <div className="rounded-lg border border-border p-6 space-y-4">
+        <Card className="space-y-4 p-6">
           <div className="space-y-1">
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Restaurant · {restaurant.status}
-            </p>
-            <h1 className="font-serif text-3xl font-semibold">
+            <Eyebrow>Restaurant · {restaurant.status}</Eyebrow>
+            <Heading as="h1" size="page">
               {restaurant.name}
-            </h1>
+            </Heading>
             <p className="text-sm text-muted-foreground">
-              {restaurant.cuisine} · {restaurant.neighborhood}, {restaurant.city}
+              {restaurant.cuisine} · {restaurant.neighborhood},{" "}
+              {restaurant.city}
             </p>
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm pt-2 border-t">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
             <dt className="text-muted-foreground">Address</dt>
             <dd>{restaurant.address}</dd>
 
@@ -72,22 +75,21 @@ export default async function AdminRestaurantReview({
           ) : null}
 
           {restaurant.status === "pending" ? (
-            <form action={approveRestaurant} className="pt-2">
-              <input type="hidden" name="restaurant_id" value={restaurant.id} />
-              <button
-                type="submit"
-                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-              >
-                Approve
-              </button>
+            <form action={approveRestaurant} className="pt-1">
+              <input
+                type="hidden"
+                name="restaurant_id"
+                value={restaurant.id}
+              />
+              <Button type="submit">Approve</Button>
             </form>
           ) : (
-            <p className="text-sm text-muted-foreground pt-2 border-t">
+            <p className="border-t border-border pt-3 text-sm text-muted-foreground">
               Already {restaurant.status}.
             </p>
           )}
-        </div>
+        </Card>
       </div>
-    </main>
+    </div>
   );
 }

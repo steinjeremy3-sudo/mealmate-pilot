@@ -6,8 +6,27 @@
 // them invoiced → paid / overdue.
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getAllSettlements } from "@/lib/db/settlements";
 import { centsToUsd } from "@/lib/money";
+
+function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === "paid"
+      ? "border-sage/40 bg-sage-tint text-sage"
+      : status === "invoiced"
+        ? "border-orange/30 bg-orange-tint text-orange-deep"
+        : status === "overdue"
+          ? "border-destructive/40 bg-rose/15 text-destructive"
+          : "border-border bg-cream-warm text-muted-foreground";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
+    >
+      {status}
+    </span>
+  );
+}
 
 export default async function AdminSettlementsPage() {
   await requireRole("admin");
@@ -18,17 +37,19 @@ export default async function AdminSettlementsPage() {
     .reduce((sum, s) => sum + s.totalDiscountCents, 0);
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-4xl space-y-6">
-        <div className="space-y-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Settlements · weekly batches
-          </p>
-          <h1 className="font-serif text-2xl font-semibold">
-            {settlements.length === 0
-              ? "No settlements yet"
-              : `${centsToUsd(owed)} outstanding`}
-          </h1>
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <div className="space-y-1.5">
+          <Eyebrow>Settlements · weekly batches</Eyebrow>
+          <Heading as="h1" size="page">
+            {settlements.length === 0 ? (
+              "No settlements yet"
+            ) : (
+              <>
+                <em>{centsToUsd(owed)}</em> outstanding
+              </>
+            )}
+          </Heading>
           <p className="text-sm text-muted-foreground">
             Restaurants are invoiced weekly for the discount portion of
             their matched transactions. Cron runs Tuesdays.
@@ -36,13 +57,13 @@ export default async function AdminSettlementsPage() {
         </div>
 
         {settlements.length === 0 ? (
-          <p className="text-sm text-muted-foreground border border-dashed rounded-md p-6 text-center">
+          <Card className="border-dashed text-center text-sm text-muted-foreground">
             No settlement batches have run yet.
-          </p>
+          </Card>
         ) : (
-          <ul className="divide-y divide-border border border-border rounded-md">
+          <Card flush className="divide-y divide-border overflow-hidden">
             {settlements.map((s) => (
-              <li key={s.id} className="p-4">
+              <div key={s.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="font-medium">
@@ -53,17 +74,22 @@ export default async function AdminSettlementsPage() {
                       {s.transactionCount} transaction
                       {s.transactionCount === 1 ? "" : "s"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      <Badge status={s.status} />
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <StatusBadge status={s.status} />
                       {s.stripeInvoiceId ? (
-                        <> · invoice {s.stripeInvoiceId.slice(0, 18)}…</>
+                        <span>
+                          invoice {s.stripeInvoiceId.slice(0, 18)}…
+                        </span>
                       ) : null}
                       {s.paidAt ? (
-                        <> · paid {new Date(s.paidAt).toLocaleDateString()}</>
+                        <span>
+                          · paid{" "}
+                          {new Date(s.paidAt).toLocaleDateString()}
+                        </span>
                       ) : null}
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="shrink-0 text-right">
                     <p className="font-medium">
                       {centsToUsd(s.totalDiscountCents)}
                     </p>
@@ -72,23 +98,11 @@ export default async function AdminSettlementsPage() {
                     </p>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </Card>
         )}
       </div>
-    </main>
+    </div>
   );
-}
-
-function Badge({ status }: { status: string }) {
-  const color =
-    status === "paid"
-      ? "text-emerald-700"
-      : status === "invoiced"
-      ? "text-blue-700"
-      : status === "overdue"
-      ? "text-destructive"
-      : "text-zinc-600";
-  return <span className={`font-mono uppercase ${color}`}>{status}</span>;
 }

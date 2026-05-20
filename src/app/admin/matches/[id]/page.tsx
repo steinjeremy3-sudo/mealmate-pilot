@@ -7,6 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getReviewMatchDetail } from "@/lib/db/matched-transactions";
 import { centsToUsd } from "@/lib/money";
 import { computeRebate } from "@/lib/pricing";
@@ -29,24 +30,22 @@ export default async function AdminMatchDetailPage({
       : null;
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
         <Link
           href="/admin/matches"
-          className="text-xs text-muted-foreground underline underline-offset-4"
+          className="text-sm text-muted-foreground transition-colors hover:text-orange"
         >
-          ← back to queue
+          ← Back to queue
         </Link>
 
         <div className="space-y-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Match review
-          </p>
-          <h1 className="font-serif text-2xl font-semibold">
+          <Eyebrow>Match review</Eyebrow>
+          <Heading as="h1" size="page">
             {row.merchantNameRaw}
-          </h1>
+          </Heading>
           <p className="text-sm text-muted-foreground">
-            {centsToUsd(row.amountCents)} · {row.transactionDate} ·{" "}
+            {centsToUsd(row.amountCents)} · {row.transactionDate} ·
             confidence{" "}
             <span className="font-mono uppercase">{row.matchConfidence}</span>
             {row.autoApprovalStatus === "flagged" ? (
@@ -56,10 +55,8 @@ export default async function AdminMatchDetailPage({
         </div>
 
         {/* Restaurant guess */}
-        <section className="rounded-md border border-border p-4 space-y-1">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Restaurant guess
-          </p>
+        <Card className="space-y-1">
+          <Eyebrow tone="muted">Restaurant guess</Eyebrow>
           <p className="font-medium">
             {row.restaurant ? row.restaurant.name : "(none)"}
             {row.restaurantCity ? ` · ${row.restaurantCity}` : null}
@@ -67,16 +64,16 @@ export default async function AdminMatchDetailPage({
           {row.merchantNameNormalized ? (
             <p className="text-xs text-muted-foreground">
               normalized:{" "}
-              <code className="font-mono">{row.merchantNameNormalized}</code>
+              <code className="font-mono text-foreground">
+                {row.merchantNameNormalized}
+              </code>
             </p>
           ) : null}
-        </section>
+        </Card>
 
         {/* Claim */}
-        <section className="rounded-md border border-border p-4 space-y-1">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Diner claim
-          </p>
+        <Card className="space-y-1">
+          <Eyebrow tone="muted">Diner claim</Eyebrow>
           {row.claim ? (
             <>
               <p className="font-medium">
@@ -92,60 +89,49 @@ export default async function AdminMatchDetailPage({
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No claim attached. Approving without a claim doesn&apos;t make
-              sense — reject this row, or attach a claim manually via
-              psql for now (admin-edit UI is Phase 4c+).
+              No claim attached. Approving without a claim doesn&apos;t
+              make sense — reject this row, or attach a claim manually
+              via psql for now.
             </p>
           )}
-        </section>
+        </Card>
 
         {/* Rebate preview */}
         {previewBreakdown ? (
-          <section className="rounded-md border border-border p-4 space-y-1">
-            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              Rebate preview
-            </p>
-            <ul className="text-sm space-y-0.5">
+          <Card className="space-y-1">
+            <Eyebrow tone="muted">Rebate preview</Eyebrow>
+            <ul className="space-y-0.5 text-sm">
               <li>Check total: {centsToUsd(row.amountCents)}</li>
               <li>
                 Discount ({row.claim?.offer?.discountPct}%):{" "}
                 {centsToUsd(previewBreakdown.discountCents)}
               </li>
               <li>
-                Platform fee:{" "}
-                {centsToUsd(previewBreakdown.platformFeeCents)}
+                Platform fee: {centsToUsd(previewBreakdown.platformFeeCents)}
               </li>
-              <li className="font-medium">
-                Rebate to diner:{" "}
-                {centsToUsd(previewBreakdown.rebateCents)}
+              <li className="font-medium text-orange-deep">
+                Rebate to diner: {centsToUsd(previewBreakdown.rebateCents)}
               </li>
             </ul>
-          </section>
+          </Card>
         ) : null}
 
         {/* Actions */}
-        <section className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
           <form action={approveMatch}>
             <input type="hidden" name="match_id" value={row.id} />
-            <button
-              type="submit"
-              disabled={!row.claim}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <Button type="submit" disabled={!row.claim}>
               Approve
-            </button>
+            </Button>
           </form>
           <form action={rejectMatch}>
             <input type="hidden" name="match_id" value={row.id} />
-            <button
-              type="submit"
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-secondary/40"
-            >
+            <Button type="submit" variant="ghost">
               Reject
-            </button>
+            </Button>
           </form>
-        </section>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

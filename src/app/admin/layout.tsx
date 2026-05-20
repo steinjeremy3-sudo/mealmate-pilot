@@ -5,11 +5,13 @@
 //
 // Admin accounts are created by hand in the Supabase dashboard (no web
 // sign-up path) — see scripts/auth-setup.sql and BRIEF.md.
-
-import Link from "next/link";
+//
+// Visual reference: design-reference/ops.html.
 
 import { requireRole } from "@/lib/auth/require-role";
 import { SignOutButton } from "@/components/sign-out-button";
+
+import { AdminSidebar } from "./AdminSidebar";
 
 export default async function AdminLayout({
   children,
@@ -19,41 +21,14 @@ export default async function AdminLayout({
   const profile = await requireRole("admin");
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b">
-        <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-5">
-            <Link href="/admin" className="font-mono text-xs tracking-widest uppercase">
-              MealMate · Ops
-            </Link>
-            <Link
-              href="/admin/matches"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Matches
-            </Link>
-            <Link
-              href="/admin/rebates"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Rebates
-            </Link>
-            <Link
-              href="/admin/settlements"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Settlements
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">
-              {profile.displayName}
-            </span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
-      <div className="flex-1 flex">{children}</div>
+    <div className="flex flex-1 bg-background">
+      <AdminSidebar displayName={profile.displayName} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-end border-b border-border bg-cream-soft px-6 py-3">
+          <SignOutButton />
+        </header>
+        <main className="flex-1">{children}</main>
+      </div>
     </div>
   );
 }
