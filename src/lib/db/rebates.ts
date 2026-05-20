@@ -125,3 +125,128 @@ function rowToRebate(row: DbRow): RebateRow {
     cardMask: card?.mask ?? null,
   };
 }
+
+// ====================================================================
+// Diner-facing reads (B5) — a diner's own rebate history + detail.
+// ====================================================================
+
+export type DinerRebateRow = {
+  id: string;
+  status: RebateStatus;
+  amountCents: number;
+  restaurantName: string | null;
+  transactionDate: string | null;
+  createdAt: string;
+};
+
+export type DinerRebateDetail = DinerRebateRow & {
+  errorMessage: string | null;
+  cardMask: string | null;
+  /** Money breakdown, snapshotted on the matched transaction. */
+  checkAmountCents: number | null;
+  discountPct: number | null;
+  discountCents: number | null;
+  platformFeeCents: number | null;
+};
+
+type DinerRebateDbRow = {
+  id: string;
+  status: RebateStatus;
+  amount_cents: number;
+  error_message: string | null;
+  created_at: string;
+  matched_transactions:
+    | DinerMatchedJoin
+    | DinerMatchedJoin[]
+    | null;
+  plaid_card_accounts: { mask: string | null } | { mask: string | null }[] | null;
+};
+
+type DinerMatchedJoin = {
+  transaction_date: string | null;
+  amount_cents: number | null;
+  discount_pct_at_match: number | null;
+  discount_cents: number | null;
+  platform_fee_cents: number | null;
+  restaurants: { name: string } | { name: string }[] | null;
+};
+
+function one<T>(v: T | T[] | null | undefined): T | null {
+  if (!v) return null;
+  return Array.isArray(v) ? (v[0] ?? null) : v;
+}
+
+const DINER_REBATE_SELECT = `
+  id, status, amount_cents, error_message, created_at,
+  matched_transactions (
+    transaction_date, amount_cents, discount_pct_at_match,
+    discount_cents, platform_fee_cents,
+    restaurants ( name )
+  ),
+  plaid_card_accounts!inner (
+    mask,
+    plaid_items!inner ( user_id )
+  )
+`;
+
+/** A diner's rebates, newest first. */
+export async function getRebatesForDiner(
+  userId: string,
+): Promise<DinerRebateRow[]> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("rebates")
+    .select(DINER_REBATE_SELECT)
+    .eq("plaid_card_accounts.plaid_items.user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("getRebatesForDiner:", error);
+    return [];
+  }
+  return (data ?? []).map((r) => {
+    const match = one(r.matched_transactions);
+    return {
+      id: r.id,
+      status: r.status,
+      amountCents: r.amount_cents,
+      restaurantName: match ? one(match.restaurants)?.name ?? null : null,
+      transactionDate: match?.transaction_date ?? null,
+      createdAt: r.created_at,
+    };
+  });
+}
+
+/** One rebate for the diner who owns it (or null). */
+export async function getRebateDetailForDiner(
+  rebateId: string,
+  userId: string,
+): Promise<DinerRebateDetail | null> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("rebates")
+    .select(DINER_REBATE_SELECT)
+    .eq("id", rebateId)
+    .eq("plaid_card_accounts.plaid_items.user_id", userId)
+    .maybeSingle();
+  if (error || !data) {
+    if (error) console.error("getRebateDetailForDiner:", error);
+    return null;
+  }
+  const r = data as DinerRebateDbRow;
+  const match = one(r.matched_transactions);
+  const card = one(r.plaid_card_accounts);
+  return {
+    id: r.id,
+    status: r.status,
+    amountCents: r.amount_cents,
+    restaurantName: match ? one(match.restaurants)?.name ?? null : null,
+    transactionDate: match?.transaction_date ?? null,
+    createdAt: r.created_at,
+    errorMessage: r.error_message,
+    cardMask: card?.mask ?? null,
+    checkAmountCents: match?.amount_cents ?? null,
+    discountPct: match?.discount_pct_at_match ?? null,
+    discountCents: match?.discount_cents ?? null,
+    platformFeeCents: match?.platform_fee_cents ?? null,
+  };
+}

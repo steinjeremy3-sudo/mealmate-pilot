@@ -43,7 +43,7 @@ export default async function DinerLayout({
                 Cards
               </Link>
               <Link
-                href="/app/rebates/setup"
+                href="/app/rebates"
                 className="text-sm text-muted-foreground transition-colors hover:text-orange"
               >
                 Rebates
