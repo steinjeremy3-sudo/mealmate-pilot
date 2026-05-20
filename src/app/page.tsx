@@ -1,43 +1,57 @@
-// Marketing landing (public). Phase 0/1 placeholder — fuller landing arrives later.
-//
-// Role surfaces:
-//   /app       → diner (claim offers)
-//   /dashboard → merchant (list offers, manage restaurant)
-//   /admin     → ops (approvals, fraud review)
+// Marketing landing (public). A dark, editorial hero echoing the
+// consumer prototype's welcome screen.
 
 import Link from "next/link";
 
+import { buttonVariants, Eyebrow, Heading } from "@/components/brand";
+
 export default function Home() {
   return (
-    <main className="flex flex-1 items-center justify-center px-6">
-      <div className="max-w-xl w-full text-center space-y-6">
-        <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-          MealMate · Dallas
+    <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-ink px-6 py-20">
+      {/* Warm orange glow, top-right — the welcome-screen signature. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem]"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(232,117,74,0.40) 0%, rgba(232,117,74,0) 70%)",
+        }}
+      />
+
+      <div className="relative w-full max-w-xl space-y-6 text-center">
+        <Eyebrow className="flex justify-center">MealMate · Dallas</Eyebrow>
+
+        <Heading as="h1" size="display" className="text-cream">
+          Eat well. Get a <em>little back</em>.
+        </Heading>
+
+        <p className="text-base text-cream/70">
+          Claim an offer at an independent Dallas restaurant, pay however
+          you normally would, and a cash-back rebate lands on your linked
+          card a day or two later. No coupons, no apps at the table.
         </p>
-        <h1 className="font-serif text-5xl font-semibold leading-tight">
-          Restaurant discounts that cost restaurants nothing.
-        </h1>
-        <p className="text-base text-muted-foreground">
-          Browse offers from independent Dallas restaurants. Claim one, eat,
-          pay in the app, see the discount applied. The restaurant pays nothing.
-        </p>
+
         <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
           <Link
             href="/sign-up?as=diner"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className={buttonVariants({ variant: "primary", size: "lg" })}
           >
             Start as a diner
           </Link>
           <Link
             href="/sign-up?as=merchant"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary"
+            className={buttonVariants({ variant: "outline", size: "lg" })}
           >
             List your restaurant
           </Link>
         </div>
-        <p className="text-xs text-muted-foreground pt-1">
+
+        <p className="pt-1 text-sm text-cream/50">
           Already have an account?{" "}
-          <Link href="/sign-in" className="underline underline-offset-4">
+          <Link
+            href="/sign-in"
+            className="text-cream underline underline-offset-4 hover:text-orange"
+          >
             Sign in
           </Link>
         </p>
