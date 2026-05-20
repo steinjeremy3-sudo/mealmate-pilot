@@ -1,8 +1,11 @@
--- Phase 4c.7: RLS for matched_transactions.
+-- RLS for matched_transactions.
 --
 -- Read access:
 --   - owner: the diner whose card produced the transaction (via the
 --     plaid_card_account → plaid_item.user_id chain).
+--   - merchant: the owner of the restaurant a transaction was matched
+--     to — so they can see the matched transactions behind their
+--     weekly settlement (B5).
 --   - admin: ops staff via the admin section.
 -- Other roles get nothing.
 --
@@ -26,6 +29,21 @@ CREATE POLICY matched_transactions_select_owner_or_admin ON public.matched_trans
         AND pi.user_id = auth.uid()
     )
     OR public.current_user_role() = 'admin'
+  );
+
+-- A merchant may read matched_transactions resolved to a restaurant
+-- they own. Postgres OR-combines multiple SELECT policies, so this
+-- widens read access without touching the owner/admin policy above.
+DROP POLICY IF EXISTS matched_transactions_select_merchant ON public.matched_transactions;
+CREATE POLICY matched_transactions_select_merchant ON public.matched_transactions
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.restaurants r
+      WHERE r.id = matched_transactions.restaurant_id
+        AND r.owner_user_id = auth.uid()
+    )
   );
 
 -- No INSERT, UPDATE, or DELETE policies — all writes go through the
