@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin/matches", label: "Matches" },
   { href: "/admin/rebates", label: "Rebates" },
   { href: "/admin/settlements", label: "Settlements" },
+  { href: "/admin/audit", label: "Audit log" },
 ];
 
 export function AdminSidebar({ displayName }: { displayName: string }) {
