@@ -1,0 +1,5217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>mealmate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F1EA;
+    --cream-warm: #EFE9DE;
+    --cream-soft: #FAF6EF;
+    --ink: #1A1A1F;
+    --ink-soft: #2A2A30;
+    --ink-deep: #0F0F12;
+    --orange: #E8754A;
+    --orange-soft: #F5A585;
+    --orange-tint: #FCEBE0;
+    --orange-deep: #C85A34;
+    --sage: #7A9670;
+    --sage-soft: #DDE5D7;
+    --sage-tint: #E8EFE3;
+    --text-muted: #7A756D;
+    --text-dark-muted: #8E8B85;
+    --border: #E5DFD3;
+    --border-dark: rgba(255, 255, 255, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #E8E4DB;
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ============ PHONE FRAME (desktop view) ============ */
+  .stage {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at top, #EFEBE1 0%, #D9D4C8 100%);
+    position: relative;
+  }
+
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: var(--cream);
+    border-radius: 55px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 12px #1a1a1f,
+      0 0 0 13px #2a2a30,
+      0 40px 80px -20px rgba(0,0,0,0.3),
+      0 20px 40px -10px rgba(0,0,0,0.2);
+    isolation: isolate;
+  }
+
+  /* On mobile, fill the screen */
+  @media (max-width: 500px) {
+    .stage { background: var(--cream); }
+    .phone {
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+
+  /* ============ STATUS BAR ============ */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 54px;
+    padding: 18px 32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 15px;
+    font-weight: 600;
+    z-index: 100;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .status-bar.dark { color: var(--cream); }
+  .status-bar.light { color: var(--ink); }
+
+  .notch {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 33px;
+    background: #000;
+    border-radius: 20px;
+  }
+  @media (max-width: 500px) { .notch { display: none; } }
+
+  .status-right { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+  .status-right svg { width: 16px; height: 11px; }
+
+  /* ============ SCREEN SYSTEM ============ */
+  .screens {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--cream);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 10;
+  }
+
+  .screen.dark {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  /* ============ TYPOGRAPHY ============ */
+  .serif { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; }
+
+  h1.display {
+    font-family: 'Fraunces', serif;
+    font-size: 44px;
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  h1.display em { font-style: italic; font-weight: 500; color: var(--orange); }
+
+  h2.page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  h2.page-title em { font-style: italic; color: var(--orange); font-weight: 500; }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 500;
+  }
+
+  /* ============ LOGO ============ */
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .logo em { font-style: italic; color: var(--orange); font-weight: 500; }
+
+  /* ============ COMMON: BACK + HEADER ============ */
+  .top-header {
+    padding: 70px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+    border: none;
+  }
+  .back-btn:active { transform: scale(0.92); }
+  .screen.dark .back-btn { background: rgba(255,255,255,0.1); color: var(--cream); }
+  .back-btn svg { width: 16px; height: 16px; }
+
+  /* ============ PILLS / CHIPS ============ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .chip:active { transform: scale(0.96); }
+
+  /* ============ BUTTONS ============ */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 24px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+    border: none;
+    width: 100%;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--orange); color: white; }
+  .btn-primary:hover { background: var(--orange-deep); }
+  .btn-dark { background: var(--ink); color: var(--cream); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--cream);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+  }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottom-nav {
+    position: sticky;
+    bottom: 0; left: 0; right: 0;
+    margin-top: auto;
+    background: var(--cream-soft);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px 32px;
+    display: flex;
+    justify-content: space-around;
+    z-index: 50;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .screen.dark .bottom-nav {
+    background: rgba(26,26,31,0.85);
+    border-top-color: var(--border-dark);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.15s;
+    border: none;
+    background: transparent;
+  }
+  .nav-item.active { color: var(--orange); }
+  .nav-item svg { width: 22px; height: 22px; stroke-width: 1.75; }
+  .nav-item span { font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
+
+  /* ============ 01 WELCOME ============ */
+  #welcome {
+    background: #0F0F12;
+    color: var(--cream);
+  }
+  .welcome-glow {
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(232,117,74,0.45) 0%, rgba(232,117,74,0) 70%);
+    pointer-events: none;
+  }
+  .welcome-inner {
+    height: 100%;
+    padding: 70px 28px 48px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+  }
+  .welcome-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--cream);
+    margin-top: 8px;
+  }
+  .welcome-logo em { color: var(--orange); font-style: italic; }
+  .welcome-content { margin-top: auto; }
+  .welcome-est {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 24px;
+  }
+  .welcome-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    line-height: 0.98;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    color: var(--cream);
+  }
+  .welcome-title em { font-style: italic; color: var(--orange); font-weight: 500; display: block; }
+  .welcome-desc {
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(245,241,234,0.75);
+    margin-bottom: 36px;
+    max-width: 320px;
+  }
+  .welcome-btns { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ============ 02 SIGN IN + 03 SIGN UP ============ */
+  .auth-body {
+    padding: 0 28px 40px;
+  }
+  .auth-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 10px;
+    margin-top: 8px;
+  }
+  .auth-title {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    line-height: 1.0;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .auth-title em { font-style: italic; color: var(--orange); font-weight: 500; }
+  .auth-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+  .field { margin-bottom: 18px; }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .field-label .link {
+    color: var(--orange);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .field input {
+    width: 100%;
+    padding: 16px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+    background: white;
+    color: var(--ink);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--orange); }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 28px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .checkbox {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .checkbox svg { width: 11px; height: 11px; color: white; }
+  .auth-divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text-muted); font-size: 11px;
+    margin: 22px 0 18px;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .auth-alt { display: flex; gap: 10px; }
+  .auth-alt .btn { background: white; color: var(--ink); border: 1px solid var(--border); }
+  .auth-footer {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .auth-footer a { color: var(--orange); text-decoration: none; cursor: pointer; font-weight: 500; }
+
+  /* ============ 04 HOME FEED ============ */
+  .home-header {
+    padding: 60px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .home-meta-top {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .home-greeting {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .home-greeting em { font-style: italic; color: var(--orange); }
+  .notif-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.04);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    border: none;
+    cursor: pointer;
+  }
+  .notif-btn svg { width: 18px; height: 18px; }
+  .notif-dot {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--orange);
+    border: 2px solid var(--cream);
+  }
+
+  .filter-row {
+    padding: 0 24px 8px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .hero-card {
+    margin: 16px 24px 24px;
+    height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    background: linear-gradient(135deg, #3d2a1e 0%, #5c3e2a 100%);
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 70% 30%, rgba(232,180,130,0.4) 0%, transparent 60%),
+      linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);
+  }
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+    background-color: #4a3528;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+  }
+  .hero-badges {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .hero-tag {
+    background: rgba(26,26,31,0.7);
+    backdrop-filter: blur(10px);
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    text-transform: uppercase;
+  }
+  .badge-off {
+    background: var(--orange);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .hero-text {
+    position: absolute;
+    bottom: 18px;
+    left: 20px;
+    right: 20px;
+    color: white;
+  }
+  .hero-name {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin-bottom: 4px;
+  }
+  .hero-meta {
+    font-size: 12px;
+    opacity: 0.85;
+    letter-spacing: 0.02em;
+  }
+
+  .section-header {
+    padding: 0 24px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .see-all {
+    font-size: 13px;
+    color: var(--orange);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .restaurant-row {
+    padding: 0 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .rest-card {
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .rest-card:active { transform: scale(0.97); }
+  .rest-img {
+    width: 100%;
+    aspect-ratio: 1.1;
+    border-radius: 16px;
+    background-size: cover;
+    background-position: center;
+    background-color: #c9bea8;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .rest-img .badge-off {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+  .rest-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .rest-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .rest-meta .star { color: var(--ink); font-weight: 500; }
+
+  .list-card {
+    margin: 0 24px 12px;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 1px solid var(--border);
+  }
+  .list-card:active { transform: scale(0.98); }
+  .list-img {
+    width: 80px; height: 80px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    background-color: #c9bea8;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .list-img .badge-off {
+    position: absolute;
+    top: 6px; left: 6px;
+    font-size: 9px;
+    padding: 3px 7px;
+  }
+  .list-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .list-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .list-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .list-rating {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ============ 05 MAP ============ */
+  #map-screen {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .map-header {
+    padding: 60px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 10;
+  }
+  .map-title {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .map-title em { font-style: italic; color: var(--orange); }
+  .map-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(245,241,234,0.6);
+    margin-bottom: 4px;
+  }
+  .map-icons { display: flex; gap: 8px; }
+  .map-icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    color: var(--cream);
+  }
+  .map-icon-btn svg { width: 16px; height: 16px; }
+
+  .map-canvas {
+    position: absolute;
+    top: 120px; left: 0; right: 0;
+    bottom: 180px;
+    background: #e8e3d8;
+    overflow: hidden;
+  }
+  .map-canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+  .map-pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    background: var(--orange);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(232,117,74,0.4);
+  }
+  .map-pin.small {
+    background: var(--ink);
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .map-pin::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid currentColor;
+  }
+  .map-pin.small::after { border-top-color: var(--ink); }
+  .map-pin:not(.small)::after { border-top-color: var(--orange); }
+
+  .map-bottom-card {
+    position: absolute;
+    bottom: 90px;
+    left: 16px;
+    right: 16px;
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    z-index: 40;
+  }
+  .map-bottom-img {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .map-bottom-info { flex: 1; }
+  .map-bottom-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--orange);
+    margin-bottom: 2px;
+  }
+  .map-bottom-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .map-bottom-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ============ 06 SEARCH ============ */
+  .search-container {
+    padding: 70px 24px 40px;
+  }
+  .search-title {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .search-title em { font-style: italic; color: var(--orange); }
+  .search-box {
+    background: white;
+    border: 1.5px solid var(--orange);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .search-box svg { width: 16px; height: 16px; color: var(--text-muted); }
+  .search-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 15px;
+    background: transparent;
+    font-family: inherit;
+  }
+  .search-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .recent-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--cream-warm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .recent-icon svg { width: 13px; height: 13px; color: var(--text-muted); }
+  .recent-text { flex: 1; font-size: 14px; font-weight: 400; }
+  .recent-arrow { color: var(--text-muted); font-size: 18px; }
+
+  .explore-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  /* ============ 07 SEARCH RESULTS ============ */
+  .results-header {
+    padding: 60px 24px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .results-search {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .results-search svg { width: 14px; height: 14px; color: var(--text-muted); }
+  .results-close { color: var(--text-muted); font-size: 16px; cursor: pointer; }
+  .results-filters {
+    padding: 0 24px 16px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .results-filters::-webkit-scrollbar { display: none; }
+  .results-meta {
+    padding: 8px 24px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ============ 08 RESTAURANT DETAIL ============ */
+  .rd-hero {
+    position: relative;
+    height: 320px;
+    overflow: hidden;
+  }
+  .rd-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .rd-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 100%);
+  }
+  .rd-top-nav {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 5;
+  }
+  .rd-top-nav .back-btn { background: rgba(255,255,255,0.95); }
+  .rd-top-nav .back-btn svg { color: var(--ink); }
+
+  .rd-body {
+    padding: 24px;
+    padding-bottom: 120px;
+  }
+  .rd-offer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .rd-offer-available {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+  .rd-name {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .rd-meta {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .rd-meta2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .rd-star { color: var(--ink); font-weight: 500; }
+  .rd-open { color: var(--sage); font-weight: 500; }
+  .rd-open::before { content: '•'; margin: 0 6px; color: var(--text-muted); }
+
+  .rd-tabs {
+    display: flex;
+    gap: 24px;
+    margin: 24px 0 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rd-tab {
+    padding-bottom: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+  }
+  .rd-tab.active { color: var(--ink); }
+  .rd-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .rd-banner {
+    background: var(--orange-tint);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .rd-banner strong { color: var(--orange-deep); }
+  .rd-banner-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--orange-deep);
+  }
+
+  .menu-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin: 16px 0 8px;
+  }
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-price {
+    display: flex;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .menu-old { color: var(--text-muted); text-decoration: line-through; font-size: 12px; }
+  .menu-new { color: var(--ink); font-weight: 500; }
+
+  .sticky-cta {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 32px;
+    background: linear-gradient(180deg, rgba(245,241,234,0) 0%, var(--cream) 30%);
+    z-index: 40;
+  }
+  .screen.dark .sticky-cta {
+    background: linear-gradient(180deg, rgba(26,26,31,0) 0%, var(--ink) 30%);
+  }
+
+  /* ============ 09 OFFER DETAIL ============ */
+  #offer-detail {
+    background: var(--cream-soft);
+  }
+  .offer-hero {
+    margin: 70px 24px 24px;
+    border-radius: 20px;
+    padding: 32px 28px;
+    background: linear-gradient(135deg, #2b1f18 0%, #4a3528 100%);
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+  }
+  .offer-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(232,180,130,0.35) 0%, transparent 70%);
+  }
+  .offer-hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 2;
+  }
+  .offer-hero-pct {
+    font-family: 'Fraunces', serif;
+    font-size: 88px;
+    line-height: 0.9;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    position: relative;
+    z-index: 2;
+  }
+  .offer-hero-pct sup {
+    font-size: 36px;
+    font-weight: 500;
+  }
+  .offer-hero-pct em {
+    font-size: 28px;
+    font-style: italic;
+    font-weight: 400;
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
+  .offer-hero-sub {
+    font-size: 13px;
+    color: rgba(245,241,234,0.75);
+    margin-top: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .offer-details {
+    padding: 0 24px;
+  }
+  .offer-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .offer-row-label { color: var(--text-muted); }
+  .offer-row-value { font-weight: 500; text-align: right; }
+
+  .offer-cta-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 24px 32px;
+    background: linear-gradient(180deg, transparent 0%, var(--cream-soft) 30%);
+  }
+
+  /* ============ 10 CLAIM CONFIRM ============ */
+  #claim-confirm {
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .claim-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    z-index: -1;
+  }
+  .claim-bg-img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  .claim-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--cream);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 24px 36px;
+    animation: slideUp 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 4px;
+    margin: 0 auto 24px;
+  }
+  .claim-title {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .claim-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .claim-summary {
+    background: var(--cream-soft);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .claim-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .claim-summary-row span:first-child { color: var(--text-muted); }
+  .claim-summary-row span:last-child { font-weight: 500; }
+  .claim-cancel {
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: center;
+    padding: 14px;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+
+  /* ============ 11 CLAIM SUCCESS ============ */
+  #claim-success {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .success-glow {
+    position: absolute;
+    bottom: -100px; left: -80px;
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(232,117,74,0.3) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .success-body {
+    padding: 70px 28px 100px;
+    position: relative;
+    z-index: 2;
+  }
+  .close-btn {
+    position: absolute;
+    top: 62px; right: 24px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--cream);
+    z-index: 10;
+    border: none;
+  }
+  .check-circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 32px;
+    animation: popIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .check-circle svg { width: 24px; height: 24px; color: white; }
+  .success-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 12px;
+  }
+  .success-title {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.02;
+    margin-bottom: 16px;
+  }
+  .success-title em { font-style: italic; color: var(--orange); }
+  .success-desc {
+    font-size: 14px;
+    color: rgba(245,241,234,0.75);
+    line-height: 1.55;
+    margin-bottom: 32px;
+    max-width: 320px;
+  }
+  .success-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .success-card-info { flex: 1; }
+  .success-card-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 4px;
+  }
+  .success-card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .success-card-meta {
+    font-size: 10px;
+    color: rgba(245,241,234,0.5);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+  .success-badge {
+    background: var(--orange);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .success-btns { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ============ 12 & 13 WALLET ============ */
+  .wallet-header {
+    padding: 60px 24px 16px;
+  }
+  .wallet-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .wallet-title {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .wallet-tabs {
+    margin: 20px 24px 20px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 100px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .wallet-tab {
+    padding: 10px;
+    border-radius: 100px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+  }
+  .wallet-tab.active {
+    background: white;
+    color: var(--ink);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .wallet-card-active {
+    margin: 0 24px 12px;
+    background: var(--ink);
+    border-radius: 18px;
+    padding: 18px 20px;
+    color: var(--cream);
+    cursor: pointer;
+    transition: transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .wallet-card-active:active { transform: scale(0.99); }
+  .wc-top {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+  .wc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .wc-name {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .wc-meta {
+    font-size: 11px;
+    color: rgba(245,241,234,0.6);
+    margin-top: 3px;
+  }
+  .wc-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(245,241,234,0.5);
+  }
+
+  .wallet-summary-card {
+    margin: 12px 24px 0;
+    background: var(--sage-tint);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ws-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .ws-title { font-size: 13px; color: var(--ink); font-weight: 500; margin-top: 2px; }
+  .ws-value {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--sage);
+  }
+
+  /* Redeemed tab */
+  .wallet-savings {
+    margin: 0 24px 16px;
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .savings-col { }
+  .savings-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 8px;
+  }
+  .savings-value {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .savings-col.right { text-align: right; }
+  .savings-col.right .savings-value { color: var(--orange); }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-date {
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+    padding: 6px 0;
+    background: var(--cream-warm);
+    border-radius: 8px;
+  }
+  .history-date-day {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .history-date-month {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  .history-info { flex: 1; }
+  .history-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .history-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    margin-top: 3px;
+  }
+  .history-amount {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--sage);
+  }
+
+  /* ============ 14 PAY NOW ============ */
+  #pay-now {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .pay-top {
+    padding: 70px 24px 24px;
+    position: relative;
+    z-index: 2;
+  }
+  .pay-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 4px;
+  }
+  .pay-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .pay-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 24px 36px;
+    z-index: 50;
+    box-shadow: 0 -20px 40px rgba(0,0,0,0.2);
+  }
+  .pay-sheet-handle {
+    width: 40px; height: 4px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 4px;
+    margin: 0 auto 20px;
+  }
+  .pay-rest-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pay-rest-logo {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .pay-rest-info { flex: 1; }
+  .pay-rest-name { font-size: 13px; font-weight: 500; }
+  .pay-rest-name strong { font-family: 'Fraunces', serif; font-weight: 500; font-size: 14px; }
+  .pay-rest-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .apple-pay-chip {
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 500;
+  }
+
+  .pay-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pay-line.total {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .pay-card-row {
+    margin: 14px 0;
+    padding: 12px 14px;
+    background: var(--cream-soft);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+  }
+  .pay-card-logo {
+    width: 32px; height: 22px;
+    border-radius: 5px;
+    background: var(--orange);
+    color: white;
+    font-family: 'Fraunces', serif;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+  .pay-card-info { flex: 1; font-size: 12px; }
+
+  .pay-savings-banner {
+    background: linear-gradient(135deg, rgba(122,150,112,0.18), rgba(122,150,112,0.08));
+    border: 1px solid rgba(122,150,112,0.3);
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .savings-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--sage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .savings-icon svg { width: 16px; height: 16px; color: white; }
+  .savings-banner-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .savings-banner-sub {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .pay-confirm-btn {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    font-family: inherit;
+  }
+  .pay-confirm-btn svg { width: 16px; height: 16px; }
+  .pay-footer {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ============ 15 PAID ============ */
+  #paid {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .paid-glow {
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 340px; height: 340px;
+    background: radial-gradient(circle, rgba(122,150,112,0.25) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .paid-body {
+    padding: 70px 28px 32px;
+    position: relative;
+    z-index: 2;
+  }
+  .check-circle.green {
+    background: var(--sage);
+    margin-top: 20px;
+  }
+  .paid-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 12px;
+  }
+  .paid-title {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.02;
+    margin-bottom: 16px;
+  }
+  .paid-title em { font-style: italic; color: var(--orange); }
+  .paid-desc {
+    font-size: 14px;
+    color: rgba(245,241,234,0.75);
+    line-height: 1.55;
+    margin-bottom: 28px;
+    max-width: 320px;
+  }
+  .receipt-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+  .receipt-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(245,241,234,0.5);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .receipt-row:last-child { border-bottom: none; padding-top: 11px; font-weight: 500; }
+  .receipt-row .discount { color: var(--orange); }
+  .receipt-label { color: rgba(245,241,234,0.7); }
+
+  /* ============ 16 UPLOAD RECEIPT ============ */
+  .upload-body {
+    padding: 0 24px;
+  }
+  .upload-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 8px 0 8px;
+  }
+  .upload-title em { font-style: italic; }
+  .upload-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .upload-rest-card {
+    background: var(--cream-soft);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .upload-rest-img {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .upload-rest-info { flex: 1; }
+  .upload-rest-name { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500; }
+  .upload-rest-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .upload-dropzone {
+    border: 1.5px dashed var(--orange);
+    background: var(--orange-tint);
+    border-radius: 18px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s;
+    margin-bottom: 14px;
+  }
+  .upload-dropzone:active { transform: scale(0.98); }
+  .upload-camera-icon {
+    width: 52px; height: 52px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .upload-camera-icon svg { width: 22px; height: 22px; color: white; }
+  .upload-cta {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .upload-hint { font-size: 11px; color: var(--text-muted); }
+  .upload-alt {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .upload-alt-icon {
+    width: 32px; height: 32px;
+    background: var(--cream-warm);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .upload-alt-icon svg { width: 14px; height: 14px; color: var(--ink); }
+  .upload-alt-text { flex: 1; }
+  .upload-alt-title { font-size: 13px; font-weight: 500; }
+  .upload-alt-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.05em; }
+
+  /* ============ 17 UPLOAD SUCCESS ============ */
+  .upload-success-body {
+    padding: 0 24px 40px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .upload-header-bar {
+    padding: 60px 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .upload-success-receipt {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    position: relative;
+    margin-bottom: 32px;
+  }
+  .receipt-stamp {
+    position: absolute;
+    top: 16px; right: 14px;
+    padding: 4px 10px;
+    border: 1.5px solid var(--sage);
+    color: var(--sage);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    transform: rotate(-5deg);
+    border-radius: 3px;
+  }
+  .upload-receipt-header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .upload-receipt-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .upload-receipt-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .upload-receipt-items {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .upload-receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+  }
+  .upload-receipt-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .upload-success-text {
+    text-align: center;
+    margin-bottom: auto;
+  }
+  .under-review {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--sage);
+    margin-bottom: 12px;
+  }
+  .upload-success-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .upload-success-title em { font-style: italic; }
+  .upload-success-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  /* ============ PROFILE ============ */
+  .profile-header { padding: 60px 24px 24px; }
+  .profile-avatar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+  .profile-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .profile-info { flex: 1; }
+  .profile-name {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .profile-email { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .profile-stat {
+    background: var(--cream-soft);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .profile-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .profile-stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .profile-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin: 0 24px 10px;
+  }
+  .profile-item {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .profile-item:last-child { border-bottom: 1px solid var(--border); }
+  .profile-item-left { display: flex; align-items: center; gap: 12px; }
+  .profile-item-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--cream-warm);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .profile-item-icon svg { width: 13px; height: 13px; }
+  .profile-card {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin: 0 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 8px;
+  }
+  .profile-card-number {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .profile-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 11px;
+    color: rgba(245,241,234,0.6);
+  }
+
+  /* ============ PARTNER CARD ============ */
+  .partner-card {
+    margin: 32px 24px 20px;
+    padding: 18px 20px;
+    background: var(--cream-soft);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+  .partner-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .partner-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin-bottom: 6px;
+  }
+  .partner-title em { font-style: italic; color: var(--orange); }
+  .partner-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .partner-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--orange);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  /* ============ NOTIFICATIONS SCREEN ============ */
+  .notif-group {
+    margin: 0 24px 20px;
+  }
+  .notif-group-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+  .notif-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .notif-item-info { flex: 1; }
+  .notif-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .notif-item-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .notif-toggle {
+    width: 42px;
+    height: 24px;
+    background: var(--orange);
+    border-radius: 100px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .notif-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .notif-toggle.off {
+    background: rgba(0,0,0,0.15);
+  }
+  .notif-toggle.off::after {
+    transform: translateX(-18px);
+  }
+
+  /* ============ EMPTY STATES ============ */
+  .empty-state {
+    padding: 60px 32px;
+    text-align: center;
+  }
+  .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--orange-tint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--orange);
+  }
+  .empty-state-icon svg { width: 26px; height: 26px; stroke-width: 1.5; }
+  .empty-state-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .empty-state-title em { font-style: italic; color: var(--orange); }
+  .empty-state-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 280px;
+    margin: 0 auto 20px;
+  }
+  .empty-state-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--cream-warm);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .empty-state-hint::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+
+  /* ============ FORGOT PASSWORD ============ */
+  .fp-icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--orange-tint);
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .fp-icon-circle svg { width: 28px; height: 28px; stroke-width: 1.75; }
+  .fp-help {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+  .fp-help a {
+    color: var(--orange);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* ============ LINKED CARDS ============ */
+  .card-row {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin: 0 24px 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+  }
+  .card-row.default {
+    border: 2px solid var(--orange);
+    background: var(--cream-soft);
+  }
+  .card-brand-chip {
+    width: 44px;
+    height: 30px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1a1f71 0%, #0e1142 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .card-brand-chip.mc {
+    background: linear-gradient(135deg, #eb001b 0%, #f79e1b 100%);
+  }
+  .card-info { flex: 1; }
+  .card-number {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .card-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .card-default-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--orange);
+    background: var(--orange-tint);
+    padding: 4px 8px;
+    border-radius: 100px;
+    text-transform: uppercase;
+  }
+  .add-card-btn {
+    margin: 16px 24px 0;
+    padding: 16px;
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    text-align: center;
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    width: calc(100% - 48px);
+    font-family: inherit;
+  }
+  .add-card-btn:hover { background: var(--cream-soft); }
+
+  /* ============ REVIEWS TAB ============ */
+  .reviews-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .reviews-rating-big {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .reviews-rating-stars {
+    color: var(--orange);
+    font-size: 14px;
+    letter-spacing: 0.05em;
+  }
+  .reviews-count {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .review-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .review-author {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .review-author-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .review-stars {
+    color: var(--orange);
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .review-text {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  /* ============ TOAST ============ */
+  .toast-msg {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    pointer-events: none;
+    max-width: 280px;
+    text-align: center;
+  }
+  .toast-msg.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ============ DEMO HINT (removable) ============ */
+  .demo-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26,26,31,0.9);
+    color: var(--cream);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+  }
+  .demo-hint.show { opacity: 1; }
+
+  /* Transitions */
+  .screen.enter-right { animation: enterRight 0.3s ease; }
+  .screen.enter-left { animation: enterLeft 0.3s ease; }
+  @keyframes enterRight { from { opacity: 0; transform: translateX(20px); } }
+  @keyframes enterLeft { from { opacity: 0; transform: translateX(-20px); } }
+
+  /* Nav indicator */
+  .nav-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(26,26,31,0.85);
+    color: var(--cream);
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
+  @media (max-width: 500px) { .nav-indicator { display: none; } }
+
+  /* Reset dev overlay */
+  .reset-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(26,26,31,0.85);
+    color: var(--cream);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    border: none;
+  }
+  @media (max-width: 500px) {
+    .reset-btn { top: auto; bottom: 20px; left: 20px; }
+  }
+  /* ============ SAVINGS DASHBOARD ============ */
+  .savings-body {
+    padding: 24px 28px 0;
+    overflow-y: auto;
+    height: calc(844px - 54px - 50px);
+  }
+  .savings-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.14em;
+    margin-bottom: 14px;
+  }
+  .savings-hero {
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+    color: var(--cream);
+    padding: 28px 24px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .savings-hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(232,117,74,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .savings-hero-amt {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .savings-hero-amt em {
+    font-style: italic;
+    color: var(--orange);
+  }
+  .savings-hero-label {
+    font-size: 13px;
+    color: rgba(245,241,234,0.7);
+  }
+  .savings-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .savings-stat {
+    background: var(--cream-warm);
+    padding: 14px 12px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .savings-stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .savings-stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .savings-section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
+  .savings-chart {
+    background: var(--cream-warm);
+    padding: 18px 16px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    height: 130px;
+  }
+  .chart-bars {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    height: 100%;
+  }
+  .chart-bar {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .bar-fill {
+    background: rgba(26,26,31,0.15);
+    border-radius: 6px 6px 2px 2px;
+    width: 100%;
+    transition: height 0.4s ease;
+  }
+  .bar-fill.orange {
+    background: var(--orange);
+  }
+  .bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: 0.08em;
+  }
+  .bar-label.active {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .savings-rest-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .savings-rest-row:last-child { border-bottom: none; }
+  .savings-rest-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .savings-rest-info { flex: 1; }
+  .savings-rest-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .savings-rest-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .savings-rest-amt {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--orange);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ ONBOARDING ============ */
+  .onboard-progress {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .progress-dot {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+  }
+  .progress-dot.active { background: var(--orange); }
+  .progress-dot.done { background: var(--ink); }
+
+  .onboard-body {
+    padding: 32px 28px 40px;
+    overflow-y: auto;
+    height: calc(844px - 54px - 50px);
+  }
+  .onboard-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.14em;
+    margin-bottom: 14px;
+  }
+  .onboard-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .onboard-title em {
+    font-style: italic;
+    color: var(--orange);
+  }
+  .onboard-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+  .onboard-card-stack {
+    perspective: 1000px;
+    margin-bottom: 28px;
+  }
+  .onboard-card {
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+    color: var(--cream);
+    padding: 22px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 32px -8px rgba(0,0,0,0.25);
+    transform: rotate(-2deg);
+  }
+  .onboard-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(232,117,74,0.3), transparent 70%);
+    border-radius: 50%;
+  }
+  .onboard-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+  .onboard-card-net {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .onboard-card-chip {
+    width: 28px;
+    height: 22px;
+    background: linear-gradient(135deg, #d4af37, #f9d870);
+    border-radius: 4px;
+  }
+  .onboard-card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    margin-top: 24px;
+    margin-bottom: 0;
+    position: relative;
+  }
+  .onboard-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: rgba(245,241,234,0.5);
+    margin-bottom: 3px;
+  }
+  .onboard-card-name {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .onboard-features {
+    margin-bottom: 24px;
+  }
+  .onboard-feat-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .onboard-feat-row:last-child { border-bottom: none; }
+  .onboard-feat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--cream-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .onboard-feat-icon svg {
+    width: 14px;
+    height: 14px;
+    color: var(--ink);
+  }
+  .onboard-feat-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .onboard-feat-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .onboard-alt {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .onboard-alt a {
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgba(26,26,31,0.2);
+  }
+
+  .hood-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .hood-card {
+    background: var(--cream-warm);
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    padding: 16px 14px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .hood-card.selected {
+    border-color: var(--orange);
+    background: var(--orange-tint);
+  }
+  .hood-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .hood-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  .hood-check {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 18px;
+    height: 18px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .hood-check svg { width: 10px; height: 10px; }
+
+  .taste-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .taste-chip {
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: var(--cream-warm);
+    border: 1.5px solid transparent;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 500;
+  }
+  .taste-chip.selected {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="status-bar" id="status-bar">
+      <span id="status-time">9:41</span>
+      <div class="status-right">
+        <svg viewBox="0 0 18 12" fill="none"><path d="M1 7L3 9M3 9L7 5M7 5L11 9M11 9L17 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 15 12" fill="currentColor"><path d="M7.5 1C10.5 1 12.5 3 14 5.5L12.5 6.5C11.5 4.5 10 3 7.5 3C5 3 3.5 4.5 2.5 6.5L1 5.5C2.5 3 4.5 1 7.5 1ZM7.5 5C8.8 5 9.7 5.7 10.5 6.7L7.5 11L4.5 6.7C5.3 5.7 6.2 5 7.5 5Z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1" opacity="0.4"/><rect x="22" y="4" width="1.5" height="4" rx="0.5" fill="currentColor" opacity="0.4"/><rect x="2.5" y="2.5" width="17" height="7" rx="1.5" fill="currentColor"/></svg>
+      </div>
+    </div>
+
+    <div class="screens">
+
+      <!-- ======================================================= -->
+      <!-- 01 WELCOME -->
+      <!-- ======================================================= -->
+      <div class="screen active" id="welcome" data-theme="dark">
+        <div class="welcome-glow"></div>
+        <div class="welcome-inner">
+          <div class="welcome-logo">meal<em>mate</em></div>
+          <div class="welcome-content">
+            <div class="welcome-est">SMART DINING  ·  EST. 2026</div>
+            <div class="welcome-title">Dine well.<em>Pay less.</em></div>
+            <div class="welcome-desc">A curated table of neighborhood restaurants — with automatic discounts up to 30% off, applied when you pay. No coupons. No codes.</div>
+            <div class="welcome-btns">
+              <button class="btn btn-primary" onclick="go('sign-up')">Create an account</button>
+              <button class="btn btn-secondary" onclick="go('sign-in')">I already have one</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 02 SIGN IN -->
+      <!-- ======================================================= -->
+      <div class="screen" id="sign-in" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('welcome')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="logo">meal<em>mate</em></div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-eyebrow">WELCOME BACK</div>
+          <div class="auth-title">Hungry <em>again?</em></div>
+          <div class="field" style="margin-top: 28px;">
+            <div class="field-label">EMAIL OR PHONE</div>
+            <input type="text" value="ava@studio.co" id="signin-email">
+          </div>
+          <div class="field">
+            <div class="field-label">
+              <span>PASSWORD</span>
+              <span class="link" onclick="go('forgot-password')">Forgot?</span>
+            </div>
+            <input type="password" value="••••••••" id="signin-pass">
+          </div>
+          <div class="checkbox-row">
+            <div class="checkbox"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            Keep me signed in
+          </div>
+          <button class="btn btn-primary" onclick="go('home')">Sign in</button>
+          <div class="auth-divider">OR</div>
+          <div class="auth-alt">
+            <button class="btn btn-ghost">Apple</button>
+            <button class="btn btn-ghost">Google</button>
+          </div>
+          <div class="auth-footer">No account yet? <a onclick="go('sign-up')">Sign up</a></div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 03 SIGN UP -->
+      <!-- ======================================================= -->
+      <div class="screen" id="sign-up" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('welcome')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="logo">meal<em>mate</em></div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-eyebrow">CREATE AN ACCOUNT</div>
+          <div class="auth-title">Join the <em>table.</em></div>
+          <div class="auth-sub">Takes 30 seconds. First discount awaits.</div>
+          <div class="field">
+            <div class="field-label">FULL NAME</div>
+            <input type="text" value="Ava Montgomery">
+          </div>
+          <div class="field">
+            <div class="field-label">EMAIL</div>
+            <input type="email" value="ava@studio.co">
+          </div>
+          <div class="field">
+            <div class="field-label">PHONE</div>
+            <input type="tel" value="+1 (415) 229-8843">
+          </div>
+          <div class="field">
+            <div class="field-label">PASSWORD</div>
+            <input type="password" value="••••••••">
+          </div>
+          <div class="checkbox-row">
+            <div class="checkbox"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            I agree to the <span style="color: var(--ink); font-weight: 500;">Terms</span> and <span style="color: var(--ink); font-weight: 500;">Privacy Policy</span>.
+          </div>
+          <button class="btn btn-primary" onclick="go('onboarding-link')">Create account</button>
+          <div class="auth-footer">Already have an account? <a onclick="go('sign-in')">Sign in</a></div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 04 HOME FEED -->
+      <!-- ======================================================= -->
+      <div class="screen" id="home" data-theme="light">
+        <div class="home-header">
+          <div>
+            <div class="home-meta-top">BISHOP ARTS · TUESDAY</div>
+            <div class="home-greeting">Evening, <em>Ava</em></div>
+          </div>
+          <button class="notif-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+            <div class="notif-dot"></div>
+          </button>
+        </div>
+
+        <div class="filter-row">
+          <div class="chip active">All</div>
+          <div class="chip">Italian</div>
+          <div class="chip">Steakhouse</div>
+          <div class="chip">Tex-Mex</div>
+          <div class="chip">BBQ</div>
+          <div class="chip">Wine bar</div>
+        </div>
+
+        <div class="hero-card" onclick="selectRestaurant('lucia')">
+          <div class="hero-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80')"></div>
+          <div class="hero-overlay"></div>
+          <div class="hero-badges">
+            <div class="hero-tag">TONIGHT ONLY</div>
+            <div class="badge-off">25% OFF</div>
+          </div>
+          <div class="hero-text">
+            <div class="hero-name">Lucia</div>
+            <div class="hero-meta">Italian · Bishop Arts · 4 min · ★ 4.9</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Near you</div>
+          <div class="see-all" onclick="go('search-results')">See all</div>
+        </div>
+        <div class="restaurant-row">
+          <div class="rest-card" onclick="selectRestaurant('hugos')">
+            <div class="rest-img" style="background-image: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?w=500&q=80')">
+              <div class="badge-off">25% OFF</div>
+            </div>
+            <div class="rest-name">Hugo's Seafood Bar</div>
+            <div class="rest-meta"><span>Seafood · 6 min</span><span class="star">★ 4.7</span></div>
+          </div>
+          <div class="rest-card" onclick="selectRestaurant('encina')">
+            <div class="rest-img" style="background-image: url('https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80')">
+              <div class="badge-off">18% OFF</div>
+            </div>
+            <div class="rest-name">Encina</div>
+            <div class="rest-meta"><span>Hill Country · 5 min</span><span class="star">★ 4.6</span></div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">20%+ off tonight</div>
+          <div class="see-all" onclick="go('search-results')">See all</div>
+        </div>
+        <div class="list-card" onclick="selectRestaurant('knife')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=500&q=80')">
+            <div class="badge-off">20% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Knife</div>
+            <div class="list-meta">Steakhouse · Knox-Henderson · $$$ · 9 min</div>
+            <div class="list-meta" style="margin-top: 4px;">MIN $80 · 5–10PM</div>
+          </div>
+          <div style="display: flex; align-items: flex-start; padding-top: 4px;">
+            <span class="list-rating">★ 4.8</span>
+          </div>
+        </div>
+        <div class="list-card" onclick="selectRestaurant('mothaiba')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1558030006-450675393462?w=500&q=80')">
+            <div class="badge-off">22% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Mot Hai Ba</div>
+            <div class="list-meta">Vietnamese · East Dallas · $$ · 7 min</div>
+            <div class="list-meta" style="margin-top: 4px;">MIN $40 · 6–9PM</div>
+          </div>
+          <div style="display: flex; align-items: flex-start; padding-top: 4px;">
+            <span class="list-rating">★ 4.7</span>
+          </div>
+        </div>
+
+        <div style="height: 120px;"></div>
+
+        <div class="bottom-nav" id="nav-home">
+          <button class="nav-item active" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 05 MAP -->
+      <!-- ======================================================= -->
+      <div class="screen" id="map-screen" data-theme="dark">
+        <div class="map-header">
+          <div>
+            <div class="map-meta">MAP · BISHOP ARTS</div>
+            <div class="map-title">Offers <em>nearby</em></div>
+          </div>
+          <div class="map-icons">
+            <button class="map-icon-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg>
+            </button>
+            <button class="map-icon-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="map-canvas">
+          <!-- Stylized map -->
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#d6d1c4" stroke-width="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="400" height="500" fill="#ebe6da"/>
+            <rect width="400" height="500" fill="url(#grid)"/>
+            <!-- Park -->
+            <rect x="20" y="60" width="80" height="70" fill="#c9d3ba" rx="3"/>
+            <text x="60" y="100" font-family="Inter" font-size="8" fill="#6b7560" text-anchor="middle">LAKE CLIFF</text>
+            <!-- Roads -->
+            <line x1="0" y1="150" x2="400" y2="150" stroke="#fff" stroke-width="14"/>
+            <line x1="0" y1="250" x2="400" y2="250" stroke="#fff" stroke-width="14"/>
+            <line x1="0" y1="350" x2="400" y2="350" stroke="#fff" stroke-width="10"/>
+            <line x1="0" y1="430" x2="400" y2="430" stroke="#fff" stroke-width="10"/>
+            <line x1="100" y1="0" x2="100" y2="500" stroke="#fff" stroke-width="10"/>
+            <line x1="200" y1="0" x2="200" y2="500" stroke="#fff" stroke-width="14"/>
+            <line x1="300" y1="0" x2="300" y2="500" stroke="#fff" stroke-width="10"/>
+            <!-- Labels -->
+            <text x="60" y="195" font-family="Inter" font-size="7" fill="#7a756d">W 7th St</text>
+            <text x="60" y="295" font-family="Inter" font-size="7" fill="#7a756d">N Bishop Ave</text>
+            <text x="60" y="370" font-family="Inter" font-size="7" fill="#7a756d">W 8th St</text>
+            <text x="210" y="80" font-family="Inter" font-size="8" fill="#6b7560" font-weight="500">BISHOP ARTS</text>
+            <text x="210" y="400" font-family="Inter" font-size="8" fill="#6b7560" font-weight="500">OAK CLIFF</text>
+            <!-- Buildings -->
+            <rect x="130" y="180" width="60" height="55" fill="#d6d1c4" rx="2"/>
+            <text x="160" y="215" font-family="Inter" font-size="6" fill="#7a756d" text-anchor="middle">Kessler Theater</text>
+            <rect x="220" y="180" width="70" height="55" fill="#d6d1c4" rx="2"/>
+            <rect x="130" y="270" width="60" height="70" fill="#d6d1c4" rx="2"/>
+            <rect x="220" y="270" width="70" height="70" fill="#d6d1c4" rx="2"/>
+            <rect x="310" y="380" width="70" height="40" fill="#c9d3ba" rx="3"/>
+            <text x="345" y="405" font-family="Inter" font-size="7" fill="#6b7560" text-anchor="middle">Lake Cliff Park</text>
+            <!-- User location -->
+            <circle cx="110" cy="260" r="10" fill="#3b82f6" opacity="0.3"/>
+            <circle cx="110" cy="260" r="5" fill="#3b82f6" stroke="white" stroke-width="2"/>
+          </svg>
+          <!-- Pins -->
+          <div class="map-pin" style="top: 40%; left: 48%;">25%</div>
+          <div class="map-pin small" style="top: 20%; left: 25%;">20%</div>
+          <div class="map-pin small" style="top: 30%; left: 75%;">15%</div>
+          <div class="map-pin small" style="top: 45%; left: 80%;">18%</div>
+          <div class="map-pin small" style="top: 55%; left: 20%;">22%</div>
+          <div class="map-pin small" style="top: 65%; left: 50%;">30%</div>
+          <div class="map-pin small" style="top: 75%; left: 70%;">15%</div>
+          <div class="map-pin small" style="top: 82%; left: 35%;">18%</div>
+        </div>
+
+        <div class="map-bottom-card" onclick="selectRestaurant('lucia')">
+          <div class="map-bottom-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&q=80')"></div>
+          <div class="map-bottom-info">
+            <div class="map-bottom-eyebrow">FEATURED · BISHOP ARTS</div>
+            <div class="map-bottom-name">Lucia</div>
+            <div class="map-bottom-meta">Italian · 4 min walk · ★ 4.9</div>
+          </div>
+          <div class="badge-off">25% OFF</div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 06 SEARCH -->
+      <!-- ======================================================= -->
+      <div class="screen" id="search" data-theme="light">
+        <div class="search-container">
+          <div class="search-title">Find your <em>meal.</em></div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" value="Date night" onkeyup="if(event.key==='Enter')go('search-results')">
+          </div>
+          <div class="search-section-title">RECENT</div>
+          <div class="recent-item" onclick="go('search-results')">
+            <div class="recent-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="recent-text">Steakhouse near me</div>
+            <div class="recent-arrow">›</div>
+          </div>
+          <div class="recent-item" onclick="go('search-results')">
+            <div class="recent-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="recent-text">Bishop Arts dinner</div>
+            <div class="recent-arrow">›</div>
+          </div>
+          <div class="recent-item" onclick="go('search-results')">
+            <div class="recent-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="recent-text">Brunch · Saturday</div>
+            <div class="recent-arrow">›</div>
+          </div>
+
+          <div class="search-section-title" style="margin-top: 28px;">EXPLORE</div>
+          <div class="explore-chips">
+            <div class="chip" onclick="go('search-results')">Date night</div>
+            <div class="chip" onclick="go('search-results')">Steakhouse</div>
+            <div class="chip" onclick="go('search-results')">Wine bar</div>
+            <div class="chip" onclick="go('search-results')">BBQ</div>
+            <div class="chip" onclick="go('search-results')">Brunch</div>
+            <div class="chip" onclick="go('search-results')">Tasting menu</div>
+            <div class="chip" onclick="go('search-results')">Late night</div>
+            <div class="chip" onclick="go('search-results')">Tex-Mex</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 07 SEARCH RESULTS -->
+      <!-- ======================================================= -->
+      <div class="screen" id="search-results" data-theme="light">
+        <div class="results-header">
+          <button class="back-btn" onclick="go('search')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="results-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span style="flex: 1;">Tonight near me</span>
+            <span class="results-close">×</span>
+          </div>
+        </div>
+        <div class="results-filters">
+          <div class="chip active">Near me</div>
+          <div class="chip active">Tonight</div>
+          <div class="chip">$$</div>
+          <div class="chip">20%+ off</div>
+          <div class="chip">Walk-in</div>
+        </div>
+        <div class="results-meta">4 RESTAURANTS · SORTED BY DISTANCE</div>
+
+        <div class="list-card" onclick="selectRestaurant('lucia')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80')">
+            <div class="badge-off">25% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Lucia</div>
+            <div class="list-meta">Italian · Bishop Arts</div>
+            <div class="list-meta" style="margin-top: 4px;"><span class="list-rating" style="font-size: 11px;">★ 4.9</span> · 4 min walk</div>
+          </div>
+        </div>
+        <div class="list-card" onclick="selectRestaurant('hugos')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?w=500&q=80')">
+            <div class="badge-off">25% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Hugo's Seafood Bar</div>
+            <div class="list-meta">Seafood · Bishop Arts</div>
+            <div class="list-meta" style="margin-top: 4px;"><span class="list-rating" style="font-size: 11px;">★ 4.7</span> · 6 min walk</div>
+          </div>
+        </div>
+        <div class="list-card" onclick="selectRestaurant('knife')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=500&q=80')">
+            <div class="badge-off">20% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Knife</div>
+            <div class="list-meta">Steakhouse · Knox-Henderson</div>
+            <div class="list-meta" style="margin-top: 4px;"><span class="list-rating" style="font-size: 11px;">★ 4.8</span> · 9 min walk</div>
+          </div>
+        </div>
+        <div class="list-card" onclick="selectRestaurant('mothaiba')">
+          <div class="list-img" style="background-image: url('https://images.unsplash.com/photo-1558030006-450675393462?w=500&q=80')">
+            <div class="badge-off">22% OFF</div>
+          </div>
+          <div class="list-content">
+            <div class="list-name">Mot Hai Ba</div>
+            <div class="list-meta">Vietnamese · East Dallas</div>
+            <div class="list-meta" style="margin-top: 4px;"><span class="list-rating" style="font-size: 11px;">★ 4.7</span> · 7 min walk</div>
+          </div>
+        </div>
+
+        <div style="height: 120px;"></div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 08 RESTAURANT DETAIL -->
+      <!-- ======================================================= -->
+      <div class="screen" id="restaurant" data-theme="light">
+        <div class="rd-hero">
+          <img class="rd-hero-img" id="rd-hero-img-tag" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80" alt="">
+          <div class="rd-hero-overlay"></div>
+          <div class="rd-top-nav">
+            <button class="back-btn" onclick="go('home')">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button class="back-btn" style="background: rgba(255,255,255,0.95);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              </button>
+              <button class="back-btn" style="background: rgba(255,255,255,0.95);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="rd-body">
+          <div class="rd-offer-row">
+            <div>
+              <div class="rd-offer-available">OFFER AVAILABLE</div>
+              <div class="rd-name" id="rd-name">Lucia</div>
+              <div class="rd-meta" id="rd-cuisine">Italian · $$$ · Bishop Arts</div>
+              <div class="rd-meta2">
+                <span class="rd-star" id="rd-rating">★ 4.9 · 612</span>
+                <span>·</span>
+                <span id="rd-walk">4 min walk</span>
+                <span class="rd-open">Open</span>
+              </div>
+            </div>
+            <div class="badge-off" id="rd-discount">25% OFF</div>
+          </div>
+
+          <div class="rd-tabs">
+            <div class="rd-tab" onclick="switchTab('overview')">Overview</div>
+            <div class="rd-tab active" onclick="switchTab('menu')" id="tab-menu">Menu</div>
+            <div class="rd-tab" onclick="switchTab('reviews')" id="tab-reviews">Reviews</div>
+          </div>
+
+          <div class="rd-banner" id="rd-banner-block">
+            <span><span id="rd-banner-text">Every item is</span> <strong id="rd-banner-discount">25% off tonight</strong></span>
+            <span class="rd-banner-meta" id="rd-banner-window">6–10 PM</span>
+          </div>
+
+          <div id="rd-menu">
+            <div class="menu-section-title">ANTIPASTI</div>
+            <div class="menu-item">
+              <span>Burrata, peach, basil oil</span>
+              <span class="menu-price"><span class="menu-old">$18</span><span class="menu-new">$13.50</span></span>
+            </div>
+            <div class="menu-item">
+              <span>Vitello tonnato</span>
+              <span class="menu-price"><span class="menu-old">$22</span><span class="menu-new">$16.50</span></span>
+            </div>
+            <div class="menu-item">
+              <span>Tuna crudo, bottarga</span>
+              <span class="menu-price"><span class="menu-old">$24</span><span class="menu-new">$18</span></span>
+            </div>
+
+            <div class="menu-section-title">PASTA</div>
+            <div class="menu-item">
+              <span>Cacio e pepe, black pepper</span>
+              <span class="menu-price"><span class="menu-old">$26</span><span class="menu-new">$19.50</span></span>
+            </div>
+            <div class="menu-item">
+              <span>Tagliatelle al ragù, 6-hour</span>
+              <span class="menu-price"><span class="menu-old">$32</span><span class="menu-new">$24</span></span>
+            </div>
+            <div class="menu-item">
+              <span>Squid ink chitarra, uni</span>
+              <span class="menu-price"><span class="menu-old">$38</span><span class="menu-new">$28.50</span></span>
+            </div>
+          </div>
+
+          <!-- Reviews tab content (hidden by default) -->
+          <div id="rd-reviews" style="display: none;"></div>
+        </div>
+        <div class="sticky-cta">
+          <button class="btn btn-primary" onclick="go('offer-detail')">Claim offer</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 09 OFFER DETAIL -->
+      <!-- ======================================================= -->
+      <div class="screen" id="offer-detail" data-theme="light">
+        <div class="top-header" style="padding-bottom: 0;">
+          <button class="back-btn" onclick="go('restaurant')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="mono" style="color: var(--text-muted);">OFFER · 01 OF 01</div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="offer-hero">
+          <div class="offer-hero-eyebrow" id="od-rest-name">LUCIA</div>
+          <div class="offer-hero-pct"><span style="font-size: 88px;" id="od-discount">25</span><sup>%</sup><em>off</em></div>
+          <div class="offer-hero-sub">on the total bill · applied automatically</div>
+        </div>
+
+        <div class="offer-details">
+          <div class="offer-row">
+            <div class="offer-row-label">Valid</div>
+            <div class="offer-row-value" id="od-window">Tonight, Apr 24</div>
+          </div>
+          <div class="offer-row">
+            <div class="offer-row-label">Hours</div>
+            <div class="offer-row-value" id="od-hours">6:00 – 10:00 pm</div>
+          </div>
+          <div class="offer-row">
+            <div class="offer-row-label">Minimum spend</div>
+            <div class="offer-row-value" id="od-min">$40 before tax</div>
+          </div>
+          <div class="offer-row">
+            <div class="offer-row-label">Applies to</div>
+            <div class="offer-row-value">Dine-in only · Party of 1–4</div>
+          </div>
+        </div>
+        <div style="height: 120px;"></div>
+
+        <div class="offer-cta-wrap">
+          <button class="btn btn-primary" onclick="go('claim-confirm')">Claim this offer</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 10 CLAIM CONFIRM -->
+      <!-- ======================================================= -->
+      <div class="screen" id="claim-confirm" data-theme="light">
+        <img class="claim-bg-img" src="https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600&q=80">
+        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55);"></div>
+        <div class="claim-sheet">
+          <div class="sheet-handle"></div>
+          <div class="claim-title">Claim this offer?</div>
+          <div class="claim-desc" id="cc-desc-text">Pay with your linked card at Lucia tonight and 25% will be discounted at checkout. No codes to show.</div>
+          <div class="claim-summary">
+            <div class="claim-summary-row"><span>Discount</span><span id="cc-discount">25% off</span></div>
+            <div class="claim-summary-row"><span>Window</span><span id="cc-window">Tonight, 6–10pm</span></div>
+            <div class="claim-summary-row"><span>Minimum</span><span id="cc-min">$40 before tax</span></div>
+          </div>
+          <button class="btn btn-primary" onclick="go('claim-success')">Confirm claim</button>
+          <button class="claim-cancel" onclick="go('restaurant')">Cancel</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 11 CLAIM SUCCESS -->
+      <!-- ======================================================= -->
+      <div class="screen" id="claim-success" data-theme="dark">
+        <div class="success-glow"></div>
+        <button class="close-btn" onclick="go('home')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+        </button>
+        <div class="success-body">
+          <div class="check-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-ref">OFFER #MM-48201</div>
+          <div class="success-title">You're <em>all set.</em></div>
+          <div class="success-desc" id="cs-desc">Head to Lucia before 10pm and pay with your digital mealmate card. Your 25% discount applies automatically.</div>
+          <div class="success-card">
+            <div class="success-card-info">
+              <div class="success-card-eyebrow" id="cs-rest-name">LUCIA</div>
+              <div class="success-card-title" id="cs-discount-text">25% off tonight</div>
+              <div class="success-card-meta" id="cs-window">EXPIRES 10:00 PM · MIN $40</div>
+            </div>
+            <div class="success-badge">25%<br>OFF</div>
+          </div>
+          <div class="success-btns">
+            <button class="btn btn-primary">Get directions</button>
+            <button class="btn btn-secondary" onclick="go('wallet-active')">View in wallet</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 12 WALLET (ACTIVE) -->
+      <!-- ======================================================= -->
+      <div class="screen" id="wallet-active" data-theme="light">
+        <div class="wallet-header">
+          <div class="wallet-eyebrow">WALLET</div>
+          <div class="wallet-title">Your offers</div>
+        </div>
+        <div class="wallet-tabs">
+          <button class="wallet-tab active">Active · 2</button>
+          <button class="wallet-tab" onclick="go('wallet-redeemed')">Redeemed · 14</button>
+        </div>
+
+        <div class="wallet-card-active" onclick="payRestaurant('lucia')">
+          <div class="wc-top">ACTIVE · TONIGHT</div>
+          <div class="wc-row">
+            <div>
+              <div class="wc-name">Lucia</div>
+              <div class="wc-meta">Italian · Bishop Arts</div>
+            </div>
+            <div class="badge-off">25% OFF</div>
+          </div>
+          <div class="wc-bottom">
+            <span>EXP 10:00 PM</span>
+            <span>MIN $40</span>
+            <span>VISA 4291</span>
+          </div>
+        </div>
+
+        <div class="wallet-card-active" style="background: #2a2a30;" onclick="receiptRestaurant('knife')">
+          <div class="wc-top">ACTIVE · SAT APR 27</div>
+          <div class="wc-row">
+            <div>
+              <div class="wc-name">Knife</div>
+              <div class="wc-meta">Steakhouse · Min $80</div>
+            </div>
+            <div class="badge-off">20% OFF</div>
+          </div>
+        </div>
+
+        <div class="wallet-summary-card" onclick="go('savings')" style="cursor: pointer;">
+          <div>
+            <div class="ws-label">SAVED THIS MONTH</div>
+            <div class="ws-title" style="margin-top: 2px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em;">ACROSS 6 MEALS · APRIL</div>
+          </div>
+          <div class="ws-value">$187.40</div>
+        </div>
+
+        <div style="height: 120px;"></div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 13 WALLET (REDEEMED) -->
+      <!-- ======================================================= -->
+      <div class="screen" id="wallet-redeemed" data-theme="light">
+        <div class="wallet-header">
+          <div class="wallet-eyebrow">WALLET</div>
+          <div class="wallet-title">Your offers</div>
+        </div>
+        <div class="wallet-tabs">
+          <button class="wallet-tab" onclick="go('wallet-active')">Active · 2</button>
+          <button class="wallet-tab active">Redeemed · 14</button>
+        </div>
+
+        <div class="wallet-savings">
+          <div class="savings-col">
+            <div class="savings-label">ALL-TIME SAVED</div>
+            <div class="savings-value">$1,284.90</div>
+          </div>
+          <div class="savings-col right">
+            <div class="savings-label">MEALS</div>
+            <div class="savings-value">42</div>
+          </div>
+        </div>
+
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">21</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Pecan Lodge</div>
+            <div class="history-meta">15% OFF · BILL $124</div>
+          </div>
+          <div class="history-amount">−$18.60</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">18</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Knox Bistro</div>
+            <div class="history-meta">15% OFF · BILL $115</div>
+          </div>
+          <div class="history-amount">−$17.25</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">12</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Mot Hai Ba</div>
+            <div class="history-meta">22% OFF · BILL $190</div>
+          </div>
+          <div class="history-amount">−$41.80</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">09</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Boulevardier</div>
+            <div class="history-meta">20% OFF · BILL $165</div>
+          </div>
+          <div class="history-amount">−$33.00</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">05</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Encina</div>
+            <div class="history-meta">18% OFF · BILL $98</div>
+          </div>
+          <div class="history-amount">−$17.64</div>
+        </div>
+        <div class="history-item">
+          <div class="history-date">
+            <div class="history-date-day">02</div>
+            <div class="history-date-month">APR</div>
+          </div>
+          <div class="history-info">
+            <div class="history-name">Hugo's Seafood Bar</div>
+            <div class="history-meta">25% OFF · BILL $142</div>
+          </div>
+          <div class="history-amount">−$35.50</div>
+        </div>
+
+        <div style="height: 120px;"></div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 14 PAY NOW -->
+      <!-- ======================================================= -->
+      <div class="screen" id="pay-now" data-theme="dark">
+        <div class="pay-top">
+          <div class="pay-eyebrow">WALLET</div>
+          <div class="pay-title">Your offers</div>
+        </div>
+
+        <div class="pay-sheet">
+          <div class="pay-sheet-handle"></div>
+          <div class="pay-rest-row">
+            <div class="pay-rest-logo">O</div>
+            <div class="pay-rest-info">
+              <div class="pay-rest-name">Pay <strong id="pn-rest-name">Lucia</strong></div>
+              <div class="pay-rest-meta" id="pn-rest-meta">Bishop Arts · dine-in · table 7</div>
+            </div>
+            <div class="apple-pay-chip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              <span>Pay</span>
+            </div>
+          </div>
+
+          <div class="pay-line"><span>Original subtotal</span><span style="text-decoration: line-through; color: rgba(245,241,234,0.4);" id="pn-subtotal">$148.00</span></div>
+          <div class="pay-line" style="color: var(--sage);"><span id="pn-discount-label">Discount applied · 25% off</span><span id="pn-discount-amt">− $37.00</span></div>
+          <div class="pay-line"><span>Discounted subtotal</span><span id="pn-discounted">$111.00</span></div>
+          <div class="pay-line"><span>Tax</span><span id="pn-tax">$7.40</span></div>
+          <div class="pay-line"><span style="display: flex; align-items: center; gap: 4px;">MealMate fee · 3%<span style="opacity: 0.5; font-size: 10px;">ⓘ</span></span><span id="pn-fee">$3.33</span></div>
+          <div class="pay-line total"><span>Total charged</span><span id="pn-total">$121.73</span></div>
+
+          <div class="pay-card-row">
+            <div class="pay-card-logo">m</div>
+            <div class="pay-card-info">mealmate card · Visa ••••4921</div>
+            <span style="color: var(--text-muted);">›</span>
+          </div>
+
+          <div class="pay-savings-banner">
+            <div class="savings-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v6m0 8v6"/><path d="M5 8a4 4 0 1 1 8 0c0 4-5 6-5 6"/></svg>
+            </div>
+            <div>
+              <div class="savings-banner-title" id="pn-savings-headline">You save $33.67 tonight.</div>
+              <div class="savings-banner-sub">25% off the bill, less the small MealMate fee. Restaurant pays nothing.</div>
+            </div>
+          </div>
+
+          <button class="pay-confirm-btn" onclick="go('paid')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7L18 7"/><path d="M8 12L16 12"/><path d="M10 17L14 17"/></svg>
+            Double-click to pay
+          </button>
+          <div class="pay-footer">Tap the side button twice to confirm.</div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 15 PAID -->
+      <!-- ======================================================= -->
+      <div class="screen" id="paid" data-theme="dark">
+        <div class="paid-glow"></div>
+        <button class="close-btn" onclick="go('wallet-active')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+        </button>
+        <div class="paid-body">
+          <div class="check-circle green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="paid-ref">PAYMENT · #MM-48201</div>
+          <div class="paid-title">Paid. You <em>saved $33.67.</em></div>
+          <div class="paid-desc">25% off applied at Lucia. The discount is already in your total — no waiting, no rebate.</div>
+
+          <div class="receipt-card">
+            <div class="receipt-title"><span>RECEIPT</span><span>Apr 24 · 8:42pm</span></div>
+            <div class="receipt-row"><span class="receipt-label">Original subtotal</span><span style="text-decoration: line-through; opacity: 0.5;">$148.00</span></div>
+            <div class="receipt-row"><span class="receipt-label" style="color: rgba(122,150,112,0.95);">MealMate discount · 25%</span><span class="discount">− $37.00</span></div>
+            <div class="receipt-row"><span class="receipt-label">Discounted subtotal</span><span>$111.00</span></div>
+            <div class="receipt-row"><span class="receipt-label">Tax</span><span>$7.40</span></div>
+            <div class="receipt-row"><span class="receipt-label">MealMate fee · 3%</span><span>$3.33</span></div>
+            <div class="receipt-row" style="border-top: 1px solid rgba(245,241,234,0.15); padding-top: 12px; margin-top: 4px;"><span class="receipt-label" style="font-weight: 600;">Charged · Visa 4921</span><span style="font-weight: 600;">$121.73</span></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go('wallet-active')">Back to wallet</button>
+          <div style="text-align: center; margin-top: 16px; font-size: 12px; color: rgba(245,241,234,0.5); cursor: pointer;">Rate your meal</div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 16 UPLOAD RECEIPT -->
+      <!-- ======================================================= -->
+      <div class="screen" id="upload-receipt" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('wallet-active')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Upload receipt</div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="upload-body">
+          <div class="upload-title">A <em>quick snap</em> confirms your meal.</div>
+          <div class="upload-sub">Only needed if you paid using your own card.</div>
+          <div class="upload-rest-card">
+            <div class="upload-rest-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&q=80')"></div>
+            <div class="upload-rest-info">
+              <div class="upload-rest-name" id="ur-rest-name">Lucia</div>
+              <div class="upload-rest-meta" id="ur-rest-meta">APR 24 · 25% OFF</div>
+            </div>
+            <div class="badge-off">25% OFF</div>
+          </div>
+          <div class="upload-dropzone" onclick="go('upload-success')">
+            <div class="upload-camera-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <div class="upload-cta">Take a photo</div>
+            <div class="upload-hint">Itemized receipt preferred</div>
+          </div>
+          <div class="upload-alt" onclick="go('upload-success')">
+            <div class="upload-alt-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="upload-alt-text">
+              <div class="upload-alt-title">Choose from library</div>
+              <div class="upload-alt-sub">JPG, PNG, PDF up to 10MB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 17 UPLOAD SUCCESS -->
+      <!-- ======================================================= -->
+      <div class="screen" id="upload-success" data-theme="light">
+        <div class="upload-success-body">
+          <div class="upload-header-bar">
+            <div style="width: 38px;"></div>
+            <div style="font-size: 14px; font-weight: 500;">Receipt received</div>
+            <button class="back-btn" onclick="go('wallet-active')">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+            </button>
+          </div>
+
+          <div class="upload-success-receipt">
+            <div class="receipt-stamp">RECEIVED</div>
+            <div class="upload-receipt-header">
+              <div class="upload-receipt-name" id="ur-receipt-name">Lucia</div>
+              <div class="upload-receipt-meta">APR 24 2026 · TABLE 07</div>
+            </div>
+            <div class="upload-receipt-items">
+              <div class="upload-receipt-row"><span>Cacio e Pepe</span><span>$24.00</span></div>
+              <div class="upload-receipt-row"><span>Branzino</span><span>$42.00</span></div>
+              <div class="upload-receipt-row"><span>Tiramisu</span><span>$14.00</span></div>
+              <div class="upload-receipt-row"><span>Barolo 2018</span><span>$68.00</span></div>
+              <div class="upload-receipt-total"><span>TOTAL</span><span>$148.00</span></div>
+            </div>
+          </div>
+
+          <div class="upload-success-text">
+            <div class="under-review">UNDER REVIEW</div>
+            <div class="upload-success-title">Thanks, <em>Ava.</em></div>
+            <div class="upload-success-desc">Your $37 discount is being verified. Expect a confirmation within 24 hours.</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go('wallet-active')" style="margin-top: 24px;">Back to wallet</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- PROFILE (bonus screen for nav) -->
+      <!-- ======================================================= -->
+      <div class="screen" id="profile" data-theme="light">
+        <div class="profile-header">
+          <div class="wallet-eyebrow">PROFILE</div>
+          <div class="wallet-title" style="margin-bottom: 20px;">Ava <em style="font-style: italic; color: var(--orange);">Montgomery</em></div>
+          <div class="profile-avatar-row">
+            <div class="profile-avatar">A</div>
+            <div class="profile-info">
+              <div class="profile-name">Ava Montgomery</div>
+              <div class="profile-email">ava@studio.co · Member since Jan '26</div>
+            </div>
+          </div>
+          <div class="profile-stats" onclick="go('savings')" style="cursor: pointer;">
+            <div class="profile-stat">
+              <div class="profile-stat-label">MEALS</div>
+              <div class="profile-stat-value">42</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-label">SAVED</div>
+              <div class="profile-stat-value">$1,284.90</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-card-label">LINKED CARD</div>
+          <div class="profile-card-number">Visa ••••  ••••  ••••  4921</div>
+          <div class="profile-card-row">
+            <span>Ava Montgomery</span>
+            <span>08 / 28</span>
+          </div>
+        </div>
+
+        <div class="profile-section-title">ACCOUNT</div>
+        <div class="profile-item" onclick="go('savings')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <span>Savings dashboard</span>
+          </div>
+          <span style="color: var(--text-muted);">$1,284 ›</span>
+        </div>
+        <div class="profile-item" onclick="showToast('Personal info coming soon')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <span>Personal info</span>
+          </div>
+          <span style="color: var(--text-muted);">›</span>
+        </div>
+        <div class="profile-item" onclick="go('notifications')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+            </div>
+            <span>Notifications</span>
+          </div>
+          <span style="color: var(--text-muted);">On ›</span>
+        </div>
+        <div class="profile-item" onclick="go('linked-cards')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            </div>
+            <span>Linked cards</span>
+          </div>
+          <span style="color: var(--text-muted);">Visa ••4291 ›</span>
+        </div>
+        <div class="profile-item" onclick="showToast('Help center coming soon')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <span>Help & support</span>
+          </div>
+          <span style="color: var(--text-muted);">›</span>
+        </div>
+        <div class="profile-item" onclick="go('welcome')">
+          <div class="profile-item-left">
+            <div class="profile-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <span>Log out</span>
+          </div>
+          <span style="color: var(--text-muted);">›</span>
+        </div>
+
+        <!-- Partner cross-link -->
+        <div class="partner-card">
+          <div class="partner-eyebrow">FOR RESTAURANTS</div>
+          <div class="partner-title">Partner <em>with us.</em></div>
+          <div class="partner-desc">Drive covers on your slow nights — no coupons, no POS changes. Set your own terms.</div>
+          <a href="https://mealmate-merchant.vercel.app" target="_blank" class="partner-link">
+            Open merchant portal →
+          </a>
+        </div>
+
+        <div style="height: 120px;"></div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- NOTIFICATIONS (new) -->
+      <!-- ======================================================= -->
+      <div class="screen" id="notifications" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('profile')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Notifications</div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div style="padding: 8px 24px 20px;">
+          <div class="auth-eyebrow" style="margin-bottom: 8px;">PREFERENCES</div>
+          <div class="auth-title" style="font-size: 26px; margin-bottom: 8px;">Stay in the <em>loop.</em></div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Choose what reaches you and when.</div>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-title">OFFERS</div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">New offers near me</div>
+              <div class="notif-item-desc">When a restaurant drops a new reward in your neighborhood</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Tonight's picks</div>
+              <div class="notif-item-desc">A daily 5pm summary of what's live near you</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Expiring offers</div>
+              <div class="notif-item-desc">A nudge when a claimed offer is about to expire</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-title">PAYMENTS & WALLET</div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Cashback approved</div>
+              <div class="notif-item-desc">When your discount is verified and credited</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Receipt reminders</div>
+              <div class="notif-item-desc">If we need a receipt to verify your meal</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Monthly savings recap</div>
+              <div class="notif-item-desc">A summary of what you saved each month</div>
+            </div>
+            <div class="notif-toggle off" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-title">CHANNELS</div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Push notifications</div>
+              <div class="notif-item-desc">Real-time on this device</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">Email</div>
+              <div class="notif-item-desc">ava@studio.co</div>
+            </div>
+            <div class="notif-toggle" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-item-info">
+              <div class="notif-item-title">SMS</div>
+              <div class="notif-item-desc">+1 (415) 229-8843</div>
+            </div>
+            <div class="notif-toggle off" onclick="this.classList.toggle('off'); showToast('Preference saved')"></div>
+          </div>
+        </div>
+
+        <div style="height: 40px;"></div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- WALLET EMPTY STATE (new) -->
+      <!-- ======================================================= -->
+      <div class="screen" id="wallet-empty" data-theme="light">
+        <div class="wallet-header">
+          <div class="wallet-eyebrow">WALLET</div>
+          <div class="wallet-title">Your offers</div>
+        </div>
+        <div class="wallet-tabs">
+          <button class="wallet-tab active">Active · 0</button>
+          <button class="wallet-tab" onclick="go('wallet-active')">Redeemed · 0</button>
+        </div>
+
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/><circle cx="8" cy="15" r="1.5" fill="currentColor"/></svg>
+          </div>
+          <div class="empty-state-title">Your <em>wallet awaits.</em></div>
+          <div class="empty-state-desc">Claim an offer from a restaurant nearby and it'll land here. Dine, pay with your linked card, and we'll do the rest.</div>
+          <div class="empty-state-hint">3 offers tonight within 5 min</div>
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="go('home')" style="max-width: 220px; margin: 0 auto;">Browse offers nearby</button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- FORGOT PASSWORD - REQUEST RESET -->
+      <!-- ======================================================= -->
+      <div class="screen" id="forgot-password" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('sign-in')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Reset password</div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="auth-body">
+          <div class="fp-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="auth-eyebrow">FORGOT YOUR PASSWORD?</div>
+          <div class="auth-title">No <em>worries.</em></div>
+          <div class="auth-sub">Enter your email and we'll send you a reset link in a moment.</div>
+          <div class="field" style="margin-top: 24px;">
+            <div class="field-label">EMAIL</div>
+            <input type="email" value="ava@studio.co" id="fp-email">
+          </div>
+          <button class="btn btn-primary" onclick="go('forgot-password-sent')">Send reset link</button>
+          <div class="fp-help">
+            Remember your password? <a onclick="go('sign-in')">Sign in</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- FORGOT PASSWORD - EMAIL SENT -->
+      <!-- ======================================================= -->
+      <div class="screen" id="forgot-password-sent" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('forgot-password')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Reset password</div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="auth-body">
+          <div class="fp-icon-circle" style="background: rgba(122,150,112,0.12); color: var(--sage);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="auth-eyebrow">CHECK YOUR INBOX</div>
+          <div class="auth-title">Reset link <em>sent.</em></div>
+          <div class="auth-sub">We've emailed instructions to <strong>ava@studio.co</strong>. The link expires in 30 minutes.</div>
+          <button class="btn btn-primary" onclick="go('reset-password')" style="margin-top: 32px;">Open the link</button>
+          <button class="btn btn-ghost" onclick="showToast('We resent the email')" style="margin-top: 8px;">Resend email</button>
+          <div class="fp-help">
+            Wrong email? <a onclick="go('forgot-password')">Try a different one</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- RESET PASSWORD - SET NEW PASSWORD -->
+      <!-- ======================================================= -->
+      <div class="screen" id="reset-password" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('forgot-password-sent')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">New password</div>
+          <div style="width: 38px;"></div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-eyebrow">SET A NEW PASSWORD</div>
+          <div class="auth-title">Pick something <em>memorable.</em></div>
+          <div class="auth-sub">At least 8 characters, mixed case, one number.</div>
+          <div class="field" style="margin-top: 24px;">
+            <div class="field-label">NEW PASSWORD</div>
+            <input type="password" value="••••••••••" id="rp-pw1">
+          </div>
+          <div class="field">
+            <div class="field-label">CONFIRM NEW PASSWORD</div>
+            <input type="password" value="••••••••••" id="rp-pw2">
+          </div>
+          <button class="btn btn-primary" onclick="go('reset-password-success')">Update password</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- RESET PASSWORD SUCCESS -->
+      <!-- ======================================================= -->
+      <div class="screen" id="reset-password-success" data-theme="dark">
+        <div class="success-glow"></div>
+        <div class="success-body">
+          <div class="check-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-ref">PASSWORD UPDATED</div>
+          <div class="success-title">You're <em>back in.</em></div>
+          <div class="success-desc">Your password has been updated. We've signed you in automatically.</div>
+          <div class="success-btns" style="margin-top: 32px;">
+            <button class="btn btn-primary" onclick="go('home')">Continue to MealMate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- LINKED CARDS -->
+      <!-- ======================================================= -->
+      <div class="screen" id="linked-cards" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('profile')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Linked cards</div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div style="padding: 8px 24px 20px;">
+          <div class="auth-eyebrow" style="margin-bottom: 8px;">PAYMENT METHODS</div>
+          <div class="auth-title" style="font-size: 26px; margin-bottom: 8px;">Cards <em>on file.</em></div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Pay with any of these and your discount is applied automatically.</div>
+        </div>
+
+        <div class="card-row default" onclick="showToast('This is your default card')">
+          <div class="card-brand-chip">VISA</div>
+          <div class="card-info">
+            <div class="card-number">Visa ••••4291</div>
+            <div class="card-meta">Expires 09/27 · Ava Montgomery</div>
+          </div>
+          <div class="card-default-badge">Default</div>
+        </div>
+
+        <div class="card-row" onclick="showToast('Card options coming soon')">
+          <div class="card-brand-chip mc">MC</div>
+          <div class="card-info">
+            <div class="card-number">Mastercard ••••8842</div>
+            <div class="card-meta">Expires 04/26 · Ava Montgomery</div>
+          </div>
+          <span style="color: var(--text-muted);">›</span>
+        </div>
+
+        <button class="add-card-btn" onclick="go('add-card')">+ Add a card</button>
+
+        <div style="margin: 24px 24px 100px; padding: 16px 18px; background: var(--cream-soft); border: 1px dashed var(--border); border-radius: 12px;">
+          <div class="partner-eyebrow" style="margin-bottom: 8px;">HOW IT WORKS</div>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+            We never charge your card directly. Restaurants charge the full bill — we calculate your discount from the receipt and credit it back within 24 hours.
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- ADD A CARD -->
+      <!-- ======================================================= -->
+      <div class="screen" id="add-card" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('linked-cards')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Add a card</div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="auth-body">
+          <div class="auth-eyebrow">SECURE LINK</div>
+          <div class="auth-title">Add a <em>new card.</em></div>
+          <div class="auth-sub">Encrypted at the keyboard. We never store the full number on our servers.</div>
+
+          <div class="field" style="margin-top: 24px;">
+            <div class="field-label">CARDHOLDER NAME</div>
+            <input type="text" value="Ava Montgomery">
+          </div>
+          <div class="field">
+            <div class="field-label">CARD NUMBER</div>
+            <input type="text" value="1234 5678 9012 3456">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="field">
+              <div class="field-label">EXPIRES</div>
+              <input type="text" value="MM / YY">
+            </div>
+            <div class="field">
+              <div class="field-label">CVC</div>
+              <input type="text" value="•••">
+            </div>
+          </div>
+          <div class="checkbox-row">
+            <div class="checkbox"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            Make this my default card
+          </div>
+          <button class="btn btn-primary" onclick="addCard()">Save card</button>
+
+          <div class="fp-help">
+            Encrypted via 256-bit TLS. PCI-DSS compliant.
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ======================================================= -->
+      <!-- SAVINGS DASHBOARD -->
+      <!-- ======================================================= -->
+      <div class="screen" id="savings" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('profile')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font-size: 14px; font-weight: 500;">Your savings</div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="savings-body">
+          <div class="savings-eyebrow">YEAR TO DATE · 2026</div>
+          <div class="savings-hero">
+            <div class="savings-hero-amt"><em>$1,284</em></div>
+            <div class="savings-hero-label">saved across 42 meals</div>
+          </div>
+
+          <div class="savings-stat-grid">
+            <div class="savings-stat">
+              <div class="savings-stat-value">22%</div>
+              <div class="savings-stat-label">avg discount</div>
+            </div>
+            <div class="savings-stat">
+              <div class="savings-stat-value">$31</div>
+              <div class="savings-stat-label">per visit</div>
+            </div>
+            <div class="savings-stat">
+              <div class="savings-stat-value">14</div>
+              <div class="savings-stat-label">restaurants</div>
+            </div>
+          </div>
+
+          <div class="savings-section-title">Savings over time</div>
+          <div class="savings-chart">
+            <div class="chart-bars">
+              <div class="chart-bar"><div class="bar-fill" style="height: 32%;"></div><div class="bar-label">JAN</div></div>
+              <div class="chart-bar"><div class="bar-fill" style="height: 48%;"></div><div class="bar-label">FEB</div></div>
+              <div class="chart-bar"><div class="bar-fill" style="height: 38%;"></div><div class="bar-label">MAR</div></div>
+              <div class="chart-bar"><div class="bar-fill orange" style="height: 95%;"></div><div class="bar-label active">APR</div></div>
+            </div>
+          </div>
+
+          <div class="savings-section-title">Top spots</div>
+          <div class="savings-rest-row">
+            <div class="savings-rest-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80')"></div>
+            <div class="savings-rest-info">
+              <div class="savings-rest-name">Lucia</div>
+              <div class="savings-rest-meta">8 visits · Italian</div>
+            </div>
+            <div class="savings-rest-amt">$284</div>
+          </div>
+          <div class="savings-rest-row">
+            <div class="savings-rest-img" style="background-image: url('https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&q=80')"></div>
+            <div class="savings-rest-info">
+              <div class="savings-rest-name">Knife</div>
+              <div class="savings-rest-meta">5 visits · Steakhouse</div>
+            </div>
+            <div class="savings-rest-amt">$218</div>
+          </div>
+          <div class="savings-rest-row">
+            <div class="savings-rest-img" style="background-image: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80')"></div>
+            <div class="savings-rest-info">
+              <div class="savings-rest-name">Hugo's Seafood Bar</div>
+              <div class="savings-rest-meta">6 visits · Seafood</div>
+            </div>
+            <div class="savings-rest-amt">$176</div>
+          </div>
+          <div class="savings-rest-row">
+            <div class="savings-rest-img" style="background-image: url('https://images.unsplash.com/photo-1558030006-450675393462?w=400&q=80')"></div>
+            <div class="savings-rest-info">
+              <div class="savings-rest-name">Mot Hai Ba</div>
+              <div class="savings-rest-meta">4 visits · Vietnamese</div>
+            </div>
+            <div class="savings-rest-amt">$143</div>
+          </div>
+
+          <div style="height: 100px;"></div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="nav-item" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item active" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- ONBOARDING — LINK YOUR CARD -->
+      <!-- ======================================================= -->
+      <div class="screen" id="onboarding-link" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('sign-up')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="onboard-progress">
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+            <div class="progress-dot"></div>
+          </div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="onboard-body">
+          <div class="onboard-eyebrow">STEP 1 OF 3</div>
+          <div class="onboard-title">Link the card you <em>already use.</em></div>
+          <div class="onboard-sub">Pay normally with your linked card. The discount lands automatically — no codes, no QR.</div>
+
+          <div class="onboard-card-stack">
+            <div class="onboard-card visa">
+              <div class="onboard-card-row">
+                <div class="onboard-card-net">VISA</div>
+                <div class="onboard-card-chip"></div>
+              </div>
+              <div class="onboard-card-num">•••• •••• •••• 4921</div>
+              <div class="onboard-card-row" style="margin-top: 16px;">
+                <div>
+                  <div class="onboard-card-label">CARDHOLDER</div>
+                  <div class="onboard-card-name">AVA MONTGOMERY</div>
+                </div>
+                <div>
+                  <div class="onboard-card-label">EXP</div>
+                  <div class="onboard-card-name">08/27</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="onboard-features">
+            <div class="onboard-feat-row">
+              <div class="onboard-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+              <div>
+                <div class="onboard-feat-title">Bank-grade security</div>
+                <div class="onboard-feat-desc">256-bit TLS · PCI-DSS compliant</div>
+              </div>
+            </div>
+            <div class="onboard-feat-row">
+              <div class="onboard-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+              <div>
+                <div class="onboard-feat-title">Visa & Mastercard rails</div>
+                <div class="onboard-feat-desc">Discounts apply at checkout · no waiting</div>
+              </div>
+            </div>
+            <div class="onboard-feat-row">
+              <div class="onboard-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+              <div>
+                <div class="onboard-feat-title">Skip when you want</div>
+                <div class="onboard-feat-desc">No subscription. No charges unless you save.</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go('onboarding-neighborhood')">Link Visa ••••4921</button>
+          <div class="onboard-alt"><a onclick="go('onboarding-neighborhood')">Use a different card</a></div>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- ONBOARDING — PICK YOUR NEIGHBORHOOD -->
+      <!-- ======================================================= -->
+      <div class="screen" id="onboarding-neighborhood" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('onboarding-link')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="onboard-progress">
+            <div class="progress-dot done"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+          </div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="onboard-body">
+          <div class="onboard-eyebrow">STEP 2 OF 3</div>
+          <div class="onboard-title">Where do you <em>eat out?</em></div>
+          <div class="onboard-sub">We'll surface offers from restaurants near where you actually go.</div>
+
+          <div class="hood-grid">
+            <div class="hood-card selected">
+              <div class="hood-name">Bishop Arts</div>
+              <div class="hood-meta">42 restaurants</div>
+              <div class="hood-check">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="hood-card selected">
+              <div class="hood-name">Lower Greenville</div>
+              <div class="hood-meta">38 restaurants</div>
+              <div class="hood-check">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="hood-card">
+              <div class="hood-name">Knox-Henderson</div>
+              <div class="hood-meta">34 restaurants</div>
+            </div>
+            <div class="hood-card selected">
+              <div class="hood-name">Deep Ellum</div>
+              <div class="hood-meta">52 restaurants</div>
+              <div class="hood-check">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="hood-card">
+              <div class="hood-name">Uptown</div>
+              <div class="hood-meta">61 restaurants</div>
+            </div>
+            <div class="hood-card">
+              <div class="hood-name">East Dallas</div>
+              <div class="hood-meta">24 restaurants</div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go('onboarding-tastes')" style="margin-top: 24px;">Continue with 3 selected</button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- ONBOARDING — TASTES -->
+      <!-- ======================================================= -->
+      <div class="screen" id="onboarding-tastes" data-theme="light">
+        <div class="top-header">
+          <button class="back-btn" onclick="go('onboarding-neighborhood')">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="onboard-progress">
+            <div class="progress-dot done"></div>
+            <div class="progress-dot done"></div>
+            <div class="progress-dot active"></div>
+          </div>
+          <div style="width: 38px;"></div>
+        </div>
+
+        <div class="onboard-body">
+          <div class="onboard-eyebrow">STEP 3 OF 3</div>
+          <div class="onboard-title">What do you <em>like?</em></div>
+          <div class="onboard-sub">Pick a few. We'll learn the rest as you dine.</div>
+
+          <div class="taste-grid">
+            <div class="taste-chip selected">Italian</div>
+            <div class="taste-chip selected">Wine bars</div>
+            <div class="taste-chip">Steakhouse</div>
+            <div class="taste-chip selected">Seafood</div>
+            <div class="taste-chip">Tex-Mex</div>
+            <div class="taste-chip">BBQ</div>
+            <div class="taste-chip selected">Japanese</div>
+            <div class="taste-chip">Vietnamese</div>
+            <div class="taste-chip">Mediterranean</div>
+            <div class="taste-chip">French</div>
+            <div class="taste-chip">Cocktail bars</div>
+            <div class="taste-chip">Café · brunch</div>
+            <div class="taste-chip">Vegetarian</div>
+            <div class="taste-chip selected">New American</div>
+            <div class="taste-chip">Latin</div>
+            <div class="taste-chip">Mexican</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="go('home')" style="margin-top: 24px;">Find me a table</button>
+          <div class="onboard-alt"><a onclick="go('home')">Skip for now</a></div>
+        </div>
+      </div>
+
+
+      <!-- ======================================================= -->
+      <!-- HOME EMPTY STATE -->
+      <!-- ======================================================= -->
+      <div class="screen" id="home-empty" data-theme="light">
+        <div class="home-header">
+          <div>
+            <div class="home-meta-top">BISHOP ARTS · TUESDAY</div>
+            <div class="home-greeting">Evening, <em>Ava</em></div>
+          </div>
+          <button class="notif-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+          </button>
+        </div>
+
+        <div class="filter-row">
+          <div class="chip active">All</div>
+          <div class="chip">Italian</div>
+          <div class="chip">Steakhouse</div>
+          <div class="chip">BBQ</div>
+        </div>
+
+        <div class="empty-state" style="padding: 80px 32px 40px;">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="empty-state-title"><em>All caught up.</em></div>
+          <div class="empty-state-desc">No offers in Bishop Arts right now. Restaurants drop their evening rewards around 4pm — check back soon.</div>
+          <div class="empty-state-hint">Next drop · about 2 hours</div>
+          <div style="margin-top: 24px;">
+            <button class="btn btn-ghost" onclick="go('home')" style="max-width: 220px; margin: 0 auto;">Widen search area</button>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="nav-item active" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            <span>Discover</span>
+          </button>
+          <button class="nav-item" onclick="go('search')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" onclick="go('map-screen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map</span>
+          </button>
+          <button class="nav-item" onclick="go('wallet-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+            <span>Wallet</span>
+          </button>
+          <button class="nav-item" onclick="go('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nav-indicator" id="nav-indicator">01 WELCOME</div>
+  <button class="reset-btn" onclick="go('welcome')">↺ RESTART</button>
+</div>
+
+<div class="demo-hint" id="demo-hint"></div>
+<div class="toast-msg" id="toast-msg"></div>
+
+<script>
+  // ============ RESTAURANT DATA ============
+  const RESTAURANTS = {
+    'lucia': {
+      name: 'Lucia',
+      cuisine: 'Italian',
+      neighborhood: 'Bishop Arts',
+      price: '$$$',
+      walkTime: '4 min',
+      rating: 4.9,
+      reviewCount: 612,
+      discount: 25,
+      window: '6–10 PM',
+      minSpend: 40,
+      img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80',
+      tagline: 'A jewel-box Italian kitchen',
+      menu: [
+        { section: 'ANTIPASTI', items: [
+          { name: 'Burrata, peach, basil oil', oldPrice: 18 },
+          { name: 'Vitello tonnato', oldPrice: 22 },
+          { name: 'Tuna crudo, bottarga', oldPrice: 24 }
+        ]},
+        { section: 'PASTA', items: [
+          { name: 'Cacio e pepe, black pepper', oldPrice: 26 },
+          { name: 'Tagliatelle al ragù, 6-hour', oldPrice: 32 },
+          { name: 'Squid ink chitarra, uni', oldPrice: 38 }
+        ]}
+      ]
+    },
+    'knife': {
+      name: 'Knife',
+      cuisine: 'Steakhouse',
+      neighborhood: 'Knox-Henderson',
+      price: '$$$',
+      walkTime: '9 min',
+      rating: 4.8,
+      reviewCount: 487,
+      discount: 20,
+      window: '5–10 PM',
+      minSpend: 80,
+      img: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=800&q=80',
+      tagline: 'John Tesar\'s steakhouse, dry-aged for days',
+      menu: [
+        { section: 'STARTERS', items: [
+          { name: 'Beef tartare, smoked yolk', oldPrice: 24 },
+          { name: 'Wedge salad, blue cheese', oldPrice: 18 },
+          { name: 'Roasted bone marrow', oldPrice: 22 }
+        ]},
+        { section: 'STEAKS', items: [
+          { name: '240-day dry-aged ribeye', oldPrice: 92 },
+          { name: 'Filet mignon, 8oz', oldPrice: 68 },
+          { name: 'Wagyu strip, 12oz', oldPrice: 110 }
+        ]}
+      ]
+    },
+    'hugos': {
+      name: 'Hugo\'s Seafood Bar',
+      cuisine: 'Seafood',
+      neighborhood: 'Bishop Arts',
+      price: '$$',
+      walkTime: '6 min',
+      rating: 4.7,
+      reviewCount: 354,
+      discount: 25,
+      window: '5–9 PM',
+      minSpend: 35,
+      img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+      tagline: 'Mexican seafood and bright cocktails',
+      menu: [
+        { section: 'CRUDOS', items: [
+          { name: 'Yellowtail aguachile', oldPrice: 19 },
+          { name: 'Hamachi tostada', oldPrice: 21 },
+          { name: 'Octopus ceviche', oldPrice: 22 }
+        ]},
+        { section: 'PLATOS', items: [
+          { name: 'Branzino al pastor', oldPrice: 38 },
+          { name: 'Shrimp tacos al carbón', oldPrice: 24 },
+          { name: 'Whole grilled snapper', oldPrice: 48 }
+        ]}
+      ]
+    },
+    'encina': {
+      name: 'Encina',
+      cuisine: 'Texas Hill Country',
+      neighborhood: 'Bishop Arts',
+      price: '$$',
+      walkTime: '5 min',
+      rating: 4.6,
+      reviewCount: 298,
+      discount: 18,
+      window: '5–10 PM',
+      minSpend: 35,
+      img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80',
+      tagline: 'Hill Country flavors with a modern hand',
+      menu: [
+        { section: 'TO START', items: [
+          { name: 'Sourdough, cultured butter', oldPrice: 9 },
+          { name: 'Smoked trout dip', oldPrice: 16 },
+          { name: 'Chicken liver mousse', oldPrice: 17 }
+        ]},
+        { section: 'MAINS', items: [
+          { name: 'Roast half chicken, schnitzel-style', oldPrice: 32 },
+          { name: 'Smoked beef cheek tamale', oldPrice: 28 },
+          { name: 'Pork shoulder, mole verde', oldPrice: 30 }
+        ]}
+      ]
+    },
+    'mothaiba': {
+      name: 'Mot Hai Ba',
+      cuisine: 'Vietnamese',
+      neighborhood: 'East Dallas',
+      price: '$$',
+      walkTime: '7 min',
+      rating: 4.7,
+      reviewCount: 412,
+      discount: 22,
+      window: '6–9 PM',
+      minSpend: 40,
+      img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=800&q=80',
+      tagline: 'Saigon and Hanoi by way of East Dallas',
+      menu: [
+        { section: 'SHARE', items: [
+          { name: 'Crispy spring rolls (4)', oldPrice: 14 },
+          { name: 'Bánh xèo, shrimp', oldPrice: 18 },
+          { name: 'Pomelo & shrimp salad', oldPrice: 16 }
+        ]},
+        { section: 'BOWLS', items: [
+          { name: 'Bún bò Huế', oldPrice: 22 },
+          { name: 'Phở tái nạm', oldPrice: 20 },
+          { name: 'Bún chả Hanoi', oldPrice: 21 }
+        ]}
+      ]
+    },
+    'pecanlodge': {
+      name: 'Pecan Lodge',
+      cuisine: 'BBQ',
+      neighborhood: 'Deep Ellum',
+      price: '$$',
+      walkTime: '12 min',
+      rating: 4.8,
+      reviewCount: 1284,
+      discount: 15,
+      window: '11 AM–3 PM',
+      minSpend: 30,
+      img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80',
+      tagline: 'Central Texas BBQ in the heart of Deep Ellum',
+      menu: [
+        { section: 'BY THE POUND', items: [
+          { name: 'Brisket, fatty', oldPrice: 36 },
+          { name: 'Beef rib, single', oldPrice: 38 },
+          { name: 'Pulled pork', oldPrice: 24 }
+        ]},
+        { section: 'SIDES', items: [
+          { name: 'Mac & cheese, brûléed', oldPrice: 9 },
+          { name: 'Coleslaw, vinegar', oldPrice: 6 },
+          { name: 'Cornbread, honey butter', oldPrice: 7 }
+        ]}
+      ]
+    },
+    'knoxbistro': {
+      name: 'Knox Bistro',
+      cuisine: 'French',
+      neighborhood: 'Knox-Henderson',
+      price: '$$$',
+      walkTime: '11 min',
+      rating: 4.7,
+      reviewCount: 312,
+      discount: 15,
+      window: '5:30–10 PM',
+      minSpend: 60,
+      img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
+      tagline: 'Bruno Davaillon\'s approachable French',
+      menu: [
+        { section: 'POUR COMMENCER', items: [
+          { name: 'French onion soup', oldPrice: 16 },
+          { name: 'Escargots de Bourgogne', oldPrice: 19 },
+          { name: 'Salade Lyonnaise', oldPrice: 18 }
+        ]},
+        { section: 'PLATS', items: [
+          { name: 'Branzino meunière', oldPrice: 42 },
+          { name: 'Cassoulet de canard', oldPrice: 38 },
+          { name: 'Steak frites, béarnaise', oldPrice: 44 }
+        ]}
+      ]
+    },
+    'boulevardier': {
+      name: 'Boulevardier',
+      cuisine: 'Bistro',
+      neighborhood: 'Bishop Arts',
+      price: '$$',
+      walkTime: '5 min',
+      rating: 4.6,
+      reviewCount: 421,
+      discount: 20,
+      window: '5–10 PM',
+      minSpend: 40,
+      img: 'https://images.unsplash.com/photo-1481833761820-0509d3217039?w=800&q=80',
+      tagline: 'Natural wine, neighborhood vibes',
+      menu: [
+        { section: 'PETITES', items: [
+          { name: 'Charcuterie board', oldPrice: 24 },
+          { name: 'Beef tartare frites', oldPrice: 22 },
+          { name: 'Mussels marinière', oldPrice: 19 }
+        ]},
+        { section: 'GRANDES', items: [
+          { name: 'Roasted bone-in chicken', oldPrice: 30 },
+          { name: 'Hanger steak, frites', oldPrice: 36 },
+          { name: 'Mushroom & gruyère tartine', oldPrice: 24 }
+        ]}
+      ]
+    }
+  };
+
+  // ============ REVIEWS DATA ============
+  const REVIEWS = {
+    'lucia': [
+      { author: 'Madison K.', meta: 'Local Guide · 47 reviews', rating: 5, date: '2 weeks ago', text: 'Best Italian in Dallas. The cacio e pepe is a religious experience and the burrata with peaches is unreal. Booked four weeks out — worth every minute of the wait.' },
+      { author: 'Tom B.', meta: 'Bishop Arts regular', rating: 5, date: '1 month ago', text: 'David and his team have built something genuinely special. Cozy, intimate, never rushed. The 25% MealMate discount was the cherry on top — felt like getting away with something.' },
+      { author: 'Priya S.', meta: '12 reviews', rating: 4, date: '6 weeks ago', text: 'Phenomenal pasta program. The squid ink chitarra was the standout. Service was warm but a little slow on a busy Saturday. Will absolutely return.' }
+    ],
+    'knife': [
+      { author: 'Marcus W.', meta: 'Local Guide · 124 reviews', rating: 5, date: '3 weeks ago', text: 'The 240-day dry-aged ribeye lives up to the hype. Tesar knows what he\'s doing. Sides are exceptional too — the bone marrow alone justifies the visit.' },
+      { author: 'Jen L.', meta: '34 reviews', rating: 5, date: '1 month ago', text: 'Pricey but worth it for a special occasion. The 20% MealMate kickback made our anniversary dinner feel less brutal on the wallet.' },
+      { author: 'Roberto F.', meta: 'Knox-Henderson local', rating: 4, date: '2 months ago', text: 'Best steakhouse in Dallas, full stop. Took half a star off only because reservations are a battle. Filet mignon was perfectly cooked, every time.' }
+    ],
+    'hugos': [
+      { author: 'Carla M.', meta: 'Local Guide · 89 reviews', rating: 5, date: '1 week ago', text: 'Hugo\'s is everything I want in a Bishop Arts spot — bright, lively, exceptional cocktails. The yellowtail aguachile is a must-order. Came back three times this month.' },
+      { author: 'David R.', meta: '18 reviews', rating: 4, date: '3 weeks ago', text: 'Great seafood with a Mexican accent. Whole snapper was beautifully done. The pomegranate margarita is dangerous in the best way.' },
+      { author: 'Sarah K.', meta: '7 reviews', rating: 5, date: '1 month ago', text: 'Octopus ceviche made me want to write a love letter. Service is attentive without being stuffy. Bishop Arts at its best.' }
+    ],
+    'encina': [
+      { author: 'James P.', meta: 'Bishop Arts foodie', rating: 5, date: '2 weeks ago', text: 'Encina threads the needle perfectly between Texas comfort and modern restaurant. The smoked beef cheek tamale should be illegal it\'s so good.' },
+      { author: 'Lauren T.', meta: '23 reviews', rating: 4, date: '1 month ago', text: 'Inventive Hill Country menu. The cocktail program is genuinely creative — try the mezcal-paloma riff. The mole verde was a revelation.' },
+      { author: 'Mike H.', meta: '11 reviews', rating: 5, date: '6 weeks ago', text: 'Felt like discovering a secret. Schnitzel-style chicken is genius. Great pre-theater dinner spot before the Kessler.' }
+    ],
+    'mothaiba': [
+      { author: 'Linh N.', meta: 'Local Guide · 156 reviews', rating: 5, date: '1 week ago', text: 'As a Vietnamese-American, I\'m picky. Mot Hai Ba is the real deal — bún bò Huế is properly spicy and complex, exactly like my aunt\'s. East Dallas\' best.' },
+      { author: 'Brendan O.', meta: '42 reviews', rating: 5, date: '3 weeks ago', text: 'Phở so good I drove 40 minutes through traffic for it. Bánh xèo was crispy perfection. Chef knows what they\'re doing.' },
+      { author: 'Alicia M.', meta: '9 reviews', rating: 4, date: '2 months ago', text: 'Authentic, well-spiced, lovely staff. A bit small inside so reservations help. Crispy spring rolls were the highlight of our visit.' }
+    ],
+    'pecanlodge': [
+      { author: 'Trevor B.', meta: 'BBQ pilgrim', rating: 5, date: '1 week ago', text: 'The beef rib at Pecan Lodge is one of the most impressive plates of food in Texas. Worth standing in line for. Brisket is top 5 in DFW too.' },
+      { author: 'Hannah G.', meta: 'Local Guide · 73 reviews', rating: 5, date: '1 month ago', text: 'Pecan Lodge is a Deep Ellum institution and lives up to it. Get there early — the best cuts go by 1pm. Mac & cheese is brûléed and sublime.' },
+      { author: 'Carlos D.', meta: '21 reviews', rating: 4, date: '6 weeks ago', text: 'Solid brisket, bark for days. Lines can be brutal on weekends but it moves. The honey-butter cornbread is a must.' }
+    ],
+    'knoxbistro': [
+      { author: 'Eleanor V.', meta: 'Local Guide · 92 reviews', rating: 5, date: '2 weeks ago', text: 'Bruno Davaillon is a treasure. French food without pretension — the cassoulet is hearty and deeply satisfying. Steak frites is exemplary.' },
+      { author: 'Robert M.', meta: '38 reviews', rating: 5, date: '1 month ago', text: 'Took my Loire-Valley-born wife. She approved. Branzino meunière was perfect, escargots transported her home. Wine list is thoughtful.' },
+      { author: 'Daniella K.', meta: '14 reviews', rating: 4, date: '5 weeks ago', text: 'A reliably elegant night out. Service is polished, food is precise. The 15% MealMate discount made this feel like a steal for the quality.' }
+    ],
+    'boulevardier': [
+      { author: 'Kira L.', meta: 'Bishop Arts neighbor', rating: 5, date: '1 week ago', text: 'My favorite neighborhood spot. The natural wine list is genuinely interesting and the staff actually knows it. Mussels marinière hit perfectly.' },
+      { author: 'Sam P.', meta: '27 reviews', rating: 4, date: '3 weeks ago', text: 'Cozy, slightly rough-around-the-edges in the best way. Charcuterie board is generous, hanger steak was perfectly cooked. A real Bishop Arts gem.' },
+      { author: 'Melissa F.', meta: '52 reviews', rating: 5, date: '2 months ago', text: 'Date night perfection. The mushroom & gruyère tartine had me considering vegetarianism for an evening. Easy walk from Lucia after dessert.' }
+    ]
+  };
+
+  // Tab switching on restaurant detail
+  function switchTab(tab) {
+    const menuDiv = document.getElementById('rd-menu');
+    const reviewsDiv = document.getElementById('rd-reviews');
+    const banner = document.getElementById('rd-banner-block');
+    const tabs = document.querySelectorAll('.rd-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+
+    if (tab === 'menu') {
+      tabs[1].classList.add('active');
+      menuDiv.style.display = '';
+      reviewsDiv.style.display = 'none';
+      if (banner) banner.style.display = '';
+    } else if (tab === 'reviews') {
+      tabs[2].classList.add('active');
+      menuDiv.style.display = 'none';
+      reviewsDiv.style.display = '';
+      if (banner) banner.style.display = 'none';
+      populateReviews();
+    } else {
+      // overview - just show a toast for now since not fully designed
+      tabs[0].classList.add('active');
+      showToast('Overview coming soon');
+      tabs[0].classList.remove('active');
+      tabs[1].classList.add('active');
+    }
+  }
+
+  function populateReviews() {
+    const r = RESTAURANTS[currentRestaurant];
+    const reviewsList = REVIEWS[currentRestaurant] || [];
+    const container = document.getElementById('rd-reviews');
+    if (!container) return;
+
+    let html = `
+      <div class="reviews-summary">
+        <div class="reviews-rating-big">${r.rating}</div>
+        <div>
+          <div class="reviews-rating-stars">★ ★ ★ ★ ★</div>
+          <div class="reviews-count">${r.reviewCount} reviews</div>
+        </div>
+      </div>
+    `;
+
+    reviewsList.forEach(review => {
+      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      html += `
+        <div class="review-item">
+          <div class="review-header">
+            <div>
+              <div class="review-author">${review.author}</div>
+              <div class="review-author-meta">${review.meta}</div>
+            </div>
+            <div class="review-author-meta">${review.date}</div>
+          </div>
+          <div class="review-stars">${stars}</div>
+          <div class="review-text">${review.text}</div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // Card management - simulate adding a card
+  function addCard() {
+    showToast('Card added · Set as default');
+    setTimeout(() => go('linked-cards'), 1500);
+  }
+
+  let currentRestaurant = 'lucia'; // default
+
+  // Populate restaurant detail screen with data from RESTAURANTS
+  function selectRestaurant(id) {
+    if (!RESTAURANTS[id]) return;
+    currentRestaurant = id;
+    const r = RESTAURANTS[id];
+
+    // Hero image
+    const heroEl = document.getElementById('rd-hero-img-tag');
+    if (heroEl) heroEl.src = r.img;
+
+    // Name, cuisine, meta
+    setText('rd-name', r.name);
+    setText('rd-cuisine', `${r.cuisine} · ${r.price} · ${r.neighborhood}`);
+    setText('rd-rating', `★ ${r.rating} · ${r.reviewCount}`);
+    setText('rd-walk', `${r.walkTime} walk`);
+
+    // Discount badge
+    setText('rd-discount', `${r.discount}% OFF`);
+
+    // Banner
+    setText('rd-banner-text', `Every item is`);
+    setText('rd-banner-discount', `${r.discount}% off tonight`);
+    setText('rd-banner-window', r.window);
+
+    // Menu
+    const menuContainer = document.getElementById('rd-menu');
+    if (menuContainer) {
+      menuContainer.innerHTML = '';
+      r.menu.forEach(section => {
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'menu-section-title';
+        sectionEl.textContent = section.section;
+        menuContainer.appendChild(sectionEl);
+
+        section.items.forEach(item => {
+          const newPrice = (item.oldPrice * (1 - r.discount / 100)).toFixed(2);
+          const itemEl = document.createElement('div');
+          itemEl.className = 'menu-item';
+          itemEl.innerHTML = `
+            <span>${item.name}</span>
+            <span class="menu-price"><span class="menu-old">$${item.oldPrice}</span><span class="menu-new">$${newPrice}</span></span>
+          `;
+          menuContainer.appendChild(itemEl);
+        });
+      });
+    }
+
+    // Also populate the offer-detail screen for the next step
+    populateOfferDetail();
+    populateClaimConfirm();
+    populateClaimSuccess();
+    populatePayNow();
+
+    // Reset to Menu tab (in case Reviews was selected before)
+    const menuDiv = document.getElementById('rd-menu');
+    const reviewsDiv = document.getElementById('rd-reviews');
+    const banner = document.getElementById('rd-banner-block');
+    const tabs = document.querySelectorAll('.rd-tab');
+    if (menuDiv && reviewsDiv) {
+      menuDiv.style.display = '';
+      reviewsDiv.style.display = 'none';
+      if (banner) banner.style.display = '';
+      tabs.forEach(t => t.classList.remove('active'));
+      if (tabs[1]) tabs[1].classList.add('active');
+    }
+
+    go('restaurant');
+  }
+
+  function populateOfferDetail() {
+    const r = RESTAURANTS[currentRestaurant];
+    setText('od-rest-name', r.name.toUpperCase());
+    setText('od-discount', `${r.discount}%`);
+    setText('od-window', `Tonight, Apr 24`);
+    setText('od-hours', r.window);
+    setText('od-min', `$${r.minSpend} before tax`);
+  }
+
+  function populateClaimConfirm() {
+    const r = RESTAURANTS[currentRestaurant];
+    setText('cc-discount', `${r.discount}% off`);
+    setText('cc-window', `Tonight, ${r.window}`);
+    setText('cc-min', `$${r.minSpend} before tax`);
+    setText('cc-desc-text', `Pay with your linked card at ${r.name} tonight and ${r.discount}% will be discounted at checkout. No codes to show.`);
+  }
+
+  function populateClaimSuccess() {
+    const r = RESTAURANTS[currentRestaurant];
+    setText('cs-rest-name', r.name.toUpperCase());
+    setText('cs-discount-text', `${r.discount}% tonight`);
+    setText('cs-window', `EXPIRES ${r.window.split('–')[1].trim()} · MIN $${r.minSpend}`);
+    setText('cs-desc', `Head to ${r.name} before ${r.window.split('–')[1].trim()} and pay with your digital mealmate card. Your ${r.discount}% discount applies automatically.`);
+  }
+
+  function populatePayNow() {
+    const r = RESTAURANTS[currentRestaurant];
+    setText('pn-rest-name', r.name);
+    setText('pn-rest-meta', `${r.neighborhood} · dine-in · table 7`);
+    // Calculate based on min spend (new model: diner pays 3% fee on discounted check)
+    const subtotal = r.minSpend * 3.7; // mock realistic check
+    const discountAmt = subtotal * (r.discount / 100);
+    const discounted = subtotal - discountAmt;
+    const tax = discounted * 0.0825;
+    const fee = discounted * 0.03;
+    const total = discounted + tax + fee;
+    const netSavings = discountAmt - fee;
+    setText('pn-subtotal', `$${subtotal.toFixed(2)}`);
+    setText('pn-discount-label', `Discount applied · ${r.discount}% off`);
+    setText('pn-discount-amt', `− $${discountAmt.toFixed(2)}`);
+    setText('pn-discounted', `$${discounted.toFixed(2)}`);
+    setText('pn-tax', `$${tax.toFixed(2)}`);
+    setText('pn-fee', `$${fee.toFixed(2)}`);
+    setText('pn-total', `$${total.toFixed(2)}`);
+    setText('pn-savings-headline', `You save $${netSavings.toFixed(2)} tonight.`);
+  }
+
+  // Helper: set restaurant and go to pay-now
+  function payRestaurant(id) {
+    if (!RESTAURANTS[id]) return;
+    currentRestaurant = id;
+    populatePayNow();
+    go('pay-now');
+  }
+
+  // Helper: set restaurant and go to upload-receipt
+  function receiptRestaurant(id) {
+    if (!RESTAURANTS[id]) return;
+    currentRestaurant = id;
+    populateUploadReceipt();
+    go('upload-receipt');
+  }
+
+  function populateUploadReceipt() {
+    const r = RESTAURANTS[currentRestaurant];
+    setText('ur-rest-name', r.name);
+    setText('ur-rest-meta', `${r.cuisine} · ${r.neighborhood}`);
+    setText('ur-receipt-name', r.name);
+  }
+
+  // Helper to safely set text
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // Screen labels for top indicator
+  const screenLabels = {
+    'welcome': '01 · WELCOME',
+    'sign-in': '02 · SIGN IN',
+    'sign-up': '03 · SIGN UP',
+    'home': '04 · HOME FEED',
+    'home-empty': '04 · HOME (EMPTY)',
+    'map-screen': '05 · MAP',
+    'search': '06 · SEARCH',
+    'search-results': '07 · SEARCH RESULTS',
+    'restaurant': '08 · RESTAURANT',
+    'offer-detail': '09 · OFFER DETAIL',
+    'claim-confirm': '10 · CLAIM CONFIRM',
+    'claim-success': '11 · CLAIM SUCCESS',
+    'wallet-active': '12 · WALLET ACTIVE',
+    'wallet-redeemed': '13 · WALLET REDEEMED',
+    'wallet-empty': '12 · WALLET (EMPTY)',
+    'pay-now': '14 · PAY NOW',
+    'paid': '15 · PAID',
+    'upload-receipt': '16 · UPLOAD RECEIPT',
+    'upload-success': '17 · UPLOAD SUCCESS',
+    'profile': 'PROFILE',
+    'notifications': 'NOTIFICATIONS',
+    'forgot-password': 'RESET PASSWORD',
+    'forgot-password-sent': 'CHECK INBOX',
+    'reset-password': 'NEW PASSWORD',
+    'reset-password-success': 'PASSWORD UPDATED',
+    'linked-cards': 'LINKED CARDS',
+    'add-card': 'ADD CARD',
+    'savings': 'SAVINGS DASHBOARD',
+    'onboarding-link': 'LINK CARD · STEP 1',
+    'onboarding-neighborhood': 'NEIGHBORHOODS · STEP 2',
+    'onboarding-tastes': 'TASTES · STEP 3'
+  };
+
+  function go(screenId) {
+    const current = document.querySelector('.screen.active');
+    const next = document.getElementById(screenId);
+    if (!next) return;
+
+    if (current) {
+      current.classList.remove('active');
+      current.scrollTop = 0;
+    }
+
+    next.classList.add('active');
+
+    // Update status bar theme
+    const statusBar = document.getElementById('status-bar');
+    const theme = next.dataset.theme;
+    statusBar.classList.remove('light', 'dark');
+    statusBar.classList.add(theme === 'dark' ? 'dark' : 'light');
+
+    // Update nav indicator
+    const indicator = document.getElementById('nav-indicator');
+    if (indicator && screenLabels[screenId]) {
+      indicator.textContent = screenLabels[screenId];
+    }
+
+    // Scroll to top of phone
+    next.scrollTop = 0;
+  }
+
+  // Toast notification system
+  let toastTimeout;
+  function showToast(message) {
+    const toast = document.getElementById('toast-msg');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Set initial status bar color
+  document.getElementById('status-bar').classList.add('dark');
+
+  // Live clock in status bar (optional — feels real)
+  function updateTime() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = now.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? '' : '';
+    h = h % 12 || 12;
+    document.getElementById('status-time').textContent = h + ':' + m;
+  }
+  updateTime();
+  setInterval(updateTime, 30000);
+
+  // Keyboard nav for demo (arrows)
+  const flow = ['welcome','sign-up','onboarding-link','onboarding-neighborhood','onboarding-tastes','home','restaurant','offer-detail','claim-confirm','claim-success','wallet-active','pay-now','paid','savings'];
+  document.addEventListener('keydown', (e) => {
+    const currentId = document.querySelector('.screen.active')?.id;
+    const i = flow.indexOf(currentId);
+    if (e.key === 'ArrowRight' && i >= 0 && i < flow.length - 1) go(flow[i + 1]);
+    if (e.key === 'ArrowLeft' && i > 0) go(flow[i - 1]);
+  });
+</script>
+
+</body>
+</html>
