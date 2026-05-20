@@ -8,11 +8,30 @@ import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { Button, Card, Eyebrow, Heading } from "@/components/brand";
-import { getReviewMatchDetail } from "@/lib/db/matched-transactions";
+import {
+  getMatchScoreBreakdown,
+  getReviewMatchDetail,
+} from "@/lib/db/matched-transactions";
 import { centsToUsd } from "@/lib/money";
 import { computeRebate } from "@/lib/pricing";
 
 import { approveMatch, rejectMatch } from "./actions";
+import { REJECT_REASONS } from "./reject-reasons";
+
+// The 6-check auto-approval rubric (src/lib/rubric.ts). flagged_reasons
+// stores the FAILED checks; we render all six with a pass/fail mark.
+const RUBRIC_CHECKS: { key: string; label: string }[] = [
+  { key: "timing", label: "Within offer hours" },
+  { key: "day", label: "Valid day" },
+  { key: "min_spend", label: "Meets minimum check" },
+  { key: "mcc", label: "Eligible merchant category" },
+  { key: "max_per_diner", label: "Within per-diner claim cap" },
+  { key: "card_match", label: "Card belongs to diner" },
+];
+
+function pct(n: number): string {
+  return `${Math.round(n * 100)}%`;
+}
 
 export default async function AdminMatchDetailPage({
   params,
@@ -24,10 +43,14 @@ export default async function AdminMatchDetailPage({
   const row = await getReviewMatchDetail(id);
   if (!row) notFound();
 
+  const [scoreBreakdown] = await Promise.all([getMatchScoreBreakdown(id)]);
+
   const previewBreakdown =
     row.claim?.offer && row.claim.offer.discountPct
       ? computeRebate(row.amountCents, row.claim.offer.discountPct)
       : null;
+
+  const flagged = new Set(row.flaggedReasons ?? []);
 
   return (
     <div className="px-6 py-10">
@@ -96,6 +119,61 @@ export default async function AdminMatchDetailPage({
           )}
         </Card>
 
+        {/* Confidence score breakdown */}
+        {scoreBreakdown ? (
+          <Card className="space-y-2">
+            <Eyebrow tone="muted">
+              Match confidence · {pct(scoreBreakdown.combinedScore)} combined
+            </Eyebrow>
+            <ul className="space-y-1 text-sm">
+              {(
+                [
+                  ["Merchant name", scoreBreakdown.dimensions.name],
+                  ["Timing", scoreBreakdown.dimensions.timing],
+                  ["Amount", scoreBreakdown.dimensions.amount],
+                  ["Geography", scoreBreakdown.dimensions.geography],
+                ] as const
+              ).map(([label, score]) => (
+                <li key={label} className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-mono">{pct(score)}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {/* 6-check rubric — only meaningful for a flagged match */}
+        {row.autoApprovalStatus === "flagged" ? (
+          <Card className="space-y-2">
+            <Eyebrow tone="muted">Auto-approval rubric</Eyebrow>
+            <ul className="space-y-1 text-sm">
+              {RUBRIC_CHECKS.map((check) => {
+                const failed = flagged.has(check.key);
+                return (
+                  <li
+                    key={check.key}
+                    className="flex justify-between gap-4"
+                  >
+                    <span className="text-muted-foreground">
+                      {check.label}
+                    </span>
+                    <span
+                      className={
+                        failed
+                          ? "font-mono text-destructive"
+                          : "font-mono text-sage"
+                      }
+                    >
+                      {failed ? "FAIL" : "pass"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        ) : null}
+
         {/* Rebate preview */}
         {previewBreakdown ? (
           <Card className="space-y-1">
@@ -117,20 +195,43 @@ export default async function AdminMatchDetailPage({
         ) : null}
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <Card className="space-y-4">
           <form action={approveMatch}>
             <input type="hidden" name="match_id" value={row.id} />
             <Button type="submit" disabled={!row.claim}>
-              Approve
+              Approve match
             </Button>
+            {!row.claim ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                No claim attached — nothing to approve against.
+              </p>
+            ) : null}
           </form>
-          <form action={rejectMatch}>
+
+          <form
+            action={rejectMatch}
+            className="flex flex-wrap items-end gap-3 border-t border-border pt-4"
+          >
             <input type="hidden" name="match_id" value={row.id} />
+            <label className="space-y-1.5 text-sm">
+              <span className="font-medium">Reject reason</span>
+              <select
+                name="reason"
+                defaultValue="wrong_restaurant"
+                className="block rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              >
+                {Object.entries(REJECT_REASONS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <Button type="submit" variant="ghost">
               Reject
             </Button>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

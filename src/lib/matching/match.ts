@@ -55,7 +55,8 @@ export async function matchPendingTransactions(): Promise<MatchSummary> {
       "id, plaid_card_account_id, merchant_name_raw, merchant_name_normalized, amount_cents, transaction_date",
     )
     .eq("match_confidence", "none")
-    .is("restaurant_id", null);
+    .is("restaurant_id", null)
+    .is("dismissed_at", null); // skip rows ops marked "not a MealMate visit"
   if (error) {
     console.error("matchPendingTransactions: list pending:", error);
     return { ...zeroSummary(), errors: 1 };

@@ -103,6 +103,41 @@ export async function getReviewMatchDetail(
   return rowToDetail(data);
 }
 
+export type MatchScoreBreakdown = {
+  combinedScore: number;
+  dimensions: {
+    name: number;
+    timing: number;
+    amount: number;
+    geography: number;
+  };
+};
+
+/**
+ * The matcher's confidence breakdown for a transaction, recovered from
+ * the `matching.matched` audit event the matcher writes. Returns null
+ * if the transaction was never matched (pure 'none').
+ */
+export async function getMatchScoreBreakdown(
+  matchedTransactionId: string,
+): Promise<MatchScoreBreakdown | null> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("audit_log")
+    .select("metadata")
+    .eq("action", "matching.matched")
+    .eq("subject_id", matchedTransactionId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  const meta = data.metadata as
+    | { combined_score?: number; dimensions?: MatchScoreBreakdown["dimensions"] }
+    | null;
+  if (!meta?.dimensions || typeof meta.combined_score !== "number") return null;
+  return { combinedScore: meta.combined_score, dimensions: meta.dimensions };
+}
+
 // ====================================================================
 // Internals — coercion of Supabase's loose join types to ours.
 // ====================================================================

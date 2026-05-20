@@ -19,6 +19,8 @@ import { logAuditEvent } from "@/lib/db/audit-log";
 import { applyApprovedSnapshot } from "@/lib/matching/approve";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
+import { REJECT_REASONS, type RejectReason } from "./reject-reasons";
+
 export async function approveMatch(formData: FormData): Promise<void> {
   const reviewer = await requireRole("admin");
   const matchId = String(formData.get("match_id") ?? "");
@@ -73,6 +75,10 @@ export async function rejectMatch(formData: FormData): Promise<void> {
   const matchId = String(formData.get("match_id") ?? "");
   if (!matchId) redirect("/admin/matches");
 
+  const reasonRaw = String(formData.get("reason") ?? "");
+  const reason: RejectReason =
+    reasonRaw in REJECT_REASONS ? (reasonRaw as RejectReason) : "other";
+
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("matched_transactions")
@@ -80,6 +86,11 @@ export async function rejectMatch(formData: FormData): Promise<void> {
       auto_approval_status: "rejected",
       reviewed_by_user_id: reviewer.id,
       reviewed_at: new Date().toISOString(),
+      // "Not a MealMate visit" also dismisses the transaction so the
+      // matcher never re-evaluates it.
+      ...(reason === "not_a_visit"
+        ? { dismissed_at: new Date().toISOString() }
+        : {}),
     })
     .eq("id", matchId)
     .is("reviewed_at", null);
@@ -93,6 +104,7 @@ export async function rejectMatch(formData: FormData): Promise<void> {
     action: "matching.rejected",
     subjectType: "matched_transaction",
     subjectId: matchId,
+    metadata: { reason, reason_label: REJECT_REASONS[reason] },
   });
 
   revalidatePath("/admin/matches");

@@ -368,6 +368,10 @@ export const matchedTransactions = pgTable("matched_transactions", {
   reviewedByUserId: uuid("reviewed_by_user_id").references(() => users.id, { onDelete: "set null" }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 
+  // Set when ops marks this transaction "not a MealMate visit" (A3).
+  // The matcher skips dismissed rows so it stops re-evaluating them.
+  dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+
   // Set when this transaction is rolled into a weekly settlement
   // batch (Phase 4e). NULL = approved but not yet settled. A
   // transaction is only ever counted in one settlement.
