@@ -1,6 +1,10 @@
 // Brand heading — Fraunces serif display type. Nested <em> renders as
 // italic orange emphasis automatically, matching the prototypes
 // (e.g. <Heading><em>25%</em> off dinner</Heading>).
+//
+// Italic Fraunces has tall descenders (g, y, p, f). Each size carries
+// padding-bottom so descenders never crash into the content below —
+// a recurring bug across deck/prototype iterations (B2 spec).
 
 import { cn } from "@/lib/utils";
 
@@ -11,10 +15,11 @@ export type HeadingProps = React.ComponentProps<"h2"> & {
   as?: "h1" | "h2" | "h3";
 };
 
+// Each size pairs its type scale with descender-safe padding-bottom.
 const sizeClasses: Record<NonNullable<HeadingProps["size"]>, string> = {
-  display: "text-[2.5rem] leading-[1.05]",
-  page: "text-2xl leading-tight",
-  section: "text-lg leading-snug",
+  display: "text-[2.5rem] leading-[1.1] pb-8",
+  page: "text-2xl leading-tight pb-6",
+  section: "text-lg leading-snug pb-3",
 };
 
 export function Heading({

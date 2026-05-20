@@ -31,6 +31,7 @@
   --color-sage-tint: var(--sage-tint);
   --color-amber: var(--amber);
   --color-rose: var(--rose);
+  --color-muted-soft: var(--muted-soft);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -81,10 +82,10 @@
    ==================================================================== */
 
 :root {
-  /* --- Brand palette (design-reference/consumer.html + merchant.html) --- */
+  /* --- Brand palette — exact values per the B2 design-token spec --- */
   --cream: #f5f1ea;
   --cream-warm: #efe9de;
-  --cream-soft: #faf6ef;
+  --cream-soft: #faf7f1;
   --ink: #1a1a1f;
   --ink-soft: #2a2a30;
   --ink-deep: #0f0f12;
@@ -97,6 +98,9 @@
   --sage-tint: #e8efe3;
   --amber: #d4a147;
   --rose: #c96a66;
+  /* Two muted grays from the spec: -fg is the primary muted text,
+     -soft is the lighter secondary tone. */
+  --muted-soft: #8e8b85;
 
   /* --- shadcn semantic tokens, re-valued onto the brand palette --- */
   --background: var(--cream);
@@ -110,7 +114,7 @@
   --secondary: var(--cream-warm);
   --secondary-foreground: var(--ink);
   --muted: var(--cream-warm);
-  --muted-foreground: #7a756d;
+  --muted-foreground: #6b6b72;
   --accent: var(--sage-tint);
   --accent-foreground: var(--ink);
   --destructive: var(--rose);
