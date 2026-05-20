@@ -94,13 +94,60 @@ export async function POST(request: NextRequest) {
       }
       break;
     }
-    // Phase 4d will add transfer.* events for rebate confirmations.
-    // Phase 4e will add invoice.paid / invoice.payment_failed for
-    // weekly settlement collection.
+    case "invoice.paid": {
+      const invoice = event.data.object as Stripe.Invoice;
+      await advanceSettlement(supabase, invoice.id, "paid");
+      break;
+    }
+    case "invoice.payment_failed":
+    case "invoice.marked_uncollectible": {
+      const invoice = event.data.object as Stripe.Invoice;
+      await advanceSettlement(supabase, invoice.id, "overdue");
+      break;
+    }
     default: {
       console.log(`[stripe-webhook] no-op for ${event.type} (${event.id})`);
     }
   }
 
   return new NextResponse("ok", { status: 200 });
+}
+
+/**
+ * Advance a settlement to a terminal-ish state by its Stripe invoice
+ * id. 'paid' also stamps paid_at. Only matches rows still in
+ * 'invoiced' state — a settlement that already moved on isn't
+ * clobbered by a late/duplicate event.
+ */
+async function advanceSettlement(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  invoiceId: string | null | undefined,
+  next: "paid" | "overdue",
+): Promise<void> {
+  if (!invoiceId) {
+    console.warn("[stripe-webhook] invoice event missing invoice id");
+    return;
+  }
+  const updates: Record<string, unknown> = { status: next };
+  if (next === "paid") updates.paid_at = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from("settlements")
+    .update(updates)
+    .eq("stripe_invoice_id", invoiceId)
+    .eq("status", "invoiced")
+    .select("id");
+  if (error) {
+    console.error(`[stripe-webhook] settlement update (${invoiceId}):`, error);
+    return;
+  }
+  if (!data || data.length === 0) {
+    // No settlement for this invoice, or it already advanced. Either
+    // is fine — the invoice may be unrelated to settlement (none are
+    // today, but defensive) or this is a duplicate delivery.
+    return;
+  }
+  console.log(
+    `[stripe-webhook] settlement ${data[0].id} -> ${next} (invoice ${invoiceId})`,
+  );
 }
