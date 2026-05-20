@@ -43,6 +43,13 @@
       "when": 1779260400000,
       "tag": "0005_plaid_card_subtype",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779267600000,
+      "tag": "0006_settlement_billing",
+      "breakpoints": true
     }
   ]
 }

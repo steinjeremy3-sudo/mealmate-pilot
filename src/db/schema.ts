@@ -368,6 +368,13 @@ export const matchedTransactions = pgTable("matched_transactions", {
   reviewedByUserId: uuid("reviewed_by_user_id").references(() => users.id, { onDelete: "set null" }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 
+  // Set when this transaction is rolled into a weekly settlement
+  // batch (Phase 4e). NULL = approved but not yet settled. A
+  // transaction is only ever counted in one settlement.
+  settlementId: uuid("settlement_id").references(() => settlements.id, {
+    onDelete: "set null",
+  }),
+
   ...timestamps,
 });
 
@@ -426,6 +433,26 @@ export const settlements = pgTable("settlements", {
 
   ...timestamps,
 });
+
+// === restaurant_billing_customers ==================================
+// Phase 4e: each restaurant gets a Stripe Customer so we can issue
+// weekly settlement Invoices. Distinct from restaurant_stripe_accounts
+// (the Connect account from Phase 4a) — that one is for Stripe paying
+// the restaurant out; this is for us billing the restaurant. Created
+// lazily on the first settlement run.
+export const restaurantBillingCustomers = pgTable(
+  "restaurant_billing_customers",
+  {
+    // PK is restaurant_id (1:1 with restaurants).
+    restaurantId: uuid("restaurant_id")
+      .primaryKey()
+      .references(() => restaurants.id, { onDelete: "cascade" }),
+
+    stripeCustomerId: text("stripe_customer_id").notNull().unique(),
+
+    ...timestamps,
+  },
+);
 
 // === audit_log =====================================================
 // Append-only event log. Immutability enforced via RLS (no UPDATE, no
