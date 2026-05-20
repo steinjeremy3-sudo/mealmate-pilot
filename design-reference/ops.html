@@ -1,0 +1,2417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mealmate · ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F1EA;
+    --cream-warm: #EFE9DE;
+    --cream-soft: #FAF6EF;
+    --bg: #EEE9DD;
+    --ink: #1A1A1F;
+    --ink-soft: #2A2A30;
+    --ink-deep: #0F0F12;
+    --orange: #E8754A;
+    --orange-soft: #F5A585;
+    --orange-tint: #FCEBE0;
+    --orange-deep: #C85A34;
+    --sage: #7A9670;
+    --sage-soft: #DDE5D7;
+    --sage-tint: #E8EFE3;
+    --rose: #C96A66;
+    --rose-tint: #F5E3E1;
+    --amber: #D4A147;
+    --amber-tint: #F5E9CF;
+    --text-muted: #7A756D;
+    --text-soft: #9A948B;
+    --border: #E5DFD3;
+    --border-soft: #EDE7DB;
+    --surface: #FFFFFF;
+    --surface-alt: #FBF8F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ============ BROWSER FRAME ============ */
+  .browser-frame {
+    max-width: 1400px;
+    margin: 24px auto;
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .browser-chrome {
+    background: #1a1a1f;
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+  .tl-red { background: #ff5f57; }
+  .tl-yellow { background: #febc2e; }
+  .tl-green { background: #28c840; }
+  .browser-tabs {
+    display: flex;
+    gap: 6px;
+    max-width: 400px;
+  }
+  .browser-tab {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.85);
+    padding: 5px 14px;
+    border-radius: 7px 7px 0 0;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .browser-tab.inactive {
+    background: transparent;
+    color: rgba(255,255,255,0.4);
+  }
+  .browser-tab-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    flex-shrink: 0;
+  }
+  .browser-url {
+    background: rgba(0,0,0,0.3);
+    color: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 11px;
+    margin: 0 18px;
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+  }
+
+  @media (max-width: 768px) {
+    .browser-frame { margin: 0; border-radius: 0; box-shadow: none; }
+    .browser-chrome { display: none; }
+  }
+
+  /* ============ APP LAYOUT ============ */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-template-rows: 1fr;
+    min-height: 820px;
+    width: 100%;
+    background: var(--cream);
+  }
+  .app > .sidebar { grid-column: 1; grid-row: 1; }
+  .app > .main { grid-column: 2; grid-row: 1; min-width: 0; }
+  .app > .sidebar-overlay { grid-column: 1 / -1; grid-row: 1; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 24px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    position: relative;
+  }
+
+  .sidebar-logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 8px;
+    margin-bottom: 2px;
+  }
+  .sidebar-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .sidebar-logo em { font-style: italic; color: var(--orange); font-weight: 500; }
+  .sidebar-logo-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--orange);
+    text-transform: uppercase;
+  }
+
+  .ops-card {
+    margin: 20px 4px 24px;
+    padding: 12px 14px;
+    border: 1px solid rgba(232,117,74,0.2);
+    border-radius: 10px;
+    background: rgba(232,117,74,0.06);
+  }
+  .ops-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--orange);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ops-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--cream);
+  }
+  .ops-meta {
+    font-size: 10px;
+    color: rgba(245,241,234,0.55);
+    margin-top: 3px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: rgba(245,241,234,0.65);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
+    position: relative;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,0.05); color: var(--cream); }
+  .sidebar-item.active {
+    background: rgba(232,117,74,0.12);
+    color: var(--cream);
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: var(--orange);
+    border-radius: 0 3px 3px 0;
+  }
+  .sidebar-item svg { width: 15px; height: 15px; stroke-width: 1.75; flex-shrink: 0; }
+  .sidebar-item-badge {
+    margin-left: auto;
+    background: var(--orange);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .sidebar-section {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: rgba(245,241,234,0.35);
+    text-transform: uppercase;
+    padding: 16px 14px 8px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+  }
+  .sidebar-link {
+    padding: 9px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.12);
+    font-size: 11px;
+    color: rgba(245,241,234,0.6);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+  }
+  .sidebar-link:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--cream);
+    border-color: rgba(245,241,234,0.2);
+  }
+  .sidebar-link svg { width: 12px; height: 12px; }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 14px;
+    margin-top: 10px;
+  }
+  .sidebar-user:hover { background: rgba(255,255,255,0.04); }
+  .sidebar-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #5B7FA8;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 12px; font-weight: 500; color: var(--cream); }
+  .sidebar-user-role { font-size: 10px; color: rgba(245,241,234,0.5); margin-top: 1px; }
+
+  /* ============ MAIN ============ */
+  .main {
+    padding: 28px 36px 60px;
+    overflow-x: auto;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    gap: 16px;
+  }
+
+  .page-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  .page-title em { font-style: italic; color: var(--orange); }
+
+  .topbar-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .breadcrumb a:hover { color: var(--orange); }
+  .breadcrumb svg { width: 10px; height: 10px; }
+
+  /* ============ BUTTONS ============ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--orange); color: white; }
+  .btn-primary:hover { background: var(--orange-deep); }
+  .btn-dark { background: var(--ink); color: var(--cream); }
+  .btn-dark:hover { background: var(--ink-soft); }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--ink); }
+  .btn-ghost:hover { background: var(--surface-alt); }
+  .btn-sage { background: var(--sage); color: white; }
+  .btn-sage:hover { background: #6a8461; }
+  .btn-rose { background: var(--rose); color: white; }
+  .btn-amber-outline { background: transparent; border: 1px solid var(--amber); color: var(--amber); }
+  .btn svg { width: 13px; height: 13px; stroke-width: 2; }
+
+  /* ============ KPI ============ */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .kpi-delta.up { color: var(--sage); }
+  .kpi-delta.down { color: var(--rose); }
+  .kpi-delta-meta { color: var(--text-muted); margin-left: 4px; }
+  .kpi-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+  .kpi-value.orange { color: var(--orange); }
+  .kpi-value.sage { color: var(--sage); }
+  .kpi-value.amber { color: var(--amber); }
+  .kpi-value.rose { color: var(--rose); }
+
+  /* ============ PANEL ============ */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 18px 22px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .panel-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .panel-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .view-all {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  /* ============ TWO-COL ============ */
+  .row-2col {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  /* ============ CHART ============ */
+  .chart-wrap {
+    padding: 20px 22px 22px;
+    height: 220px;
+    position: relative;
+  }
+  .chart-wrap svg { width: 100%; height: 100%; }
+
+  /* ============ TABLE ============ */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table thead th {
+    text-align: left;
+    padding: 10px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface-alt);
+  }
+  .data-table thead th.align-right { text-align: right; }
+  .data-table tbody td {
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+  }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { cursor: pointer; transition: background 0.15s; }
+  .data-table tbody tr:hover { background: var(--surface-alt); }
+  .data-table tbody tr.highlight { background: var(--orange-tint); }
+  .data-table tbody tr.highlight:hover { background: #f8dfcd; }
+  .data-table td.align-right { text-align: right; }
+  .data-table td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-variant-numeric: tabular-nums; }
+
+  .cell-serif { font-family: 'Fraunces', serif; font-weight: 500; }
+  .cell-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .cell-discount { color: var(--orange); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cell-positive { color: var(--sage); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cell-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* ============ PILLS ============ */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .pill-approved { background: var(--sage-tint); color: var(--sage); }
+  .pill-approved::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+  .pill-auto { background: var(--sage-tint); color: var(--sage); }
+  .pill-auto::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+  .pill-review { background: var(--orange-tint); color: var(--orange-deep); }
+  .pill-review::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+  .pill-pending { background: var(--amber-tint); color: var(--amber); }
+  .pill-pending::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+  .pill-rejected { background: var(--rose-tint); color: var(--rose); }
+  .pill-rejected::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--rose); }
+  .pill-verified { background: var(--sage-tint); color: var(--sage); }
+  .pill-verified::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+
+  .flag-reason {
+    font-size: 11px;
+    color: var(--rose);
+    font-style: italic;
+  }
+
+  /* ============ TABS ============ */
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .filter-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+  .filter-tab.active {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .filter-tab-count {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.7;
+  }
+  .filter-tab.active .filter-tab-count { opacity: 0.85; }
+
+  .search-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 250px;
+  }
+  .search-box svg { width: 14px; height: 14px; color: var(--text-muted); }
+  .search-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 13px;
+    background: transparent;
+    font-family: inherit;
+  }
+
+  /* ============ CLAIM DETAIL ============ */
+  .claim-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .flag-banner {
+    background: var(--orange-tint);
+    border: 1px solid rgba(232,117,74,0.25);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .flag-icon {
+    width: 28px; height: 28px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .flag-icon svg { width: 14px; height: 14px; color: white; }
+  .flag-text {
+    flex: 1;
+    font-size: 13px;
+  }
+  .flag-text strong { font-weight: 600; }
+  .flag-badge {
+    background: var(--orange);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .section-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+  }
+  .section-block-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+  }
+
+  .fact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .fact-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .fact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .fact-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .fact-value.serif {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .fact-value.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RUBRIC ============ */
+  .rubric-header {
+    background: #EFF2FB;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: #5B6A94;
+    margin-bottom: 4px;
+    display: inline-block;
+    font-weight: 500;
+  }
+  .rubric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+  }
+  .rubric-item:last-child { border-bottom: none; }
+  .rubric-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .rubric-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--sage);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rubric-check svg { width: 10px; height: 10px; color: white; }
+  .rubric-check.fail {
+    background: var(--rose);
+  }
+  .rubric-name { font-weight: 500; font-size: 13px; }
+  .rubric-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .rubric-pass {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--sage);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .rubric-fail-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--rose);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ============ DINER CARD ============ */
+  .diner-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface-alt);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .diner-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .diner-info { flex: 1; min-width: 0; }
+  .diner-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .diner-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .diner-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .diner-stat {
+    padding: 10px 12px;
+    background: var(--surface-alt);
+    border-radius: 10px;
+  }
+  .diner-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .diner-stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .diner-stat-value.sage { color: var(--sage); }
+
+  /* ============ AUDIT TRAIL ============ */
+  .audit-item {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .audit-item:last-child { border-bottom: none; }
+  .audit-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .audit-event { color: var(--ink); }
+  .audit-event strong { font-weight: 500; }
+
+  /* ============ REVIEW SCREEN ============ */
+  .review-decision-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .decision-card {
+    padding: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: all 0.15s;
+  }
+  .decision-card:hover { border-color: var(--orange-soft); }
+  .decision-card.selected.approve {
+    border-color: var(--sage);
+    background: var(--sage-tint);
+  }
+  .decision-card.selected.request {
+    border-color: var(--amber);
+    background: var(--amber-tint);
+  }
+  .decision-card.selected.reject {
+    border-color: var(--rose);
+    background: var(--rose-tint);
+  }
+  .decision-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .decision-icon.approve { background: var(--sage); }
+  .decision-icon.request { background: var(--amber); }
+  .decision-icon.reject { background: var(--rose); }
+  .decision-icon svg { width: 13px; height: 13px; color: white; stroke-width: 2.5; }
+  .decision-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .decision-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .form-label-sm {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .form-helper {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .textarea-field {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--surface);
+    font-family: inherit;
+    outline: none;
+    min-height: 80px;
+    resize: vertical;
+  }
+  .textarea-field:focus { border-color: var(--orange); }
+
+  .rate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .rate-card {
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--surface);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .rate-card.selected {
+    border-color: var(--orange);
+    background: var(--orange-tint);
+  }
+  .rate-radio {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    margin-top: 2px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .rate-card.selected .rate-radio {
+    border-color: var(--orange);
+    background: var(--orange);
+  }
+  .rate-card.selected .rate-radio::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+  }
+  .rate-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .rate-sub { font-size: 11px; color: var(--text-muted); }
+
+  .snapshot-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .snapshot-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .snapshot-payout {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .snapshot-amount {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .snapshot-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    margin-bottom: 20px;
+  }
+  .snapshot-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .snapshot-row:last-child { border-bottom: none; }
+  .snapshot-label { color: var(--text-muted); }
+  .snapshot-value { font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  .shortcuts-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+  }
+  .shortcuts-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .kbd {
+    background: var(--cream-warm);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+  }
+
+  .footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .footer-actions-left { font-size: 11px; color: var(--text-muted); }
+
+  /* ============ MERCHANTS LIST ============ */
+  .merchant-row-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .merchant-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--cream-warm);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .merchant-info {
+    line-height: 1.3;
+  }
+  .merchant-name {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .merchant-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .tier-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    font-family: 'Inter', sans-serif;
+  }
+  .tier-pill.premium { background: #2A2A30; color: var(--cream); }
+  .tier-pill.standard { background: var(--cream-warm); color: var(--text-muted); }
+
+  /* ============ DASHBOARD CHART (SLA / DECISIONS) ============ */
+  .decision-bar {
+    height: 10px;
+    background: var(--cream-warm);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    margin: 14px 0 10px;
+  }
+  .decision-bar-segment { height: 100%; }
+  .decision-bar-segment.approved { background: var(--sage); }
+  .decision-bar-segment.rejected { background: var(--rose); }
+  .decision-bar-segment.pending { background: var(--amber); }
+  .decision-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+  }
+  .decision-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+  }
+  .decision-legend-item .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .decision-legend-item .dot.approved { background: var(--sage); }
+  .decision-legend-item .dot.rejected { background: var(--rose); }
+  .decision-legend-item .dot.pending { background: var(--amber); }
+
+  .big-stat {
+    padding: 20px 22px;
+  }
+  .big-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .big-stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .big-stat-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  .mobile-topbar {
+    display: none;
+    padding: 14px 16px;
+    background: var(--ink);
+    color: var(--cream);
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mobile-toggle {
+    background: transparent;
+    border: none;
+    color: var(--cream);
+    cursor: pointer;
+  }
+  .mobile-toggle svg { width: 20px; height: 20px; }
+
+  @media (max-width: 768px) {
+    body { background: var(--cream); }
+    .browser-frame { margin: 0; }
+    .app { grid-template-columns: 1fr; }
+    .mobile-topbar { display: flex; }
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 260px;
+      height: 100vh;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.25s;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 150;
+    }
+    .sidebar-overlay.active { display: block; }
+    .main { padding: 20px 16px 60px; }
+
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .row-2col { grid-template-columns: 1fr; }
+    .claim-detail-grid { grid-template-columns: 1fr; }
+    .fact-grid { grid-template-columns: 1fr 1fr; }
+    .fact-grid.cols-2 { grid-template-columns: 1fr; }
+    .review-decision-grid { grid-template-columns: 1fr; }
+    .rate-grid { grid-template-columns: 1fr; }
+
+    .data-table { font-size: 12px; }
+    .data-table thead { display: none; }
+    .data-table tbody tr {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 12px;
+      padding: 14px 18px;
+    }
+    .data-table tbody td {
+      padding: 0;
+      border-bottom: none;
+    }
+
+    .page-title { font-size: 24px; }
+    .topbar { flex-direction: column; align-items: flex-start; }
+    .topbar-actions { flex-wrap: wrap; }
+    .filter-tabs { flex-wrap: wrap; }
+    .search-box { width: 100%; }
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .footer-hint {
+    text-align: center;
+    padding: 24px 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+</style>
+</head>
+<body>
+
+<div class="browser-frame">
+  <div class="browser-chrome">
+    <div class="traffic-lights">
+      <div class="traffic-light tl-red"></div>
+      <div class="traffic-light tl-yellow"></div>
+      <div class="traffic-light tl-green"></div>
+    </div>
+    <div class="browser-tabs">
+      <div class="browser-tab">
+        <div class="browser-tab-dot"></div>
+        <span id="tab-title">mealmate · ops</span>
+      </div>
+      <div class="browser-tab inactive">OpenTable</div>
+    </div>
+    <div class="browser-url" id="browser-url">ops.mealmate.co/dashboard</div>
+    <div style="color: rgba(255,255,255,0.4);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo-row">
+        <div class="sidebar-logo">meal<em>mate</em></div>
+        <div class="sidebar-logo-tag">OPS</div>
+      </div>
+
+      <div class="ops-card">
+        <div class="ops-label">INTERNAL TOOLS</div>
+        <div class="ops-name">Trust & Safety</div>
+        <div class="ops-meta">Claims review · Merchant ops</div>
+      </div>
+
+      <button class="sidebar-item" data-screen="dashboard" onclick="go('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-item active" data-screen="queue" onclick="go('queue')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Claims queue
+        <span class="sidebar-item-badge">24</span>
+      </button>
+      <button class="sidebar-item" data-screen="merchants" onclick="go('merchants')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+        Merchants
+      </button>
+      <button class="sidebar-item" onclick="showToast('Diners view coming soon')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Diners
+      </button>
+      <button class="sidebar-item" onclick="showToast('Payouts view coming soon')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M22 10H2"/></svg>
+        Payouts
+      </button>
+      <button class="sidebar-item" onclick="showToast('Rules engine coming soon')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Rules & fraud
+      </button>
+
+      <div class="sidebar-bottom">
+        <a href="#" class="sidebar-link" onclick="return openExternal(event, 'consumer')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Open diner app →
+        </a>
+        <a href="#" class="sidebar-link" onclick="return openExternal(event, 'merchant')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Open merchant dashboard →
+        </a>
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">JK</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Jordan Kim</div>
+            <div class="sidebar-user-role">ops@mealmate.co</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="mobile-topbar">
+        <button class="mobile-toggle" onclick="toggleSidebar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div style="font-family: 'Fraunces', serif; font-size: 17px;">
+          meal<em style="color: var(--orange); font-style: italic;">mate</em>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--orange); letter-spacing: 0.2em; margin-left: 6px;">OPS</span>
+        </div>
+        <div style="width: 20px;"></div>
+      </div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="screen" id="dashboard">
+        <div class="topbar">
+          <div>
+            <div class="page-eyebrow">TRUST & SAFETY · TUE APR 28, 2026</div>
+            <h1 class="page-title">Good morning, <em>Jordan</em></h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Last 24h
+            </button>
+            <button class="btn btn-primary" onclick="go('queue')">
+              Review queue →
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">IN REVIEW</div>
+            <div class="kpi-value">24</div>
+            <div class="kpi-meta">Needs human review</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">CLAIMS · TODAY</div>
+            <div class="kpi-value">312</div>
+            <div class="kpi-delta up">+18%<span class="kpi-delta-meta">vs. yesterday</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">AUTO-APPROVAL RATE</div>
+            <div class="kpi-value sage">94.2%</div>
+            <div class="kpi-meta">trailing 7 days</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">MEDIAN SLA</div>
+            <div class="kpi-value">4.3m</div>
+            <div class="kpi-meta">claim → decision</div>
+          </div>
+        </div>
+
+        <div class="row-2col">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Decisions · last 14 days</div>
+                <div class="panel-sub">APPROVED / REJECTED / PENDING</div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <svg viewBox="0 0 700 220" preserveAspectRatio="none">
+                <!-- Grid -->
+                <g stroke="#EDE7DB" stroke-width="1">
+                  <line x1="0" y1="40" x2="700" y2="40"/>
+                  <line x1="0" y1="100" x2="700" y2="100"/>
+                  <line x1="0" y1="160" x2="700" y2="160"/>
+                </g>
+                <!-- Stacked bars -->
+                <g>
+                  <!-- Bar 1 -->
+                  <rect x="20" y="60" width="30" height="120" rx="3" fill="#7A9670"/>
+                  <rect x="20" y="50" width="30" height="10" rx="3" fill="#D4A147"/>
+                  <rect x="20" y="45" width="30" height="5" rx="3" fill="#C96A66"/>
+                  <!-- Bar 2 -->
+                  <rect x="70" y="70" width="30" height="110" rx="3" fill="#7A9670"/>
+                  <rect x="70" y="58" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="70" y="52" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 3 -->
+                  <rect x="120" y="55" width="30" height="125" rx="3" fill="#7A9670"/>
+                  <rect x="120" y="45" width="30" height="10" rx="3" fill="#D4A147"/>
+                  <rect x="120" y="40" width="30" height="5" rx="3" fill="#C96A66"/>
+                  <!-- Bar 4 -->
+                  <rect x="170" y="40" width="30" height="140" rx="3" fill="#7A9670"/>
+                  <rect x="170" y="28" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="170" y="22" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 5 -->
+                  <rect x="220" y="80" width="30" height="100" rx="3" fill="#7A9670"/>
+                  <rect x="220" y="70" width="30" height="10" rx="3" fill="#D4A147"/>
+                  <rect x="220" y="65" width="30" height="5" rx="3" fill="#C96A66"/>
+                  <!-- Bar 6 -->
+                  <rect x="270" y="50" width="30" height="130" rx="3" fill="#7A9670"/>
+                  <rect x="270" y="38" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="270" y="32" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 7 -->
+                  <rect x="320" y="30" width="30" height="150" rx="3" fill="#7A9670"/>
+                  <rect x="320" y="18" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="320" y="12" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 8 -->
+                  <rect x="370" y="60" width="30" height="120" rx="3" fill="#7A9670"/>
+                  <rect x="370" y="48" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="370" y="43" width="30" height="5" rx="3" fill="#C96A66"/>
+                  <!-- Bar 9 -->
+                  <rect x="420" y="45" width="30" height="135" rx="3" fill="#7A9670"/>
+                  <rect x="420" y="33" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="420" y="27" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 10 -->
+                  <rect x="470" y="55" width="30" height="125" rx="3" fill="#7A9670"/>
+                  <rect x="470" y="42" width="30" height="13" rx="3" fill="#D4A147"/>
+                  <rect x="470" y="35" width="30" height="7" rx="3" fill="#C96A66"/>
+                  <!-- Bar 11 -->
+                  <rect x="520" y="25" width="30" height="155" rx="3" fill="#7A9670"/>
+                  <rect x="520" y="12" width="30" height="13" rx="3" fill="#D4A147"/>
+                  <rect x="520" y="5" width="30" height="7" rx="3" fill="#C96A66"/>
+                  <!-- Bar 12 -->
+                  <rect x="570" y="65" width="30" height="115" rx="3" fill="#7A9670"/>
+                  <rect x="570" y="52" width="30" height="13" rx="3" fill="#D4A147"/>
+                  <rect x="570" y="46" width="30" height="6" rx="3" fill="#C96A66"/>
+                  <!-- Bar 13 -->
+                  <rect x="620" y="35" width="30" height="145" rx="3" fill="#7A9670"/>
+                  <rect x="620" y="22" width="30" height="13" rx="3" fill="#D4A147"/>
+                  <rect x="620" y="15" width="30" height="7" rx="3" fill="#C96A66"/>
+                  <!-- Bar 14 -->
+                  <rect x="670" y="50" width="30" height="130" rx="3" fill="#7A9670"/>
+                  <rect x="670" y="38" width="30" height="12" rx="3" fill="#D4A147"/>
+                  <rect x="670" y="33" width="30" height="5" rx="3" fill="#C96A66"/>
+                </g>
+                <text x="35" y="200" font-family="JetBrains Mono" font-size="9" fill="#7A756D" text-anchor="middle">APR 14</text>
+                <text x="335" y="200" font-family="JetBrains Mono" font-size="9" fill="#7A756D" text-anchor="middle">APR 21</text>
+                <text x="685" y="200" font-family="JetBrains Mono" font-size="9" fill="#7A756D" text-anchor="middle">APR 28</text>
+              </svg>
+            </div>
+            <div style="padding: 0 22px 18px;">
+              <div class="decision-legend">
+                <div class="decision-legend-item"><span class="dot approved"></span>Approved · 94.2%</div>
+                <div class="decision-legend-item"><span class="dot rejected"></span>Rejected · 2.8%</div>
+                <div class="decision-legend-item"><span class="dot pending"></span>Pending · 3.0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Queue health</div>
+                <div class="panel-sub">CURRENT STATE</div>
+              </div>
+            </div>
+            <div class="big-stat">
+              <div class="big-stat-label">OLDEST CLAIM WAITING</div>
+              <div class="big-stat-value">12<span style="font-size: 20px; margin-left: 4px;">min</span></div>
+              <div class="big-stat-sub">Within SLA (target &lt; 4 hours)</div>
+            </div>
+            <div style="padding: 0 22px 18px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 10px 0; border-top: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Today's reviews</span>
+                <span style="font-weight: 500;">67 / 85</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 10px 0; border-top: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Avg decision time</span>
+                <span style="font-weight: 500;">2m 14s</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 10px 0; border-top: 1px solid var(--border-soft);">
+                <span style="color: var(--text-muted);">Flagged merchants</span>
+                <span style="font-weight: 500; color: var(--rose);">2 active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 22px;">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Needs review</div>
+              <div class="panel-sub">FLAGGED BY RULES ENGINE · HIGHEST PRIORITY FIRST</div>
+            </div>
+            <a class="view-all" onclick="go('queue')">Open queue →</a>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>WHEN</th>
+                <th>DINER</th>
+                <th>VENUE</th>
+                <th class="align-right">CHECK</th>
+                <th>FLAG</th>
+                <th class="align-right">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="go('claim-detail')">
+                <td class="cell-id">CLM-4827</td>
+                <td class="mono">34 min ago</td>
+                <td>Priya S.</td>
+                <td>Osteria Mora</td>
+                <td class="align-right mono">$212.40</td>
+                <td><span class="flag-reason">Large check</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4821</td>
+                <td class="mono">58 min ago</td>
+                <td>Elena M.</td>
+                <td>Kaiseki Aoi</td>
+                <td class="align-right mono">$74.25</td>
+                <td><span class="flag-reason">Receipt mismatch</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4816</td>
+                <td class="mono">1 hr ago</td>
+                <td>Sofia B.</td>
+                <td>Demonico</td>
+                <td class="align-right mono">$290.00</td>
+                <td><span class="flag-reason">2nd claim today</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4812</td>
+                <td class="mono">2 hr ago</td>
+                <td>Tom L.</td>
+                <td>Mesa Verde</td>
+                <td class="align-right mono">$342.00</td>
+                <td><span class="flag-reason">New merchant</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ CLAIMS QUEUE ============ -->
+      <div class="screen active" id="queue">
+        <div class="topbar">
+          <div>
+            <div class="page-eyebrow">OPS · QUEUE</div>
+            <h1 class="page-title">Claims <em>queue</em></h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+              Open review mode
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div class="filter-tabs">
+            <button class="filter-tab active">Review <span class="filter-tab-count">24</span></button>
+            <button class="filter-tab">Pending <span class="filter-tab-count">8</span></button>
+            <button class="filter-tab">Approved <span class="filter-tab-count">288</span></button>
+            <button class="filter-tab">Rejected <span class="filter-tab-count">4</span></button>
+            <button class="filter-tab">All <span class="filter-tab-count">324</span></button>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em;">
+            SORT: OLDEST FIRST
+          </div>
+        </div>
+
+        <div class="panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>WHEN</th>
+                <th>DINER</th>
+                <th>VENUE</th>
+                <th>OFFER</th>
+                <th class="align-right">CHECK</th>
+                <th class="align-right">DISCOUNT</th>
+                <th>FLAG</th>
+                <th class="align-right">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-id">CLM-4830</td>
+                <td class="mono">2 min ago</td>
+                <td>Ava L.</td>
+                <td>Osteria Mora</td>
+                <td>25% off dinner</td>
+                <td class="align-right mono">$148.00</td>
+                <td class="align-right cell-discount">−$37.00</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4829</td>
+                <td class="mono">5 min ago</td>
+                <td>Michael R.</td>
+                <td>Osteria Mora</td>
+                <td>25% off dinner</td>
+                <td class="align-right mono">$89.50</td>
+                <td class="align-right cell-discount">−$22.38</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-auto">Auto-approved</span></td>
+              </tr>
+              <tr class="highlight" onclick="go('claim-detail')">
+                <td class="cell-id">CLM-4827</td>
+                <td class="mono">34 min ago</td>
+                <td>Priya S.</td>
+                <td>Osteria Mora</td>
+                <td>25% off dinner</td>
+                <td class="align-right mono">$212.40</td>
+                <td class="align-right cell-discount">−$53.10</td>
+                <td><span class="flag-reason">Large check</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4825</td>
+                <td class="mono">22 min ago</td>
+                <td>Noah T.</td>
+                <td>Bar Primi</td>
+                <td>15% off lunch</td>
+                <td class="align-right mono">$64.40</td>
+                <td class="align-right cell-discount">−$9.66</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-auto">Auto-approved</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4821</td>
+                <td class="mono">58 min ago</td>
+                <td>Elena M.</td>
+                <td>Kaiseki Aoi</td>
+                <td>20% off dinner</td>
+                <td class="align-right mono">$74.25</td>
+                <td class="align-right cell-discount">−$14.85</td>
+                <td><span class="flag-reason">Receipt mismatch</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4824</td>
+                <td class="mono">45 min ago</td>
+                <td>Jonas W.</td>
+                <td>Le Baron</td>
+                <td>15% off lunch</td>
+                <td class="align-right mono">$184.00</td>
+                <td class="align-right cell-discount">−$27.60</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-auto">Auto-approved</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4816</td>
+                <td class="mono">1 hr ago</td>
+                <td>Sofia B.</td>
+                <td>Demonico</td>
+                <td>20% off dinner</td>
+                <td class="align-right mono">$290.00</td>
+                <td class="align-right cell-discount">−$64.38</td>
+                <td><span class="flag-reason">2nd claim today</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4815</td>
+                <td class="mono">1 hr ago</td>
+                <td>James K.</td>
+                <td>Osteria Mora</td>
+                <td>25% off dinner</td>
+                <td class="align-right mono">$78.00</td>
+                <td class="align-right cell-discount">−$19.50</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-auto">Auto-approved</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4812</td>
+                <td class="mono">2 hr ago</td>
+                <td>Tom L.</td>
+                <td>Mesa Verde</td>
+                <td>22% off dinner</td>
+                <td class="align-right mono">$342.00</td>
+                <td class="align-right cell-discount">−$75.24</td>
+                <td><span class="flag-reason">Large check</span></td>
+                <td class="align-right"><span class="pill pill-review">Review</span></td>
+              </tr>
+              <tr>
+                <td class="cell-id">CLM-4810</td>
+                <td class="mono">2 hr ago</td>
+                <td>Rosa V.</td>
+                <td>Osteria Mora</td>
+                <td>25% off dinner</td>
+                <td class="align-right mono">$155.80</td>
+                <td class="align-right cell-discount">−$38.95</td>
+                <td><span class="flag-reason">—</span></td>
+                <td class="align-right"><span class="pill pill-auto">Auto-approved</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ CLAIM DETAIL ============ -->
+      <div class="screen" id="claim-detail">
+        <div class="breadcrumb">
+          <a onclick="go('queue')">Claims queue</a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>CLM-4827</span>
+        </div>
+        <div class="topbar">
+          <div>
+            <div class="page-eyebrow">CLAIM · CLM-4827</div>
+            <h1 class="page-title">Claim <em>CLM-4827</em></h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost" onclick="go('queue')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              Queue
+            </button>
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              Previous
+            </button>
+            <button class="btn btn-ghost">
+              Next
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 21 12 15 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flag-banner">
+          <div class="flag-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          </div>
+          <div class="flag-text">
+            <strong>Flagged for review</strong> · Large check<br>
+            <span style="font-size: 11px; color: var(--text-muted);">Check was 2.3× this diner's trailing average. Rule threshold: 2.0×.</span>
+          </div>
+          <div class="flag-badge">Review</div>
+        </div>
+
+        <div class="claim-detail-grid">
+          <!-- LEFT -->
+          <div>
+            <div class="section-block">
+              <div class="section-block-title">Transaction</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">From linked card · Chase ending 4291</div>
+              <div class="fact-grid">
+                <div>
+                  <div class="fact-label">MERCHANT</div>
+                  <div class="fact-value">Osteria Mora</div>
+                </div>
+                <div>
+                  <div class="fact-label">POSTED</div>
+                  <div class="fact-value">Apr 28 · 7:14 pm</div>
+                </div>
+                <div>
+                  <div class="fact-label">MCC</div>
+                  <div class="fact-value mono">5812 · Eat. places</div>
+                </div>
+                <div>
+                  <div class="fact-label">AMOUNT</div>
+                  <div class="fact-value serif">$212.40</div>
+                </div>
+                <div>
+                  <div class="fact-label">TIP</div>
+                  <div class="fact-value serif">$18.85</div>
+                </div>
+                <div>
+                  <div class="fact-label">CARD</div>
+                  <div class="fact-value mono">Chase ••4291</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="section-block-title">
+                <span class="rubric-header">Rubrics · must pass for auto-approval</span>
+              </div>
+              <div style="margin-top: 10px;">
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check"><svg viewBox="0 0 16 16" fill="none"><polyline points="3 8 7 12 13 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">Timing window</div>
+                      <div class="rubric-sub">7:14 pm · offer live 5–10 pm</div>
+                    </div>
+                  </div>
+                  <div class="rubric-pass">PASS</div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check"><svg viewBox="0 0 16 16" fill="none"><polyline points="3 8 7 12 13 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">Day of week</div>
+                      <div class="rubric-sub">Tue · Sun–Thu allowed</div>
+                    </div>
+                  </div>
+                  <div class="rubric-pass">PASS</div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check"><svg viewBox="0 0 16 16" fill="none"><polyline points="3 8 7 12 13 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">Minimum spend</div>
+                      <div class="rubric-sub">$212.40 ≥ $60.00</div>
+                    </div>
+                  </div>
+                  <div class="rubric-pass">PASS</div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check"><svg viewBox="0 0 16 16" fill="none"><polyline points="3 8 7 12 13 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">MCC match</div>
+                      <div class="rubric-sub">5812 matches venue category</div>
+                    </div>
+                  </div>
+                  <div class="rubric-pass">PASS</div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check"><svg viewBox="0 0 16 16" fill="none"><polyline points="3 8 7 12 13 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">Max per diner</div>
+                      <div class="rubric-sub">First claim this week</div>
+                    </div>
+                  </div>
+                  <div class="rubric-pass">PASS</div>
+                </div>
+                <div class="rubric-item">
+                  <div class="rubric-item-left">
+                    <div class="rubric-check fail"><svg viewBox="0 0 16 16" fill="none"><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="4" x2="4" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+                    <div>
+                      <div class="rubric-name">Check size vs history</div>
+                      <div class="rubric-sub">2.3× trailing avg · threshold 2.0×</div>
+                    </div>
+                  </div>
+                  <div class="rubric-fail-tag">FAIL</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <div class="section-block">
+              <div class="section-block-title">Diner</div>
+              <div class="diner-card">
+                <div class="diner-avatar">A</div>
+                <div class="diner-info">
+                  <div class="diner-name">Ava Leclerc</div>
+                  <div class="diner-meta">ava@studio.co · member since Jan 2026</div>
+                </div>
+              </div>
+              <div style="font-size: 12px; font-family: 'Inter', sans-serif; margin-bottom: 10px; display: flex; gap: 14px;">
+                <span style="color: var(--text-muted);">+1 (415) 229-8843</span>
+              </div>
+              <div class="diner-stat-grid">
+                <div class="diner-stat">
+                  <div class="diner-stat-label">LIFETIME CLAIMS</div>
+                  <div class="diner-stat-value">34</div>
+                </div>
+                <div class="diner-stat">
+                  <div class="diner-stat-label">AVG CHECK</div>
+                  <div class="diner-stat-value">$92</div>
+                </div>
+                <div class="diner-stat">
+                  <div class="diner-stat-label">REJECT RATE</div>
+                  <div class="diner-stat-value sage">0%</div>
+                </div>
+                <div class="diner-stat">
+                  <div class="diner-stat-label">TRUST SCORE</div>
+                  <div class="diner-stat-value sage">A+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="section-block-title">Venue</div>
+              <div class="fact-grid cols-2">
+                <div>
+                  <div class="fact-label">NAME</div>
+                  <div class="fact-value">Osteria Mora</div>
+                </div>
+                <div>
+                  <div class="fact-label">CUISINE</div>
+                  <div class="fact-value">Italian</div>
+                </div>
+                <div>
+                  <div class="fact-label">OFFER</div>
+                  <div class="fact-value">25% off dinner</div>
+                </div>
+                <div>
+                  <div class="fact-label">TRUST</div>
+                  <div class="fact-value sage" style="color: var(--sage);">Verified · 14 mo</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="section-block-title">Audit trail</div>
+              <div class="audit-item">
+                <div class="audit-time">7:14 pm</div>
+                <div class="audit-event"><strong>Card auth posted</strong> by Chase</div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-time">7:14 pm</div>
+                <div class="audit-event"><strong>Matched to offer</strong> 25% off dinner</div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-time">7:14 pm</div>
+                <div class="audit-event"><strong>Rubric check</strong> 5 of 6 passed</div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-time">7:14 pm</div>
+                <div class="audit-event"><strong>Flagged</strong> check size vs history</div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-time">7:40 pm</div>
+                <div class="audit-event"><strong>Assigned to queue</strong> priority P2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <div class="footer-actions-left">6 of 6 rubric fields checked · 1 failed · requires manual review</div>
+          <button class="btn btn-primary btn-lg" onclick="go('claim-review')">
+            Take action →
+          </button>
+        </div>
+      </div>
+
+      <!-- ============ CLAIM REVIEW ============ -->
+      <div class="screen" id="claim-review">
+        <div class="breadcrumb">
+          <a onclick="go('queue')">Claims queue</a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <a onclick="go('claim-detail')">CLM-4827</a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>Review</span>
+        </div>
+        <div class="topbar">
+          <div>
+            <div class="page-eyebrow">OPS · CLM-4827 · REVIEW</div>
+            <h1 class="page-title">Take <em>action</em></h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost" onclick="go('claim-detail')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              Back to detail
+            </button>
+          </div>
+        </div>
+
+        <div class="claim-detail-grid">
+          <div>
+            <div class="section-block">
+              <div class="section-block-title">Decision</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Select an outcome — you can override any flag with a reason.</div>
+
+              <div class="review-decision-grid">
+                <div class="decision-card selected approve" id="dc-approve" onclick="selectDecision('approve')">
+                  <div class="decision-icon approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div>
+                  <div class="decision-title">Approve</div>
+                  <div class="decision-desc">Pay diner $53.10 rebate · $159.30 to Osteria Mora next payout.</div>
+                </div>
+                <div class="decision-card" id="dc-request" onclick="selectDecision('request')">
+                  <div class="decision-icon request"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                  <div class="decision-title">Request receipt</div>
+                  <div class="decision-desc">Ask diner for an itemized receipt. Auto-reviewed when received.</div>
+                </div>
+                <div class="decision-card" id="dc-reject" onclick="selectDecision('reject')">
+                  <div class="decision-icon reject"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                  <div class="decision-title">Reject</div>
+                  <div class="decision-desc">No payout · diner notified with reason.</div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 18px;">
+                <div class="form-label-sm">Override reason</div>
+                <textarea class="textarea-field">Reviewed bar breakdown and offer history (34 claims, 0 reject). Check size reflects a birthday dinner — confirmed with reservation notes on OpenTable. Approving.</textarea>
+                <div class="form-helper">Required when approving past a flagged rubric. Visible in audit trail — not shared with diner.</div>
+              </div>
+
+              <div>
+                <div class="form-label-sm">Apply rule adjustment?</div>
+                <div class="rate-grid">
+                  <div class="rate-card selected">
+                    <div class="rate-radio"></div>
+                    <div>
+                      <div class="rate-title">Just this claim</div>
+                      <div class="rate-sub">No rule change</div>
+                    </div>
+                  </div>
+                  <div class="rate-card">
+                    <div class="rate-radio"></div>
+                    <div>
+                      <div class="rate-title">All diners &gt; 2.5× threshold</div>
+                      <div class="rate-sub">Applies to all A+ going forward</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-helper">Raise the check size threshold for A+ diners automatically. Only Ops lead can permit this.</div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;">
+                <button class="btn btn-ghost">Cancel</button>
+                <button class="btn btn-sage btn-lg" onclick="approveAndPay()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Approve & pay $53.10
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="snapshot-card">
+              <div class="snapshot-title">Claim snapshot</div>
+              <div class="snapshot-payout">PAYOUT IF APPROVED</div>
+              <div class="snapshot-amount">$53.10</div>
+              <div class="snapshot-meta">25% of $212.40 pre-tax · to Ava Leclerc</div>
+              <div class="snapshot-row">
+                <span class="snapshot-label">Diner</span>
+                <span class="snapshot-value" style="font-family: 'Inter', sans-serif;">Ava Leclerc · A+</span>
+              </div>
+              <div class="snapshot-row">
+                <span class="snapshot-label">Venue</span>
+                <span class="snapshot-value" style="font-family: 'Inter', sans-serif;">Osteria Mora · Verified</span>
+              </div>
+              <div class="snapshot-row">
+                <span class="snapshot-label">Check</span>
+                <span class="snapshot-value">$212.40 pre-tax</span>
+              </div>
+              <div class="snapshot-row">
+                <span class="snapshot-label">Flag</span>
+                <span class="snapshot-value" style="color: var(--rose); font-family: 'Inter', sans-serif;">Check 2.3× avg</span>
+              </div>
+              <div class="snapshot-row">
+                <span class="snapshot-label">Rules</span>
+                <span class="snapshot-value" style="font-family: 'Inter', sans-serif;">5 of 6 pass</span>
+              </div>
+            </div>
+
+            <div class="shortcuts-card">
+              <div class="shortcuts-title">SHORTCUTS</div>
+              <div class="shortcut-row"><span>Approve</span><span class="kbd">A</span></div>
+              <div class="shortcut-row"><span>Reject</span><span class="kbd">R</span></div>
+              <div class="shortcut-row"><span>Request receipt</span><span class="kbd">E</span></div>
+              <div class="shortcut-row"><span>Next claim</span><span class="kbd">J</span></div>
+              <div class="shortcut-row"><span>Back to detail</span><span class="kbd">B</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MERCHANTS ============ -->
+      <div class="screen" id="merchants">
+        <div class="topbar">
+          <div>
+            <div class="page-eyebrow">OPS · MERCHANTS</div>
+            <h1 class="page-title">Merchants</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Onboard merchant
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div class="filter-tabs">
+            <button class="filter-tab active">All <span class="filter-tab-count">142</span></button>
+            <button class="filter-tab">Verified <span class="filter-tab-count">128</span></button>
+            <button class="filter-tab">Pending <span class="filter-tab-count">12</span></button>
+            <button class="filter-tab">Flagged <span class="filter-tab-count">2</span></button>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search merchants...">
+          </div>
+        </div>
+
+        <div class="panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>VENUE</th>
+                <th>CITY</th>
+                <th>TIER</th>
+                <th>ONBOARDED</th>
+                <th class="align-right">LIVE OFFERS</th>
+                <th class="align-right">CLAIMS · 30D</th>
+                <th class="align-right">GMV · 30D</th>
+                <th class="align-right">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">O</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Osteria Mora</div>
+                      <div class="merchant-meta">Italian · SoHo</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill premium">Premium</span></td>
+                <td class="mono">Jan 15, '25</td>
+                <td class="align-right mono">3</td>
+                <td class="align-right mono">412</td>
+                <td class="align-right cell-positive">$148,240</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">K</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Kaiseki Aoi</div>
+                      <div class="merchant-meta">Japanese · W.Village</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill premium">Premium</span></td>
+                <td class="mono">Feb 02, '25</td>
+                <td class="align-right mono">2</td>
+                <td class="align-right mono">284</td>
+                <td class="align-right cell-positive">$96,580</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">L</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Le Baron</div>
+                      <div class="merchant-meta">French · Tribeca</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Mar 10, '25</td>
+                <td class="align-right mono">2</td>
+                <td class="align-right mono">198</td>
+                <td class="align-right cell-positive">$72,340</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">B</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Bar Primi</div>
+                      <div class="merchant-meta">Italian · NoHo</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Mar 18, '25</td>
+                <td class="align-right mono">1</td>
+                <td class="align-right mono">156</td>
+                <td class="align-right cell-positive">$48,720</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">M</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Mesa Verde</div>
+                      <div class="merchant-meta">Mexican · LES</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Apr 01, '26</td>
+                <td class="align-right mono">1</td>
+                <td class="align-right mono">42</td>
+                <td class="align-right cell-positive">$14,580</td>
+                <td class="align-right"><span class="pill pill-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">V</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Via Carota</div>
+                      <div class="merchant-meta">Italian · W.Village</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill premium">Premium</span></td>
+                <td class="mono">Jan 08, '25</td>
+                <td class="align-right mono">2</td>
+                <td class="align-right mono">368</td>
+                <td class="align-right cell-positive">$124,890</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">R</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Rubirosa</div>
+                      <div class="merchant-meta">Italian · Nolita</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Feb 22, '25</td>
+                <td class="align-right mono">1</td>
+                <td class="align-right mono">221</td>
+                <td class="align-right cell-positive">$68,450</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">T</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Trattoria Bene</div>
+                      <div class="merchant-meta">Italian · Nolita</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Mar 01, '25</td>
+                <td class="align-right mono">2</td>
+                <td class="align-right mono">189</td>
+                <td class="align-right cell-positive">$54,280</td>
+                <td class="align-right"><span class="pill pill-verified">Verified</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="merchant-row-compact">
+                    <div class="merchant-icon">D</div>
+                    <div class="merchant-info">
+                      <div class="merchant-name">Demonico</div>
+                      <div class="merchant-meta">Italian · TriBeCa</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono">New York</td>
+                <td><span class="tier-pill standard">Standard</span></td>
+                <td class="mono">Apr 10, '26</td>
+                <td class="align-right mono">1</td>
+                <td class="align-right mono">18</td>
+                <td class="align-right cell-positive">$8,240</td>
+                <td class="align-right"><span class="pill pill-pending">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="footer-hint">
+  MealMate · Ops Demo · Trust & Safety
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg">Claim approved</span></div>
+
+<script>
+  // IMPORTANT: Update these two URLs after deploying each prototype:
+  const CONSUMER_URL = 'https://mealmate-jet.vercel.app';
+  const MERCHANT_URL = 'https://mealmate-merchant.vercel.app';
+
+  const urls = {
+    'dashboard': 'ops.mealmate.co/dashboard',
+    'queue': 'ops.mealmate.co/claims-queue',
+    'claim-detail': 'ops.mealmate.co/claims/CLM-4827',
+    'claim-review': 'ops.mealmate.co/claims/CLM-4827/decide',
+    'merchants': 'ops.mealmate.co/merchants'
+  };
+
+  const tabTitles = {
+    'dashboard': 'ops · dashboard',
+    'queue': 'ops · claims queue',
+    'claim-detail': 'ops · CLM-4827',
+    'claim-review': 'ops · CLM-4827 · decide',
+    'merchants': 'ops · merchants'
+  };
+
+  const sidebarMap = {
+    'dashboard': 'dashboard',
+    'queue': 'queue',
+    'claim-detail': 'queue',
+    'claim-review': 'queue',
+    'merchants': 'merchants'
+  };
+
+  function go(screenId) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebar-overlay').classList.remove('active');
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    const sidebarActive = sidebarMap[screenId];
+    if (sidebarActive) {
+      const item = document.querySelector(`.sidebar-item[data-screen="${sidebarActive}"]`);
+      if (item) item.classList.add('active');
+    }
+
+    document.getElementById('browser-url').textContent = urls[screenId] || 'ops.mealmate.co';
+    document.getElementById('tab-title').textContent = tabTitles[screenId] || 'mealmate · ops';
+    document.title = 'mealmate ops · ' + screenId.replace(/-/g, ' ');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('mobile-open');
+    document.getElementById('sidebar-overlay').classList.toggle('active');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function selectDecision(which) {
+    document.querySelectorAll('.decision-card').forEach(c => c.classList.remove('selected', 'approve', 'request', 'reject'));
+    const card = document.getElementById('dc-' + which);
+    card.classList.add('selected', which);
+  }
+
+  function approveAndPay() {
+    showToast('Claim CLM-4827 approved · $53.10 queued for payout');
+    setTimeout(() => go('queue'), 1100);
+  }
+
+  function openExternal(e, which) {
+    e.preventDefault();
+    const url = which === 'consumer' ? CONSUMER_URL : MERCHANT_URL;
+    window.open(url, '_blank');
+    return false;
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.screen.active')?.id;
+
+    if (active === 'claim-review') {
+      if (e.key === 'a' || e.key === 'A') selectDecision('approve');
+      if (e.key === 'r' || e.key === 'R') selectDecision('reject');
+      if (e.key === 'e' || e.key === 'E') selectDecision('request');
+      if (e.key === 'b' || e.key === 'B') go('claim-detail');
+    }
+
+    const flow = ['dashboard', 'queue', 'claim-detail', 'claim-review', 'merchants'];
+    const i = flow.indexOf(active);
+    if (e.key === 'ArrowRight' && i >= 0 && i < flow.length - 1) go(flow[i + 1]);
+    if (e.key === 'ArrowLeft' && i > 0) go(flow[i - 1]);
+  });
+</script>
+
+</body>
+</html>

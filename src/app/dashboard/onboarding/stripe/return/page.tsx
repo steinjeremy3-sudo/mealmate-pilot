@@ -9,6 +9,7 @@
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { buttonVariants, Eyebrow, Heading } from "@/components/brand";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
 import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 
@@ -22,14 +23,18 @@ export default async function StripeOnboardingReturn() {
   const isActive = account?.status === "active";
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-md space-y-6 text-center">
-        <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-          Stripe Connect
-        </p>
-        <h1 className="font-serif text-3xl font-semibold">
-          {isActive ? "You're connected." : "Almost there."}
-        </h1>
+    <div className="flex flex-1 items-start justify-center px-6 py-16">
+      <div className="w-full max-w-md space-y-5 text-center">
+        <Eyebrow className="flex justify-center">Stripe Connect</Eyebrow>
+        <Heading as="h1" size="page">
+          {isActive ? (
+            <>
+              You&apos;re <em>connected</em>
+            </>
+          ) : (
+            "Almost there"
+          )}
+        </Heading>
         <p className="text-sm text-muted-foreground">
           {isActive
             ? "Stripe has verified your account. You're ready to create offers and collect rebates for your diners."
@@ -37,11 +42,11 @@ export default async function StripeOnboardingReturn() {
         </p>
         <Link
           href="/dashboard"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className={buttonVariants({ variant: "primary", size: "md" })}
         >
           Back to dashboard
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

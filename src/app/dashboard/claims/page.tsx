@@ -1,10 +1,9 @@
 // Merchant "tonight" view — every claim made today against any of the
-// merchant's offers. Useful during service so the host knows who's coming
-// in and which offer they claimed.
-
-import Link from "next/link";
+// merchant's offers. Useful during service so the host knows who's
+// coming in and which offer they claimed.
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Card, Eyebrow, Heading } from "@/components/brand";
 import {
   getTodaysClaimsForMerchant,
   isClaimActive,
@@ -18,36 +17,26 @@ function StatusBadge({
   status: ClaimStatus;
   active: boolean;
 }) {
+  const base =
+    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
   if (active) {
     return (
-      <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-900">
+      <span className={`${base} border-sage/40 bg-sage-tint text-sage`}>
         active
       </span>
     );
   }
-  const styles: Record<ClaimStatus, string> = {
-    claimed: "bg-neutral-100 text-neutral-500 border-neutral-200",
-    matched: "bg-sky-100 text-sky-900 border-sky-200",
-    consumed: "bg-sky-100 text-sky-900 border-sky-200",
-    expired: "bg-neutral-100 text-neutral-500 border-neutral-200",
-    cancelled: "bg-neutral-100 text-neutral-500 border-neutral-200",
-  };
   const label =
     status === "claimed"
       ? "expired"
       : status === "matched" || status === "consumed"
         ? "redeemed"
         : status;
-  return (
-    <span
-      className={
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
-        styles[status]
-      }
-    >
-      {label}
-    </span>
-  );
+  const tone =
+    label === "redeemed"
+      ? "border-orange/30 bg-orange-tint text-orange-deep"
+      : "border-border bg-cream-warm text-muted-foreground";
+  return <span className={`${base} ${tone}`}>{label}</span>;
 }
 
 function formatTime(iso: string): string {
@@ -65,61 +54,53 @@ export default async function MerchantTonightPage() {
   const paid = claims.filter((c) => c.status === "consumed");
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-3xl space-y-6">
-        <div>
-          <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-            Tonight
-          </p>
-          <h1 className="font-serif text-3xl font-semibold">
-            {active.length === 0 && paid.length === 0
-              ? "No claims yet"
-              : `${active.length} holding · ${paid.length} paid`}
-          </h1>
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
+        <div className="space-y-1.5">
+          <Eyebrow>Tonight</Eyebrow>
+          <Heading as="h1" size="page">
+            {active.length === 0 && paid.length === 0 ? (
+              "No claims yet"
+            ) : (
+              <>
+                <em>{active.length}</em> holding · {paid.length} paid
+              </>
+            )}
+          </Heading>
           <p className="text-sm text-muted-foreground">
             Claims your diners made today, in the order they were claimed.
           </p>
         </div>
 
         {claims.length === 0 ? (
-          <p className="text-sm text-muted-foreground border border-dashed rounded-md p-6 text-center">
-            No claims today. They&apos;ll show up here as soon as a diner taps
-            Claim on one of your live offers.
-          </p>
+          <Card className="border-dashed text-center text-sm text-muted-foreground">
+            No claims today. They&apos;ll show up here as soon as a diner
+            taps Claim on one of your live offers.
+          </Card>
         ) : (
-          <ul className="divide-y divide-border border border-border rounded-md">
-            {claims.map((c) => {
-              const isActive = isClaimActive(c);
-              return (
-                <li
-                  key={c.id}
-                  className="flex items-start justify-between gap-4 p-4"
-                >
-                  <div className="space-y-1 min-w-0">
-                    <p className="font-medium truncate">
-                      {c.diner?.display_name ?? "Unknown diner"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {c.offer?.title ?? "—"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Claimed at {formatTime(c.claimed_at)}
-                    </p>
-                  </div>
-                  <StatusBadge status={c.status} active={isActive} />
-                </li>
-              );
-            })}
-          </ul>
+          <Card flush className="divide-y divide-border overflow-hidden">
+            {claims.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-start justify-between gap-4 p-4"
+              >
+                <div className="min-w-0 space-y-1">
+                  <p className="truncate font-medium">
+                    {c.diner?.display_name ?? "Unknown diner"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {c.offer?.title ?? "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Claimed at {formatTime(c.claimed_at)}
+                  </p>
+                </div>
+                <StatusBadge status={c.status} active={isClaimActive(c)} />
+              </div>
+            ))}
+          </Card>
         )}
-
-        <Link
-          href="/dashboard"
-          className="text-xs text-muted-foreground underline underline-offset-4"
-        >
-          ← Back to dashboard
-        </Link>
       </div>
-    </main>
+    </div>
   );
 }

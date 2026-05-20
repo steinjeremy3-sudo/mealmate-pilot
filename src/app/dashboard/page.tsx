@@ -1,71 +1,61 @@
 // Merchant dashboard home. Shows the merchant's restaurant + status.
 // If no restaurant yet, redirects to the onboarding flow.
-//
-// The Phase 3.5 "Pending payout" / "Paid out" card was removed when we
-// switched to the rebate model — the direction inverted (restaurants
-// owe MealMate, not vice versa). Phase 4e will reintroduce a weekly
-// settlement summary card pointing the other way.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import {
+  Button,
+  buttonVariants,
+  Card,
+  Eyebrow,
+  Heading,
+} from "@/components/brand";
 import { getRestaurantForOwner, type RestaurantStatus } from "@/lib/db/restaurants";
 import {
   getStripeAccountForRestaurant,
   type StripeAccountStatus,
 } from "@/lib/db/stripe-accounts";
+import { cn } from "@/lib/utils";
 
 import {
   refreshStripeAccountStatus,
   startStripeOnboarding,
 } from "./onboarding/stripe/actions";
 
-function StatusBadge({ status }: { status: RestaurantStatus }) {
-  const styles: Record<RestaurantStatus, string> = {
-    pending: "bg-yellow-100 text-yellow-900 border-yellow-200",
-    approved: "bg-emerald-100 text-emerald-900 border-emerald-200",
-    suspended: "bg-red-100 text-red-900 border-red-200",
-  };
-  const label: Record<RestaurantStatus, string> = {
-    pending: "Pending approval",
-    approved: "Approved",
-    suspended: "Suspended",
-  };
+type BadgeTone = "positive" | "warning" | "negative";
+
+const toneClasses: Record<BadgeTone, string> = {
+  positive: "border-sage/40 bg-sage-tint text-sage",
+  warning: "border-amber/50 bg-amber/15 text-ink/80",
+  negative: "border-destructive/40 bg-rose/15 text-destructive",
+};
+
+function Badge({ tone, children }: { tone: BadgeTone; children: React.ReactNode }) {
   return (
     <span
-      className={
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
-        styles[status]
-      }
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        toneClasses[tone],
+      )}
     >
-      {label[status]}
+      {children}
     </span>
   );
 }
 
-function StripeStatusBadge({ status }: { status: StripeAccountStatus }) {
-  const styles: Record<StripeAccountStatus, string> = {
-    pending: "bg-yellow-100 text-yellow-900 border-yellow-200",
-    restricted: "bg-amber-100 text-amber-900 border-amber-200",
-    active: "bg-emerald-100 text-emerald-900 border-emerald-200",
-  };
-  const label: Record<StripeAccountStatus, string> = {
-    pending: "Setup in progress",
-    restricted: "Stripe review",
-    active: "Connected",
-  };
-  return (
-    <span
-      className={
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
-        styles[status]
-      }
-    >
-      {label[status]}
-    </span>
-  );
-}
+const RESTAURANT_BADGE: Record<RestaurantStatus, { tone: BadgeTone; label: string }> = {
+  pending: { tone: "warning", label: "Pending approval" },
+  approved: { tone: "positive", label: "Approved" },
+  suspended: { tone: "negative", label: "Suspended" },
+};
+
+const STRIPE_BADGE: Record<StripeAccountStatus, { tone: BadgeTone; label: string }> = {
+  pending: { tone: "warning", label: "Setup in progress" },
+  restricted: { tone: "warning", label: "Stripe review" },
+  active: { tone: "positive", label: "Connected" },
+};
 
 export default async function MerchantHome() {
   const profile = await requireRole("merchant");
@@ -80,9 +70,8 @@ export default async function MerchantHome() {
       ? await getStripeAccountForRestaurant(restaurant.id)
       : null;
 
-  // Self-heal stale mirrors: if a webhook delivery was missed (the
-  // subscription was added after onboarding finished, or the event
-  // bounced), pull fresh state directly from Stripe.
+  // Self-heal stale mirrors: if a webhook delivery was missed, pull
+  // fresh state directly from Stripe.
   if (stripeAccount && stripeAccount.status !== "active") {
     await refreshStripeAccountStatus(
       stripeAccount.restaurant_id,
@@ -95,30 +84,31 @@ export default async function MerchantHome() {
     restaurant.status === "approved" && stripeAccount?.status === "active";
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-2xl space-y-6">
-        <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-          Your restaurant
-        </p>
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <Eyebrow>Your restaurant</Eyebrow>
 
-        <div className="rounded-lg border border-border p-6 space-y-4">
+        <Card className="space-y-4 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="font-serif text-3xl font-semibold">
+              <Heading as="h1" size="page">
                 {restaurant.name}
-              </h1>
+              </Heading>
               <p className="text-sm text-muted-foreground">
-                {restaurant.cuisine} · {restaurant.neighborhood}, {restaurant.city}
+                {restaurant.cuisine} · {restaurant.neighborhood},{" "}
+                {restaurant.city}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {restaurant.address}
               </p>
             </div>
-            <StatusBadge status={restaurant.status} />
+            <Badge tone={RESTAURANT_BADGE[restaurant.status].tone}>
+              {RESTAURANT_BADGE[restaurant.status].label}
+            </Badge>
           </div>
 
           {restaurant.status === "pending" ? (
-            <p className="text-sm text-muted-foreground border-t pt-4">
+            <p className="border-t border-border pt-4 text-sm text-muted-foreground">
               The MealMate team typically approves new restaurants within a
               business day. You&apos;ll be able to set up payouts and create
               offers once approved.
@@ -126,33 +116,38 @@ export default async function MerchantHome() {
           ) : null}
 
           {restaurant.status === "suspended" ? (
-            <p className="text-sm text-muted-foreground border-t pt-4">
+            <p className="border-t border-border pt-4 text-sm text-muted-foreground">
               Your restaurant is currently suspended. Reach out to{" "}
-              <Link href="mailto:ops@mealmate.co" className="underline">
+              <Link
+                href="mailto:ops@mealmate.co"
+                className="text-orange underline underline-offset-4"
+              >
                 ops@mealmate.co
               </Link>{" "}
               for help.
             </p>
           ) : null}
-        </div>
+        </Card>
 
-        {/* ===== Stripe Connect (Phase 4a) ===== */}
+        {/* ===== Stripe Connect ===== */}
         {restaurant.status === "approved" ? (
-          <div className="rounded-lg border border-border p-6 space-y-4">
+          <Card className="space-y-4 p-6">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-                  Payouts via Stripe
-                </p>
-                <h2 className="font-serif text-xl font-semibold">
+              <div className="space-y-1">
+                <Eyebrow>Payouts via Stripe</Eyebrow>
+                <Heading size="section">
                   {stripeAccount?.status === "active"
-                    ? "You're set up."
+                    ? "You're set up"
                     : stripeAccount
                       ? "Finish setup"
                       : "Set up payouts"}
-                </h2>
+                </Heading>
               </div>
-              {stripeAccount ? <StripeStatusBadge status={stripeAccount.status} /> : null}
+              {stripeAccount ? (
+                <Badge tone={STRIPE_BADGE[stripeAccount.status].tone}>
+                  {STRIPE_BADGE[stripeAccount.status].label}
+                </Badge>
+              ) : null}
             </div>
 
             {!stripeAccount ? (
@@ -163,18 +158,14 @@ export default async function MerchantHome() {
                   about 5 minutes.
                 </p>
                 <form action={startStripeOnboarding}>
-                  <button
-                    type="submit"
-                    className="cursor-pointer rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                  >
-                    Continue on Stripe →
-                  </button>
+                  <Button type="submit">Continue on Stripe →</Button>
                 </form>
               </>
             ) : stripeAccount.status === "active" ? (
               <p className="text-sm text-muted-foreground">
                 Your Stripe Connect account is verified. Weekly settlement
-                invoices will be pulled from the bank account you registered.
+                invoices will be pulled from the bank account you
+                registered.
               </p>
             ) : (
               <>
@@ -183,28 +174,23 @@ export default async function MerchantHome() {
                   need to update it, continue on Stripe.
                 </p>
                 <form action={startStripeOnboarding}>
-                  <button
-                    type="submit"
-                    className="cursor-pointer rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary"
-                  >
+                  <Button type="submit" variant="ghost">
                     Continue on Stripe →
-                  </button>
+                  </Button>
                 </form>
               </>
             )}
-          </div>
+          </Card>
         ) : null}
 
         {/* ===== Manage offers (gated on payouts_enabled) ===== */}
         {restaurant.status === "approved" ? (
-          <div className="rounded-lg border border-border p-6 space-y-3">
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              Offers
-            </p>
+          <Card className="space-y-3 p-6">
+            <Eyebrow>Offers</Eyebrow>
             {canCreateOffers ? (
               <Link
                 href="/dashboard/offers"
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className={buttonVariants({ variant: "primary", size: "md" })}
               >
                 Manage offers →
               </Link>
@@ -214,9 +200,9 @@ export default async function MerchantHome() {
                 verified above.
               </p>
             )}
-          </div>
+          </Card>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }

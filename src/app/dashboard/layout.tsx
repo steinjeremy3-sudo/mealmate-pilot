@@ -2,11 +2,15 @@
 //
 // Phase 1: enforces role=merchant. Unauthenticated → /sign-in.
 // Wrong role → bounced to their own home (see requireRole).
-
-import Link from "next/link";
+//
+// Visual reference: design-reference/merchant.html — a desktop
+// dashboard with a dark ink sidebar.
 
 import { requireRole } from "@/lib/auth/require-role";
 import { SignOutButton } from "@/components/sign-out-button";
+import { getRestaurantForOwner } from "@/lib/db/restaurants";
+
+import { DashboardSidebar } from "./DashboardSidebar";
 
 export default async function MerchantLayout({
   children,
@@ -14,37 +18,20 @@ export default async function MerchantLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireRole("merchant");
+  const restaurant = await getRestaurantForOwner(profile.id);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b">
-        <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-5">
-            <Link href="/dashboard" className="font-mono text-xs tracking-widest uppercase">
-              MealMate · Merchant
-            </Link>
-            <Link
-              href="/dashboard/offers"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Offers
-            </Link>
-            <Link
-              href="/dashboard/claims"
-              className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground"
-            >
-              Tonight
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">
-              {profile.displayName}
-            </span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
-      <div className="flex-1 flex">{children}</div>
+    <div className="flex flex-1 bg-background">
+      <DashboardSidebar
+        restaurantName={restaurant?.name ?? null}
+        displayName={profile.displayName}
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-end border-b border-border bg-cream-soft px-6 py-3">
+          <SignOutButton />
+        </header>
+        <main className="flex-1">{children}</main>
+      </div>
     </div>
   );
 }

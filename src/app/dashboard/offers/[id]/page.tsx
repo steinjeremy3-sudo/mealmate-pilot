@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getActiveClaimCount } from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
@@ -30,7 +31,6 @@ function formatDays(days: string[]): string {
 }
 
 function formatTime(t: string): string {
-  // postgres time arrives as "HH:MM:SS"; trim seconds for readability.
   return t.slice(0, 5);
 }
 
@@ -48,27 +48,33 @@ export default async function MerchantOfferDetail({
   const offer = await getOfferById(id);
   if (!offer) notFound();
 
-  // Only meaningful once the offer is live; for drafts this is always 0.
   const activeClaimCount =
     offer.status === "live" ? await getActiveClaimCount(offer.id) : 0;
 
   return (
-    <main className="flex flex-1 items-start justify-center px-6 py-10">
-      <div className="w-full max-w-2xl space-y-6">
-        <Link href="/dashboard/offers" className="text-xs text-muted-foreground underline underline-offset-4">
+    <div className="px-6 py-10">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <Link
+          href="/dashboard/offers"
+          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+        >
           ← Back to offers
         </Link>
 
-        <div className="rounded-lg border border-border p-6 space-y-4">
-          <div>
-            <p className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+        <Card className="space-y-4 p-6">
+          <div className="space-y-1">
+            <Eyebrow>
               {offer.restaurant?.name ?? "—"} · {offer.status}
+            </Eyebrow>
+            <Heading as="h1" size="page">
+              {offer.title}
+            </Heading>
+            <p className="pt-1 text-sm text-muted-foreground">
+              {offer.description}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">{offer.title}</h1>
-            <p className="text-sm text-muted-foreground pt-2">{offer.description}</p>
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm pt-2 border-t">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
             <dt className="text-muted-foreground">Discount</dt>
             <dd>{offer.discount_pct}% off</dd>
 
@@ -80,21 +86,28 @@ export default async function MerchantOfferDetail({
 
             <dt className="text-muted-foreground">Daily window</dt>
             <dd>
-              {formatTime(offer.valid_start_time)} – {formatTime(offer.valid_end_time)}
+              {formatTime(offer.valid_start_time)} –{" "}
+              {formatTime(offer.valid_end_time)}
             </dd>
 
             <dt className="text-muted-foreground">Starts</dt>
             <dd>{new Date(offer.starts_at).toLocaleString()}</dd>
 
             <dt className="text-muted-foreground">Ends</dt>
-            <dd>{offer.ends_at ? new Date(offer.ends_at).toLocaleString() : "—"}</dd>
+            <dd>
+              {offer.ends_at ? new Date(offer.ends_at).toLocaleString() : "—"}
+            </dd>
 
             {offer.status === "live" ? (
               <>
                 <dt className="text-muted-foreground">Active claims</dt>
                 <dd>
                   <span className="font-medium">{activeClaimCount}</span>
-                  <span className="text-muted-foreground"> diner{activeClaimCount === 1 ? "" : "s"} holding right now</span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    diner{activeClaimCount === 1 ? "" : "s"} holding right
+                    now
+                  </span>
                 </dd>
               </>
             ) : null}
@@ -107,17 +120,12 @@ export default async function MerchantOfferDetail({
           ) : null}
 
           {offer.status === "draft" || offer.status === "live" ? (
-            <div className="pt-2 border-t space-y-3">
+            <div className="space-y-3 border-t border-border pt-3">
               {offer.status === "draft" ? (
                 <form action={publishOffer}>
                   <input type="hidden" name="offer_id" value={offer.id} />
-                  <button
-                    type="submit"
-                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-                  >
-                    Publish
-                  </button>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <Button type="submit">Publish</Button>
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Once published, this offer becomes visible to diners.
                   </p>
                 </form>
@@ -130,23 +138,25 @@ export default async function MerchantOfferDetail({
                 <input type="hidden" name="offer_id" value={offer.id} />
                 <button
                   type="submit"
-                  className="cursor-pointer rounded-md border border-destructive bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive hover:text-white"
+                  className="cursor-pointer rounded-full border border-destructive bg-transparent px-4 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive hover:text-white"
                 >
                   End this offer
                 </button>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Active claims keep their hour to redeem. Ended offers
                   disappear from diner browse.
                 </p>
               </form>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground pt-2 border-t">
-              {offer.status === "ended" ? "This offer has ended." : "Scheduled."}
+            <p className="border-t border-border pt-3 text-sm text-muted-foreground">
+              {offer.status === "ended"
+                ? "This offer has ended."
+                : "Scheduled."}
             </p>
           )}
-        </div>
+        </Card>
       </div>
-    </main>
+    </div>
   );
 }
