@@ -25,6 +25,11 @@ import { plaid } from "@/lib/plaid";
 import { logAuditEvent } from "@/lib/db/audit-log";
 import { getPlaidItemForUse } from "@/lib/db/plaid-items";
 import { normalizeMerchantName } from "@/lib/matching/normalize";
+import {
+  classifyPlaidError,
+  type ClassifiedError,
+} from "@/lib/observability/provider-errors";
+import { reportError } from "@/lib/observability/report";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import type {
@@ -119,12 +124,33 @@ export async function syncItem(plaidItemRowId: string): Promise<SyncItemResult> 
   let hasMore = true;
   let pages = 0;
 
+  // Set if a transactionsSync call fails. We break the loop, persist
+  // whatever cursor we reached (each processed page was already
+  // upserted idempotently), then act on the disposition below.
+  let syncFailure: ClassifiedError | null = null;
+
   while (hasMore && pages < MAX_PAGES_PER_ITEM) {
     pages += 1;
-    const resp = await plaid.transactionsSync({
-      access_token: item.accessToken,
-      cursor: cursor ?? undefined,
-    });
+    let resp: Awaited<ReturnType<typeof plaid.transactionsSync>>;
+    try {
+      resp = await plaid.transactionsSync({
+        access_token: item.accessToken,
+        cursor: cursor ?? undefined,
+      });
+    } catch (err) {
+      // Plaid failure modes handled:
+      //   retryable   (429 RATE_LIMIT, PRODUCT_NOT_READY, 5xx, network
+      //                timeout) — leave the item active; the next cron
+      //                run retries from the same cursor.
+      //   user_action (ITEM_LOGIN_REQUIRED, INVALID_CREDENTIALS) —
+      //                the diner must re-link; flip the item to
+      //                'error' so we stop hammering.
+      //   terminal    (INVALID_ACCESS_TOKEN, ITEM_NOT_FOUND) — the
+      //                Item is dead; flip to 'error'.
+      //   unexpected  — reportError so a human investigates.
+      syncFailure = classifyPlaidError(err);
+      break;
+    }
 
     for (const txn of resp.data.added) {
       const r = await persistTransaction(txn, accountIdToCard);
@@ -149,7 +175,8 @@ export async function syncItem(plaidItemRowId: string): Promise<SyncItemResult> 
     hasMore = resp.data.has_more;
   }
 
-  // Persist final cursor.
+  // Persist whatever cursor we reached — safe even on partial failure,
+  // since each processed page's transactions were already upserted.
   const { error: cursorErr } = await admin
     .from("plaid_items")
     .update({ transactions_cursor: cursor })
@@ -159,6 +186,42 @@ export async function syncItem(plaidItemRowId: string): Promise<SyncItemResult> 
     result.errors += 1;
   } else {
     result.cursorAdvanced = true;
+  }
+
+  // Act on a transactionsSync failure.
+  if (syncFailure) {
+    result.errors += 1;
+    if (
+      syncFailure.disposition === "user_action" ||
+      syncFailure.disposition === "terminal"
+    ) {
+      // The Item can't be synced until the diner re-links. Flip to
+      // 'error' so syncAllActiveItems (which filters status='active')
+      // stops retrying it every run.
+      await admin
+        .from("plaid_items")
+        .update({ status: "error" })
+        .eq("id", plaidItemRowId);
+      await logAuditEvent({
+        actor: { id: "system", role: "system" },
+        action: "plaid.item_errored",
+        subjectType: "plaid_item",
+        subjectId: item.id,
+        metadata: { code: syncFailure.code, disposition: syncFailure.disposition },
+      });
+    } else if (syncFailure.disposition === "unexpected") {
+      reportError({
+        scope: "plaid.transactionsSync",
+        message: `Unrecognized Plaid error syncing item: ${syncFailure.message}`,
+        meta: { itemId: item.id, code: syncFailure.code, httpStatus: syncFailure.httpStatus },
+      });
+    } else {
+      // retryable — normal operation; next cron run picks up.
+      console.warn(
+        `[plaid.transactionsSync] item ${item.id} retryable failure ` +
+          `(${syncFailure.code}) — will retry next run`,
+      );
+    }
   }
 
   await logAuditEvent({
@@ -173,6 +236,9 @@ export async function syncItem(plaidItemRowId: string): Promise<SyncItemResult> 
       skipped_unknown_account: result.skippedUnknownAccount,
       errors: result.errors,
       pages,
+      sync_failure: syncFailure
+        ? { code: syncFailure.code, disposition: syncFailure.disposition }
+        : null,
     },
   });
 

@@ -10,15 +10,19 @@
 //   - /app/rebates/setup actions.ts after the diner attaches a funding
 //     source — catches rebates earned BEFORE setup.
 //
-// Both call sendInitiatedRebates() which iterates over every diner
-// who has both rebates waiting and a destination configured.
-//
 // Idempotency: rebates.status starts as 'initiated' and we filter on
-// that. Once 'sent', a row won't be re-processed. If the Dwolla call
-// itself succeeds but our DB write fails, the rebate becomes a duplicate
-// — but Dwolla transfers are themselves idempotent on (source, dest,
-// amount, time) at the millisecond, and the chance of double-firing
-// from us is low in the daily-cron pilot.
+// that. Once 'sent', a row won't be re-processed.
+//
+// Dwolla failure handling (A1):
+//   retryable (429, 5xx, network) — leave the rebate 'initiated' so
+//     the next run retries; counted as `deferred`, not `failed`.
+//   terminal / user_action (ValidationError, closed account) — mark
+//     the rebate 'failed' with the error.
+//   unexpected (InsufficientFunds — the MealMate balance is dry — or
+//     any unrecognized code) — mark 'failed' AND reportError so a
+//     human investigates.
+//   DB write failure AFTER a successful transfer — money moved but our
+//     record didn't: always reportError.
 
 import "server-only";
 
@@ -28,12 +32,16 @@ import {
   getMealMateBalanceFundingUrl,
   locationOf,
 } from "@/lib/dwolla";
+import { classifyDwollaError } from "@/lib/observability/provider-errors";
+import { reportError } from "@/lib/observability/report";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export type SendRebatesSummary = {
   examined: number;
   sent: number;
   skippedNoDestination: number;
+  /** Transient Dwolla failure — left 'initiated' for the next run. */
+  deferred: number;
   failed: number;
 };
 
@@ -53,12 +61,10 @@ export async function sendInitiatedRebates(args: {
     examined: 0,
     sent: 0,
     skippedNoDestination: 0,
+    deferred: 0,
     failed: 0,
   };
 
-  // Pull rebates joined to their diner (via card → item → user).
-  // Postgres FK chain lets us filter to a specific diner with a
-  // simple inner join when scoped.
   let query = admin
     .from("rebates")
     .select(
@@ -108,6 +114,7 @@ export async function sendInitiatedRebates(args: {
 
     const outcome = await sendOne(row.id, row.amount_cents, destinationUrl);
     if (outcome === "sent") summary.sent += 1;
+    else if (outcome === "deferred") summary.deferred += 1;
     else summary.failed += 1;
   }
 
@@ -124,16 +131,20 @@ async function loadDestination(userId: string): Promise<string | null> {
   return data?.default_card_funding_source_url ?? null;
 }
 
+type SendOutcome = "sent" | "deferred" | "failed";
+
 async function sendOne(
   rebateId: string,
   amountCents: number,
   destinationUrl: string,
-): Promise<"sent" | "failed"> {
+): Promise<SendOutcome> {
   const admin = createSupabaseAdminClient();
-  const sourceUrl = await getMealMateBalanceFundingUrl();
   const amountUsd = (amountCents / 100).toFixed(2);
 
+  // 1. The Dwolla boundary: resolve our balance + create the transfer.
+  let transferUrl: string;
   try {
+    const sourceUrl = await getMealMateBalanceFundingUrl();
     const transferResp = await dwolla.post("transfers", {
       _links: {
         source: { href: sourceUrl },
@@ -141,51 +152,72 @@ async function sendOne(
       },
       amount: { currency: "USD", value: amountUsd },
     });
-    const transferUrl = locationOf(transferResp);
-
-    const { error } = await admin
-      .from("rebates")
-      .update({
-        status: "sent",
-        provider_transfer_id: transferUrl,
-        sent_at: new Date().toISOString(),
-        error_message: null,
-      })
-      .eq("id", rebateId)
-      .eq("status", "initiated"); // race-safe — don't clobber a later state
-    if (error) {
-      throw new Error(`db update post-transfer: ${error.message}`);
-    }
-
-    await logAuditEvent({
-      actor: { id: "system", role: "system" },
-      action: "rebate.sent",
-      subjectType: "rebate",
-      subjectId: rebateId,
-      metadata: {
-        provider_transfer_url: transferUrl,
-        amount_cents: amountCents,
-      },
-    });
-    return "sent";
+    transferUrl = locationOf(transferResp);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const c = classifyDwollaError(err);
+    if (c.disposition === "retryable") {
+      // Transient — leave the rebate 'initiated'; the next run retries.
+      console.warn(
+        `[rebate.send] rebate ${rebateId} deferred (${c.code}) — will retry`,
+      );
+      return "deferred";
+    }
+    // terminal / user_action / unexpected → mark the rebate failed.
     await admin
       .from("rebates")
       .update({
         status: "failed",
-        error_message: message.slice(0, 500),
+        error_message: `${c.code}: ${c.message}`.slice(0, 500),
       })
       .eq("id", rebateId)
       .eq("status", "initiated");
-
     await logAuditEvent({
       actor: { id: "system", role: "system" },
       action: "rebate.send_failed",
       subjectType: "rebate",
       subjectId: rebateId,
-      metadata: { error: message.slice(0, 500) },
+      metadata: { code: c.code, disposition: c.disposition },
+    });
+    if (c.disposition === "unexpected") {
+      reportError({
+        scope: "rebate.send",
+        message: `Unexpected Dwolla failure issuing rebate: ${c.message}`,
+        meta: { rebateId, code: c.code, httpStatus: c.httpStatus },
+      });
+    }
+    return "failed";
+  }
+
+  // 2. Transfer created. Persist 'sent'. A DB failure here means money
+  //    moved but our record didn't — always alert.
+  const { error } = await admin
+    .from("rebates")
+    .update({
+      status: "sent",
+      provider_transfer_id: transferUrl,
+      sent_at: new Date().toISOString(),
+      error_message: null,
+    })
+    .eq("id", rebateId)
+    .eq("status", "initiated"); // race-safe — don't clobber a later state
+  if (error) {
+    reportError({
+      scope: "rebate.send",
+      message:
+        "Dwolla transfer created but the rebate row failed to update — " +
+        "money moved without a matching 'sent' record",
+      meta: { rebateId, transferUrl },
+      cause: error,
     });
     return "failed";
   }
+
+  await logAuditEvent({
+    actor: { id: "system", role: "system" },
+    action: "rebate.sent",
+    subjectType: "rebate",
+    subjectId: rebateId,
+    metadata: { provider_transfer_url: transferUrl, amount_cents: amountCents },
+  });
+  return "sent";
 }

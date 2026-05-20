@@ -32,6 +32,7 @@ import {
   createReceiveOnlyCustomer,
   splitDisplayName,
 } from "@/lib/dwolla";
+import { callExternal } from "@/lib/observability/provider-errors";
 import { plaid } from "@/lib/plaid";
 import { sendInitiatedRebates } from "@/lib/rebates/send";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -51,11 +52,16 @@ export async function setRebateDestination(formData: FormData): Promise<void> {
       );
     }
     const { firstName, lastName } = splitDisplayName(profile.displayName);
-    const customerUrl = await createReceiveOnlyCustomer({
-      email: profile.email,
-      firstName,
-      lastName,
-    });
+    const customerUrl = await callExternal(
+      "dwolla",
+      "dwolla.createReceiveOnlyCustomer",
+      () =>
+        createReceiveOnlyCustomer({
+          email: profile.email!,
+          firstName,
+          lastName,
+        }),
+    );
     await upsertDinerDwollaCustomer(profile.id, customerUrl);
     dwollaAccount = await getDinerDwollaAccount(profile.id);
     if (!dwollaAccount) {
@@ -96,21 +102,32 @@ export async function setRebateDestination(formData: FormData): Promise<void> {
     throw new Error(`setRebateDestination: plaid_item ${card.plaid_item_id} not loadable`);
   }
 
-  // 3. Mint Plaid processor token for Dwolla. This call fails if
-  //    the underlying account isn't depository (e.g. credit card),
-  //    which is the natural validation we want.
-  const tokenResp = await plaid.processorTokenCreate({
-    access_token: plaidItem.accessToken,
-    account_id: card.plaid_account_id,
-    processor: ProcessorTokenCreateRequestProcessorEnum.Dwolla,
-  });
+  // 3. Mint Plaid processor token for Dwolla. This call fails if the
+  //    underlying account isn't depository (e.g. credit card) — that's
+  //    expected validation; callExternal classifies it 'terminal' and
+  //    throws a clean message rather than a raw 500.
+  const tokenResp = await callExternal(
+    "plaid",
+    "plaid.processorTokenCreate",
+    () =>
+      plaid.processorTokenCreate({
+        access_token: plaidItem.accessToken,
+        account_id: card.plaid_account_id,
+        processor: ProcessorTokenCreateRequestProcessorEnum.Dwolla,
+      }),
+  );
 
   // 4. Attach to Dwolla customer.
-  const fundingSourceUrl = await attachPlaidFundingSource({
-    customerUrl: dwollaAccount.dwollaCustomerUrl,
-    plaidProcessorToken: tokenResp.data.processor_token,
-    name: card.mask ? `Checking ···· ${card.mask}` : "Checking",
-  });
+  const fundingSourceUrl = await callExternal(
+    "dwolla",
+    "dwolla.attachPlaidFundingSource",
+    () =>
+      attachPlaidFundingSource({
+        customerUrl: dwollaAccount.dwollaCustomerUrl,
+        plaidProcessorToken: tokenResp.data.processor_token,
+        name: card.mask ? `Checking ···· ${card.mask}` : "Checking",
+      }),
+  );
 
   // 5. Persist as default.
   await setDefaultCardFundingSource(profile.id, fundingSourceUrl);

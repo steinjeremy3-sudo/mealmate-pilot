@@ -84,7 +84,8 @@ export async function GET(request: NextRequest) {
       `match_errors=${matching.errors} ` +
       `approved=${autoApproval.approved} flagged=${autoApproval.flagged} ` +
       `approval_errors=${autoApproval.errors} ` +
-      `rebate_sent=${issuance.sent} rebate_skipped_no_dest=${issuance.skippedNoDestination} ` +
+      `rebate_sent=${issuance.sent} rebate_deferred=${issuance.deferred} ` +
+      `rebate_skipped_no_dest=${issuance.skippedNoDestination} ` +
       `rebate_failed=${issuance.failed} duration_ms=${durationMs}`,
   );
 

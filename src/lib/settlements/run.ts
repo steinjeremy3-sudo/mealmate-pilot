@@ -20,6 +20,8 @@
 import "server-only";
 
 import { logAuditEvent } from "@/lib/db/audit-log";
+import { classifyStripeError } from "@/lib/observability/provider-errors";
+import { reportError } from "@/lib/observability/report";
 import { stripe } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -91,7 +93,22 @@ export async function runWeeklySettlement(): Promise<SettlementRunSummary> {
       summary.totalDiscountCents += entry.totalDiscount;
       summary.invoicesCreated += 1;
     } catch (err) {
-      console.error(`settleRestaurant(${restaurantId}):`, err);
+      // A settleRestaurant failure leaves the settlement row (if it
+      // was created) 'pending' with its transactions already claimed
+      // — they won't be re-batched, so this always needs a human:
+      // either the Stripe call failed, or a DB write did. Alert.
+      const c = classifyStripeError(err);
+      reportError({
+        scope: "settlement.settleRestaurant",
+        message: `Failed to settle restaurant — settlement may be stuck 'pending': ${c.message}`,
+        meta: {
+          restaurantId,
+          stripeCode: c.code,
+          disposition: c.disposition,
+          txnCount: entry.txnIds.length,
+        },
+        cause: err,
+      });
       summary.errors += 1;
     }
   }
