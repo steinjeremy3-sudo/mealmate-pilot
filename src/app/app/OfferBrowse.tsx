@@ -1,13 +1,24 @@
 "use client";
 
-// Home browse — cuisine filter chips over the live-offer list.
+// Diner home browse. Cuisine filter chips over the live offers.
+//   - No filter  → editorial sections: a featured pick, a "Near you"
+//                  grid, and a "20%+ off" list.
+//   - Filter set → a flat filtered list of rows.
 // Client component: chip selection filters instantly, no round-trip.
 
 import { useMemo, useState } from "react";
 
 import { Card, Chip } from "@/components/brand";
 
-import { OfferCard, type OfferCardData } from "./OfferCard";
+import { HeroOffer, OfferCard, OfferTile, type OfferCardData } from "./OfferCard";
+
+function SectionHead({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="font-serif text-[22px] font-medium leading-tight tracking-tight [&_em]:italic [&_em]:text-orange">
+      {children}
+    </h2>
+  );
+}
 
 export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
   const cuisines = useMemo(() => {
@@ -20,12 +31,16 @@ export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
 
   const [active, setActive] = useState<string | null>(null);
 
-  const shown = active
+  const filtered = active
     ? offers.filter((o) => o.restaurant?.cuisine === active)
-    : offers;
+    : null;
+
+  const hero = offers[0];
+  const nearYou = offers.slice(1, 5);
+  const bigDiscount = offers.filter((o) => o.discount_pct >= 20).slice(0, 4);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-7">
       {/* Filter chips — horizontal scroll, bleeds to the screen edge. */}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         <Chip active={active === null} onClick={() => setActive(null)}>
@@ -42,18 +57,57 @@ export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
         ))}
       </div>
 
-      {shown.length === 0 ? (
-        <Card className="border-dashed text-center text-sm text-muted-foreground">
-          Nothing in that category right now.
-        </Card>
+      {filtered ? (
+        filtered.length === 0 ? (
+          <Card className="border-dashed text-center text-sm text-muted-foreground">
+            Nothing in that category right now.
+          </Card>
+        ) : (
+          <ul className="space-y-3">
+            {filtered.map((o) => (
+              <li key={o.id}>
+                <OfferCard offer={o} />
+              </li>
+            ))}
+          </ul>
+        )
       ) : (
-        <ul className="space-y-3">
-          {shown.map((o) => (
-            <li key={o.id}>
-              <OfferCard offer={o} />
-            </li>
-          ))}
-        </ul>
+        <>
+          {hero ? (
+            <section className="space-y-3">
+              <SectionHead>
+                Tonight&apos;s <em>pick</em>
+              </SectionHead>
+              <HeroOffer offer={hero} />
+            </section>
+          ) : null}
+
+          {nearYou.length > 0 ? (
+            <section className="space-y-3">
+              <SectionHead>Near you</SectionHead>
+              <div className="grid grid-cols-2 gap-3">
+                {nearYou.map((o) => (
+                  <OfferTile key={o.id} offer={o} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {bigDiscount.length > 0 ? (
+            <section className="space-y-3">
+              <SectionHead>
+                20%+ off <em>tonight</em>
+              </SectionHead>
+              <ul className="space-y-3">
+                {bigDiscount.map((o) => (
+                  <li key={o.id}>
+                    <OfferCard offer={o} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </>
       )}
     </div>
   );

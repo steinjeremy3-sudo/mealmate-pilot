@@ -1,12 +1,31 @@
-// Diner card management. Lists linked cards (from Plaid) and offers
-// a "Link a card" CTA that opens Plaid Link.
+// Diner card management. Lists linked cards (from Plaid) and offers a
+// "Link a card" CTA that opens Plaid Link. The empty state leads with
+// the rotated Visa mockup + a plain-language read of what linking does.
+
+import { CreditCard, Eye, ShieldCheck } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getMyPlaidCards } from "@/lib/db/plaid-cards";
 
+import { CardMockup } from "./CardMockup";
 import { createLinkToken, removeCard, setDefaultCard } from "./actions";
 import { PlaidLinkButton } from "./PlaidLinkButton";
+
+const ASSURANCES = [
+  {
+    Icon: ShieldCheck,
+    text: "Bank-grade encryption. Your bank login goes to Plaid, never to MealMate.",
+  },
+  {
+    Icon: Eye,
+    text: "Read-only. We see transaction amounts to match your visits — never your full card number.",
+  },
+  {
+    Icon: CreditCard,
+    text: "We never charge your card. Rebates are paid out to your bank account.",
+  },
+];
 
 export default async function CardsPage() {
   await requireRole("diner");
@@ -23,46 +42,50 @@ export default async function CardsPage() {
           <Eyebrow>Your cards</Eyebrow>
           <Heading as="h1" size="display">
             {cards.length === 0 ? (
-              "Link your card"
+              <>
+                Link your <em>card.</em>
+              </>
             ) : (
               <>
                 <em>{cards.length}</em> on file
               </>
             )}
           </Heading>
-          <p className="text-sm text-muted-foreground">
-            We use Plaid to read your card&apos;s transactions so we can
-            match your restaurant visits and rebate you. We never see your
-            full card number.
-          </p>
         </div>
 
         {cards.length === 0 ? (
-          <Card className="border-dashed text-center text-sm text-muted-foreground">
-            No cards linked yet. Tap below to connect one via Plaid.
-          </Card>
+          <>
+            <div className="flex justify-center py-3">
+              <div className="w-[280px] max-w-full rotate-[-6deg]">
+                <CardMockup label="Your Visa" />
+              </div>
+            </div>
+            <Card className="space-y-3">
+              {ASSURANCES.map(({ Icon, text }) => (
+                <div key={text} className="flex gap-3">
+                  <Icon
+                    className="mt-0.5 size-4 shrink-0 text-sage"
+                    strokeWidth={1.75}
+                  />
+                  <p className="text-sm text-foreground/80">{text}</p>
+                </div>
+              ))}
+            </Card>
+          </>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-5">
             {cards.map((card) => (
-              <li key={card.id}>
-                <Card className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {card.name ?? "Card"}
-                      {card.mask ? <> ···· {card.mask}</> : null}
-                    </p>
-                    {card.official_name ? (
-                      <p className="text-xs text-muted-foreground">
-                        {card.official_name}
-                      </p>
-                    ) : null}
-                    {card.is_default ? (
-                      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-sage">
-                        Default
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5">
+              <li key={card.id} className="space-y-2">
+                <CardMockup mask={card.mask} label={card.name ?? "Card"} />
+                <div className="flex items-center justify-between px-1">
+                  {card.is_default ? (
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-sage">
+                      Default card
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  <div className="flex gap-4">
                     {!card.is_default ? (
                       <form action={setDefaultCard}>
                         <input type="hidden" name="card_id" value={card.id} />
@@ -84,7 +107,7 @@ export default async function CardsPage() {
                       </button>
                     </form>
                   </div>
-                </Card>
+                </div>
               </li>
             ))}
           </ul>
@@ -95,8 +118,8 @@ export default async function CardsPage() {
         <p className="border-t border-border pt-3 text-xs text-muted-foreground">
           Sandbox test: pick any bank, use{" "}
           <code className="font-mono text-foreground">user_good</code> /{" "}
-          <code className="font-mono text-foreground">pass_good</code>.
-          Select a credit card or checking account to link.
+          <code className="font-mono text-foreground">pass_good</code>. Select
+          a credit card or checking account to link.
         </p>
       </div>
     </main>

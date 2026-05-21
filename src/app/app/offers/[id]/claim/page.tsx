@@ -1,0 +1,141 @@
+// Claim confirmation step.
+//
+// Two states:
+//   - no active claim → review the terms, confirm to place the claim
+//   - active claim    → conflict screen (one claim per offer)
+// The actual insert + caps live in claimOffer (../actions).
+
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { requireRole } from "@/lib/auth/require-role";
+import { Button, Card, Eyebrow, Heading } from "@/components/brand";
+import { getActiveClaimForOffer } from "@/lib/db/claims";
+import { getOfferById } from "@/lib/db/offers";
+import { centsToUsd } from "@/lib/money";
+import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
+
+import { claimOffer } from "../actions";
+
+type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ error?: string }>;
+
+function TermsRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-6 border-b border-border px-4 py-3.5 text-sm last:border-b-0">
+      <span className="text-muted-foreground">{k}</span>
+      <span className="text-right font-medium">{v}</span>
+    </div>
+  );
+}
+
+export default async function ClaimConfirm({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
+  await requireRole("diner");
+  const { id } = await params;
+  const { error } = await searchParams;
+
+  const [offer, activeClaim] = await Promise.all([
+    getOfferById(id),
+    getActiveClaimForOffer(id),
+  ]);
+  if (!offer) notFound();
+
+  const name = offer.restaurant?.name ?? "this restaurant";
+
+  // ---- Conflict: the diner already holds a claim on this offer ----
+  if (activeClaim) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md space-y-5 text-center">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-orange-tint font-serif text-3xl italic text-orange">
+            !
+          </span>
+          <Eyebrow className="text-center">Already claimed</Eyebrow>
+          <Heading as="h1" size="page" className="pb-0">
+            You already have a claim at <em>{name}.</em>
+          </Heading>
+          <p className="text-sm text-muted-foreground">
+            One active claim per offer. Your existing claim is still good —
+            eat, pay with your linked card, and we&apos;ll match it.
+          </p>
+          <div className="space-y-2 pt-2">
+            <Link
+              href={`/app/claims/${activeClaim.id}`}
+              className="block w-full rounded-full bg-ink py-3.5 text-center text-[15px] font-semibold text-cream transition-colors hover:bg-ink-soft"
+            >
+              View active claim
+            </Link>
+            <Link
+              href="/app"
+              className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
+            >
+              Browse other restaurants
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ---- Confirm: review terms, then place the claim ----
+  return (
+    <main className="flex flex-1 items-start justify-center px-6 py-8">
+      <div className="w-full max-w-md space-y-5">
+        <div className="space-y-1.5">
+          <Eyebrow>Confirm claim</Eyebrow>
+          <Heading as="h1" size="page">
+            {offer.discount_pct}% off at <em>{name}.</em>
+          </Heading>
+        </div>
+
+        <Card flush>
+          <TermsRow k="Discount" v={`${offer.discount_pct}% off your check`} />
+          <TermsRow
+            k="Window"
+            v={formatDayRange(offer.valid_days) || "See offer"}
+          />
+          <TermsRow
+            k="Hours"
+            v={formatTimeRange(offer.valid_start_time, offer.valid_end_time)}
+          />
+          {offer.min_check_cents > 0 ? (
+            <TermsRow
+              k="Minimum"
+              v={`${centsToUsd(offer.min_check_cents)} before tax`}
+            />
+          ) : null}
+        </Card>
+
+        <Card className="bg-cream-warm text-sm leading-relaxed text-ink/80">
+          MealMate keeps 6% of the total bill as a platform fee, capped at
+          $10. Your rebate is the discount minus this fee.
+        </Card>
+
+        {error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <form action={claimOffer} className="space-y-2">
+          <input type="hidden" name="offer_id" value={offer.id} />
+          <Button type="submit" size="lg" className="w-full">
+            Confirm claim
+          </Button>
+          <Link
+            href={`/app/offers/${offer.id}`}
+            className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
+          >
+            Cancel
+          </Link>
+        </form>
+      </div>
+    </main>
+  );
+}

@@ -26,7 +26,7 @@ import { getOfferById } from "@/lib/db/offers";
 const CLAIM_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function errParam(offerId: string, message: string): string {
-  return `/app/offers/${offerId}?error=${encodeURIComponent(message)}`;
+  return `/app/offers/${offerId}/claim?error=${encodeURIComponent(message)}`;
 }
 
 export async function claimOffer(formData: FormData): Promise<void> {
@@ -58,18 +58,24 @@ export async function claimOffer(formData: FormData): Promise<void> {
   const expiresAt = new Date(Date.now() + CLAIM_TTL_MS).toISOString();
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("claims").insert({
-    offer_id: offerId,
-    diner_user_id: profile.id,
-    expires_at: expiresAt,
-    status: "claimed",
-  });
+  const { data: claim, error } = await supabase
+    .from("claims")
+    .insert({
+      offer_id: offerId,
+      diner_user_id: profile.id,
+      expires_at: expiresAt,
+      status: "claimed",
+    })
+    .select("id")
+    .single();
 
-  if (error) {
-    redirect(errParam(offerId, error.message));
+  if (error || !claim) {
+    redirect(errParam(offerId, error?.message ?? "Couldn't place the claim."));
   }
 
   revalidatePath("/app/claims");
+  revalidatePath("/app/wallet");
   revalidatePath(`/app/offers/${offerId}`);
-  redirect("/app/claims");
+  // Land on the claim detail in its just-placed success state.
+  redirect(`/app/claims/${claim.id}?placed=1`);
 }

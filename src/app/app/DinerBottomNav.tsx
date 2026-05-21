@@ -36,7 +36,8 @@ const TABS = [
     match: (p: string) =>
       p.startsWith("/app/wallet") ||
       p.startsWith("/app/claims") ||
-      p.startsWith("/app/rebates"),
+      p.startsWith("/app/rebates") ||
+      p.startsWith("/app/savings"),
   },
   {
     href: "/app/profile",

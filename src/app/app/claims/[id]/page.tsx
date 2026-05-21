@@ -1,5 +1,6 @@
 // Diner claim detail. Adapts to the claim's state:
-//   - claimed + not expired → active panel with Cancel action
+//   - ?placed=1 + active   → just-placed success screen (dark hero)
+//   - claimed + not expired → active panel + "how this works" steps
 //   - matched / consumed    → "redeemed; rebate processing"
 //   - claimed + past expiry → "expired"
 //   - cancelled             → "cancelled"
@@ -8,9 +9,10 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, Check } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
+import { Card, Eyebrow, Heading, PlaceholderImg } from "@/components/brand";
 import {
   expiresInMinutes,
   getClaimByIdForDiner,
@@ -20,6 +22,7 @@ import {
 import { cancelClaim } from "../actions";
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ placed?: string }>;
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
@@ -31,13 +34,21 @@ function formatDateTime(iso: string): string {
   });
 }
 
+/** Google Maps "search" deep link — opens directions to an address. */
+function mapsUrl(query: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 export default async function DinerClaimDetail({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: SearchParams;
 }) {
   await requireRole("diner");
   const { id } = await params;
+  const { placed } = await searchParams;
 
   const claim = await getClaimByIdForDiner(id);
   if (!claim || !claim.offer) notFound();
@@ -46,20 +57,87 @@ export default async function DinerClaimDetail({
   const isRedeemed = claim.status === "matched" || claim.status === "consumed";
   const isCancelled = claim.status === "cancelled";
   const isExpired = !isActive && !isRedeemed && !isCancelled;
+  const r = claim.offer.restaurant;
+  const name = r?.name ?? "the restaurant";
+
+  // ===== Just-placed success screen =====
+  if (placed && isActive) {
+    return (
+      <main className="flex flex-1 flex-col bg-ink-deep px-7 py-12 text-cream-soft">
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-sage text-cream-soft">
+            <Check className="size-10" strokeWidth={2.5} />
+          </span>
+          <Eyebrow className="mb-4">Claim placed</Eyebrow>
+          <Heading as="h1" size="display" className="text-cream-soft">
+            You&apos;re <em>all set.</em>
+          </Heading>
+          <p className="max-w-xs text-[15px] leading-relaxed text-cream/70">
+            Head to {name} and pay normally with your linked card. We&apos;ll
+            match the transaction and rebate you within 1–2 days.
+          </p>
+        </div>
+
+        <div className="mt-8 space-y-4">
+          <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <PlaceholderImg
+              name={name}
+              className="size-14 shrink-0 rounded-lg"
+            />
+            <div className="min-w-0">
+              <p className="truncate font-serif text-lg text-cream-soft">
+                {name}
+              </p>
+              <p className="truncate text-xs text-cream/60">
+                {claim.offer.discount_pct}% off
+                {r?.neighborhood ? ` · ${r.neighborhood}` : ""}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2.5">
+            <a
+              href={mapsUrl(r?.address ?? name)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 rounded-full bg-orange py-3.5 text-center text-[15px] font-semibold text-white transition-colors hover:bg-orange-deep"
+            >
+              Get directions
+            </a>
+            <Link
+              href="/app/wallet"
+              className="flex-1 rounded-full border border-white/30 py-3.5 text-center text-[15px] font-semibold text-cream-soft transition-colors hover:bg-white/5"
+            >
+              View in wallet
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="flex flex-1 items-start justify-center px-4 py-8">
-      <div className="w-full max-w-md space-y-6">
+    <main className="mx-auto w-full max-w-md">
+      {/* Hero */}
+      <div className="relative">
+        <PlaceholderImg
+          name={name}
+          caption={r?.neighborhood}
+          label="Photo"
+          showName
+          className="h-44"
+        />
         <Link
-          href="/app/claims"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          href="/app/wallet"
+          aria-label="Back to wallet"
+          className="absolute left-4 top-4 flex size-9 items-center justify-center rounded-full bg-cream-soft text-ink shadow-sm transition-colors hover:bg-cream-warm"
         >
-          ← Back to claims
+          <ArrowLeft className="size-5" strokeWidth={1.75} />
         </Link>
+      </div>
 
-        {/* ===== Offer info ===== */}
+      <div className="space-y-6 px-6 py-6">
         <div className="space-y-2">
-          <Eyebrow>{claim.offer.restaurant?.name ?? "Restaurant"}</Eyebrow>
+          <Eyebrow>{name}</Eyebrow>
           <Heading as="h1" size="page">
             {claim.offer.title}
           </Heading>
@@ -75,14 +153,10 @@ export default async function DinerClaimDetail({
               Claim active — expires in {expiresInMinutes(claim)} min
             </p>
             <p className="text-xs text-ink/70">
-              Eat at {claim.offer.restaurant?.name ?? "the restaurant"} and
-              pay with your linked card. We&apos;ll match the transaction
-              and rebate you within 1–2 business days.
+              Eat at {name} and pay with your linked card. We&apos;ll match
+              the transaction and rebate you within 1–2 business days.
             </p>
-            <form
-              action={cancelClaim}
-              className="border-t border-sage/30 pt-3"
-            >
+            <form action={cancelClaim} className="border-t border-sage/30 pt-3">
               <input type="hidden" name="claim_id" value={claim.id} />
               <button
                 type="submit"
@@ -136,6 +210,19 @@ export default async function DinerClaimDetail({
           </Card>
         ) : null}
 
+        {/* ===== How this works (active only) ===== */}
+        {isActive ? (
+          <Card className="space-y-3 bg-cream-warm">
+            <Eyebrow>How this works</Eyebrow>
+            <ol className="list-decimal space-y-1.5 pl-4 text-sm leading-relaxed text-ink/80 marker:text-muted-foreground">
+              <li>Eat at {name} before your claim expires.</li>
+              <li>Pay normally with your linked card.</li>
+              <li>We match the transaction within 1–2 days.</li>
+              <li>Your rebate lands in your bank account.</li>
+            </ol>
+          </Card>
+        ) : null}
+
         {/* ===== Offer details (always shown) ===== */}
         <Card className="space-y-2 text-sm">
           {claim.offer.description ? (
@@ -143,10 +230,8 @@ export default async function DinerClaimDetail({
           ) : null}
           <div className="space-y-1 border-t border-border pt-2 text-xs text-muted-foreground">
             <p>
-              {claim.offer.restaurant?.address ?? "—"}
-              {claim.offer.restaurant?.neighborhood
-                ? ` · ${claim.offer.restaurant.neighborhood}`
-                : ""}
+              {r?.address ?? "—"}
+              {r?.neighborhood ? ` · ${r.neighborhood}` : ""}
             </p>
             <p>{claim.offer.discount_pct}% off</p>
           </div>

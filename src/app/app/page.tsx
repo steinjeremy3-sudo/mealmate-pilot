@@ -1,10 +1,10 @@
-// Diner home — browse live offers, restaurant-first, with cuisine
-// filter chips.
+// Diner home — a greeting, then editorial sections of live offers.
 
 import Link from "next/link";
+import { Bell } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
+import { Card, Eyebrow } from "@/components/brand";
 import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
@@ -21,22 +21,28 @@ export default async function DinerHome() {
   const showRebateSetupBanner =
     !rebateBanner.hasDestination && rebateBanner.initiatedCents > 0;
 
+  const firstName =
+    profile.displayName?.trim().split(/\s+/)[0] || "there";
+  const weekday = new Date().toLocaleDateString("en-US", { weekday: "long" });
+
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="space-y-1.5">
-          <Eyebrow>
-            Meal<span className="text-orange">Mate</span> · Live in Dallas
-          </Eyebrow>
-          <Heading as="h1" size="display">
-            {offers.length === 0 ? (
-              "No offers right now"
-            ) : (
-              <>
-                Tonight&apos;s <em>tables</em>
-              </>
-            )}
-          </Heading>
+        {/* Greeting */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1.5">
+            <Eyebrow>Dallas · {weekday}</Eyebrow>
+            <p className="font-serif text-[22px] leading-tight tracking-tight">
+              Evening, <em className="italic text-orange">{firstName}.</em>
+            </p>
+          </div>
+          <Link
+            href="/app/wallet?show=pending"
+            aria-label="Your rebates"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-cream-warm text-ink transition-colors hover:bg-cream-soft"
+          >
+            <Bell className="size-[18px]" strokeWidth={1.75} />
+          </Link>
         </div>
 
         {showRebateSetupBanner ? (

@@ -1,11 +1,13 @@
-// Diner Wallet — the diner's own stuff: offers they're holding
-// ("Claimed") and cash back they've earned ("Rebates"). A segmented
-// control switches between the two (server-rendered via ?show=).
+// Diner Wallet — the diner's own activity in three tabs:
+//   Active    — claims currently held (eat + pay to redeem)
+//   Pending   — rebates matched, money still in flight
+//   Completed — rebates that landed in the bank account
+// A monthly-savings card sits on top. Tab is server-rendered via ?show=.
 
 import Link from "next/link";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
+import { Card, Eyebrow, Heading, PlaceholderImg } from "@/components/brand";
 import {
   expiresInMinutes,
   getClaimsForDiner,
@@ -15,33 +17,76 @@ import { getRebatesForDiner, type RebateStatus } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
-const REBATE_STATE: Record<RebateStatus, { label: string; tone: string }> = {
-  initiated: { label: "processing", tone: "border-border bg-cream-warm text-muted-foreground" },
-  sent: { label: "on the way", tone: "border-orange/30 bg-orange-tint text-orange-deep" },
-  settled: { label: "landed", tone: "border-sage/40 bg-sage-tint text-sage" },
-  failed: { label: "couldn't send", tone: "border-destructive/40 bg-rose/15 text-destructive" },
+type Tab = "active" | "pending" | "completed";
+
+// Pending-tab status badges (the in-flight rebate states).
+const REBATE_STATE: Partial<Record<RebateStatus, { label: string; tone: string }>> = {
+  initiated: {
+    label: "processing",
+    tone: "border-border bg-cream-warm text-muted-foreground",
+  },
+  sent: {
+    label: "on the way",
+    tone: "border-orange/30 bg-orange-tint text-orange-deep",
+  },
+  failed: {
+    label: "couldn't send",
+    tone: "border-destructive/40 bg-rose/15 text-destructive",
+  },
 };
+
+function shortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 export default async function WalletPage({
   searchParams,
 }: {
   searchParams: Promise<{ show?: string }>;
 }) {
-  await requireRole("diner");
   const profile = await requireRole("diner");
   const { show } = await searchParams;
-  const tab: "claimed" | "rebates" = show === "rebates" ? "rebates" : "claimed";
+  const tab: Tab =
+    show === "pending" ? "pending" : show === "completed" ? "completed" : "active";
 
   const [claims, rebates] = await Promise.all([
     getClaimsForDiner(),
     getRebatesForDiner(profile.id),
   ]);
 
-  const landedCents = rebates
-    .filter((r) => r.status === "settled")
-    .reduce((sum, r) => sum + r.amountCents, 0);
   const activeClaims = claims.filter(isClaimActive);
   const pastClaims = claims.filter((c) => !isClaimActive(c));
+  const pendingRebates = rebates.filter((r) => r.status !== "settled");
+  const completedRebates = rebates.filter((r) => r.status === "settled");
+
+  const now = new Date();
+  const monthSavedCents = completedRebates
+    .filter((r) => {
+      const d = new Date(r.createdAt);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum, r) => sum + r.amountCents, 0);
+  const monthLabel = now.toLocaleDateString("en-US", { month: "long" });
+
+  const tabs: { key: Tab; label: string; count: number; href: string }[] = [
+    { key: "active", label: "Active", count: activeClaims.length, href: "/app/wallet" },
+    {
+      key: "pending",
+      label: "Pending",
+      count: pendingRebates.length,
+      href: "/app/wallet?show=pending",
+    },
+    {
+      key: "completed",
+      label: "Completed",
+      count: completedRebates.length,
+      href: "/app/wallet?show=completed",
+    },
+  ];
 
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
@@ -49,128 +94,209 @@ export default async function WalletPage({
         <div className="space-y-1.5">
           <Eyebrow>Wallet</Eyebrow>
           <Heading as="h1" size="display">
-            {landedCents > 0 ? (
-              <>
-                <em>{centsToUsd(landedCents)}</em> back
-              </>
-            ) : (
-              "Your wallet"
-            )}
+            Your <em>wallet.</em>
           </Heading>
         </div>
 
-        {/* Segmented control */}
-        <div className="flex gap-2">
-          {(
-            [
-              ["claimed", "Claimed", "/app/wallet"],
-              ["rebates", "Rebates", "/app/wallet?show=rebates"],
-            ] as const
-          ).map(([key, label, href]) => (
+        {/* Monthly savings → dashboard */}
+        <Link href="/app/savings" className="block">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink-deep p-5 text-cream-soft transition-transform active:scale-[0.99]">
+            <div>
+              <Eyebrow tone="muted" className="text-cream/60">
+                {monthLabel} so far
+              </Eyebrow>
+              <p className="mt-1.5 font-serif text-3xl">
+                <span className="italic text-orange-soft">
+                  {centsToUsd(monthSavedCents)}
+                </span>{" "}
+                saved
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-white/25 px-3 py-1.5 text-xs">
+              Dashboard →
+            </span>
+          </div>
+        </Link>
+
+        {/* Tabs */}
+        <div className="flex gap-6 border-b border-border">
+          {tabs.map((t) => (
             <Link
-              key={key}
-              href={href}
+              key={t.key}
+              href={t.href}
               className={cn(
-                "flex-1 rounded-full border px-4 py-2 text-center text-sm font-medium transition-colors",
-                tab === key
-                  ? "border-ink bg-ink text-cream"
-                  : "border-border bg-transparent text-ink hover:bg-cream-warm",
+                "-mb-px border-b-2 pb-3 pt-1 text-sm font-medium transition-colors",
+                tab === t.key
+                  ? "border-ink text-ink"
+                  : "border-transparent text-muted-foreground hover:text-ink",
               )}
             >
-              {label}
+              {t.label}{" "}
+              <span className="font-mono text-xs text-muted-foreground">
+                {t.count}
+              </span>
             </Link>
           ))}
         </div>
 
-        {tab === "claimed" ? (
-          claims.length === 0 ? (
+        {/* ===== Active ===== */}
+        {tab === "active" ? (
+          activeClaims.length === 0 && pastClaims.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
               No claims yet. Browse{" "}
-              <Link href="/app" className="text-orange underline underline-offset-4">
+              <Link
+                href="/app"
+                className="text-orange underline underline-offset-4"
+              >
                 tonight&apos;s offers
               </Link>
               .
             </Card>
           ) : (
-            <ul className="space-y-2">
-              {activeClaims.map((c) => (
-                <li key={c.id}>
-                  <Link href={`/app/claims/${c.id}`} className="block">
-                    <Card className="border-sage/40 bg-sage-tint transition-colors hover:bg-sage-soft/40">
-                      <p className="font-serif text-lg font-medium tracking-tight text-ink">
-                        {c.offer?.title ?? "Offer"}
-                      </p>
-                      <p className="text-xs text-ink/70">
-                        {c.offer?.restaurant?.name ?? "—"} · expires in{" "}
-                        {expiresInMinutes(c)} min
-                      </p>
-                    </Card>
-                  </Link>
-                </li>
-              ))}
-              {pastClaims.map((c) => (
-                <li key={c.id}>
-                  <Link href={`/app/claims/${c.id}`} className="block">
-                    <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {c.offer?.title ?? "Offer"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {c.offer?.restaurant?.name ?? "—"} ·{" "}
-                          {new Date(c.claimed_at).toLocaleDateString()}
+            <div className="space-y-5">
+              {activeClaims.length > 0 ? (
+                <ul className="space-y-3">
+                  {activeClaims.map((c) => {
+                    const name = c.offer?.restaurant?.name ?? "Restaurant";
+                    return (
+                      <li key={c.id}>
+                        <Link href={`/app/claims/${c.id}`} className="block">
+                          <div className="flex items-center gap-3.5 rounded-2xl border border-sage/40 bg-sage-tint p-3 transition-colors hover:bg-sage-soft/40">
+                            <PlaceholderImg
+                              name={name}
+                              className="size-[70px] shrink-0 rounded-xl"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-serif text-lg text-ink">
+                                {name}
+                              </p>
+                              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ink/60">
+                                Expires in {expiresInMinutes(c)} min
+                              </p>
+                              <span className="mt-2 inline-flex items-center rounded-full bg-orange px-3 py-1 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
+                                {c.offer?.discount_pct ?? 0}% off
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+
+              {pastClaims.length > 0 ? (
+                <div className="space-y-2">
+                  <Eyebrow tone="muted">Past claims</Eyebrow>
+                  <ul className="space-y-2">
+                    {pastClaims.map((c) => (
+                      <li key={c.id}>
+                        <Link href={`/app/claims/${c.id}`} className="block">
+                          <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">
+                                {c.offer?.restaurant?.name ?? "Restaurant"}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {c.offer?.title ?? "Offer"} ·{" "}
+                                {new Date(c.claimed_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-xs text-muted-foreground">
+                              {c.status === "matched" || c.status === "consumed"
+                                ? "redeemed"
+                                : c.status === "cancelled"
+                                  ? "cancelled"
+                                  : "expired"}
+                            </span>
+                          </Card>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )
+        ) : null}
+
+        {/* ===== Pending ===== */}
+        {tab === "pending" ? (
+          pendingRebates.length === 0 ? (
+            <Card className="border-dashed text-center text-sm text-muted-foreground">
+              No rebates in flight. Claimed visits show here while we match
+              and send them.
+            </Card>
+          ) : (
+            <ul className="space-y-3">
+              {pendingRebates.map((r) => {
+                const s = REBATE_STATE[r.status];
+                return (
+                  <li key={r.id}>
+                    <Link href={`/app/rebates/${r.id}`} className="block">
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-cream-soft p-4 transition-colors hover:bg-cream-warm">
+                        <div className="min-w-0">
+                          <p className="truncate font-serif text-base">
+                            {r.restaurantName ?? "Restaurant"}
+                          </p>
+                          {s ? (
+                            <span
+                              className={cn(
+                                "mt-1.5 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                                s.tone,
+                              )}
+                            >
+                              {s.label}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="shrink-0 font-mono text-base">
+                          {centsToUsd(r.amountCents)}
                         </p>
                       </div>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {c.status === "matched" || c.status === "consumed"
-                          ? "redeemed"
-                          : c.status === "cancelled"
-                            ? "cancelled"
-                            : "expired"}
-                      </span>
-                    </Card>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : null}
+
+        {/* ===== Completed ===== */}
+        {tab === "completed" ? (
+          completedRebates.length === 0 ? (
+            <Card className="border-dashed text-center text-sm text-muted-foreground">
+              No rebates yet. Claim an offer, eat, pay with your linked card.
+            </Card>
+          ) : (
+            <ul>
+              {completedRebates.map((r) => (
+                <li key={r.id}>
+                  <Link href={`/app/rebates/${r.id}`} className="block">
+                    <div className="flex items-center gap-3.5 border-b border-border py-4">
+                      <PlaceholderImg
+                        name={r.restaurantName ?? "Restaurant"}
+                        className="size-11 shrink-0 rounded-lg"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-base">
+                          {r.restaurantName ?? "Restaurant"}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                          {shortDate(r.transactionDate ?? r.createdAt)} ·
+                          landed
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-serif text-lg text-sage">
+                        +{centsToUsd(r.amountCents)}
+                      </p>
+                    </div>
                   </Link>
                 </li>
               ))}
             </ul>
           )
-        ) : rebates.length === 0 ? (
-          <Card className="border-dashed text-center text-sm text-muted-foreground">
-            No rebates yet. Claim an offer, eat, pay with your linked card.
-          </Card>
-        ) : (
-          <ul className="space-y-2">
-            {rebates.map((r) => {
-              const s = REBATE_STATE[r.status];
-              return (
-                <li key={r.id}>
-                  <Link href={`/app/rebates/${r.id}`} className="block">
-                    <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">
-                          {r.restaurantName ?? "Restaurant"}
-                        </p>
-                        <p className="mt-1">
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                              s.tone,
-                            )}
-                          >
-                            {s.label}
-                          </span>
-                        </p>
-                      </div>
-                      <p className="shrink-0 font-serif text-xl font-medium text-orange">
-                        {centsToUsd(r.amountCents)}
-                      </p>
-                    </Card>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        ) : null}
       </div>
     </main>
   );

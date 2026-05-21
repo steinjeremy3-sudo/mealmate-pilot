@@ -1,16 +1,22 @@
-// Shared restaurant-first offer card. Plain presentational component
-// (no hooks) so both server pages and client browse/search can use it.
+// Diner offer cards — three restaurant-first variants from the design
+// bundle. Plain presentational components (no hooks) so server pages
+// and the client browse/search can both use them.
+//
+//   OfferCard  — full-width list row (search results, "20%+" section)
+//   OfferTile  — 2-column grid tile, image on top ("Near you")
+//   HeroOffer  — dark featured card ("Tonight's pick")
 
 import Link from "next/link";
 
-import { Card } from "@/components/brand";
-import { centsToUsd } from "@/lib/money";
+import { Eyebrow, PlaceholderImg } from "@/components/brand";
+import { formatDayRange } from "@/lib/offers/format";
 
 export type OfferCardData = {
   id: string;
   title: string;
   discount_pct: number;
   min_check_cents: number;
+  valid_days: string[];
   restaurant: {
     name: string;
     neighborhood: string;
@@ -18,34 +24,81 @@ export type OfferCardData = {
   } | null;
 };
 
+/** The orange brand pill: "25% OFF". */
+export function DiscountPill({ pct }: { pct: number }) {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-orange px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
+      {pct}% OFF
+    </span>
+  );
+}
+
 export function OfferCard({ offer }: { offer: OfferCardData }) {
+  const r = offer.restaurant;
   return (
     <Link href={`/app/offers/${offer.id}`} className="block">
-      <Card className="transition-colors hover:bg-cream-warm">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <p className="truncate font-serif text-lg font-medium tracking-tight">
-              {offer.restaurant?.name ?? "—"}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {offer.restaurant?.cuisine ?? "—"} ·{" "}
-              {offer.restaurant?.neighborhood ?? "—"}
-            </p>
-            <p className="text-sm text-foreground/80">{offer.title}</p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="font-serif text-3xl font-medium leading-none text-orange">
-              {offer.discount_pct}%
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">off</p>
-          </div>
-        </div>
-        {offer.min_check_cents > 0 ? (
-          <p className="mt-3 border-t border-border pt-2 text-xs text-muted-foreground">
-            Min spend {centsToUsd(offer.min_check_cents)}
+      <div className="flex items-center gap-3.5 rounded-2xl border border-border bg-cream-soft p-3 transition-colors hover:bg-cream-warm">
+        <PlaceholderImg
+          name={r?.name ?? "Restaurant"}
+          className="size-20 shrink-0 rounded-xl"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-serif text-lg leading-snug">
+            {r?.name ?? "—"}
           </p>
-        ) : null}
-      </Card>
+          <p className="mt-1 truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+            {r?.cuisine ?? "—"} · {r?.neighborhood ?? "—"}
+          </p>
+          <p className="mt-1.5 truncate text-sm text-foreground/75">
+            {offer.title}
+          </p>
+        </div>
+        <DiscountPill pct={offer.discount_pct} />
+      </div>
+    </Link>
+  );
+}
+
+export function OfferTile({ offer }: { offer: OfferCardData }) {
+  const r = offer.restaurant;
+  return (
+    <Link href={`/app/offers/${offer.id}`} className="block h-full">
+      <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-cream-soft transition-colors hover:bg-cream-warm">
+        <PlaceholderImg name={r?.name ?? "Restaurant"} className="h-28" />
+        <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+          <p className="truncate font-serif text-base leading-snug">
+            {r?.name ?? "—"}
+          </p>
+          <p className="truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+            {r?.cuisine ?? "—"}
+          </p>
+          <span className="mt-auto inline-flex w-fit items-center rounded-full bg-orange-tint px-2.5 py-1 text-[11px] font-semibold text-orange-deep">
+            {offer.discount_pct}% off
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export function HeroOffer({ offer }: { offer: OfferCardData }) {
+  const r = offer.restaurant;
+  const dayRange = formatDayRange(offer.valid_days);
+  return (
+    <Link href={`/app/offers/${offer.id}`} className="block">
+      <div className="relative overflow-hidden rounded-2xl bg-ink-deep p-5 text-cream-soft transition-transform active:scale-[0.99]">
+        <PlaceholderImg name={r?.name ?? "Restaurant"} className="h-36 rounded-xl" />
+        <span className="absolute right-7 top-7">
+          <DiscountPill pct={offer.discount_pct} />
+        </span>
+        <div className="mt-3.5 space-y-1.5">
+          <Eyebrow>{dayRange ? `Tonight only · ${dayRange}` : "Tonight only"}</Eyebrow>
+          <p className="font-serif text-2xl leading-tight">{r?.name ?? "—"}</p>
+          <p className="text-sm text-cream/60">
+            {r?.cuisine ?? "—"} · {r?.neighborhood ?? "—"}
+          </p>
+        </div>
+      </div>
     </Link>
   );
 }

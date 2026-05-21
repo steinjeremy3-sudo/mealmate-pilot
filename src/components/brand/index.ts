@@ -8,3 +8,4 @@ export { Card, type CardProps } from "./card";
 export { Eyebrow, type EyebrowProps } from "./eyebrow";
 export { Heading, type HeadingProps } from "./heading";
 export { Chip, type ChipProps } from "./chip";
+export { PlaceholderImg, type PlaceholderImgProps } from "./placeholder-img";
