@@ -15,6 +15,7 @@ const NAV = [
   { href: "/dashboard/offers", label: "Offers" },
   { href: "/dashboard/claims", label: "Tonight" },
   { href: "/dashboard/settlements", label: "Settlements" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 export function DashboardSidebar({
