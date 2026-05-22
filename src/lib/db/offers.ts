@@ -18,6 +18,8 @@ export type Offer = {
   description: string;
   discount_pct: number;
   min_check_cents: number;
+  monthly_budget_cents: number;
+  monthly_spent_cents: number;
   valid_days: string[];
   valid_start_time: string; // "HH:MM:SS"
   valid_end_time: string;

@@ -78,7 +78,7 @@ export default async function MerchantOffersPage() {
               <span className="flex-1">Name</span>
               <span className="w-20 text-right">Discount</span>
               <span className="w-44">Window</span>
-              <span className="w-20 text-right">Min check</span>
+              <span className="w-40">Budget</span>
               <span className="w-24">Status</span>
             </div>
             {offers.map((o) => (
@@ -101,8 +101,30 @@ export default async function MerchantOffersPage() {
                   <br />
                   {formatTimeRange(o.valid_start_time, o.valid_end_time)}
                 </span>
-                <span className="w-20 text-right font-mono text-sm">
-                  {centsToUsd(o.min_check_cents)}
+                <span className="w-40">
+                  <span className="block h-1.5 overflow-hidden rounded-full bg-border">
+                    <span
+                      className="block h-full rounded-full bg-orange"
+                      style={{
+                        width: `${
+                          o.monthly_budget_cents > 0
+                            ? Math.min(
+                                100,
+                                Math.round(
+                                  (o.monthly_spent_cents /
+                                    o.monthly_budget_cents) *
+                                    100,
+                                ),
+                              )
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </span>
+                  <span className="mt-1 block font-mono text-[10px] text-muted-foreground">
+                    {centsToUsd(o.monthly_spent_cents)} /{" "}
+                    {centsToUsd(o.monthly_budget_cents)}
+                  </span>
                 </span>
                 <span className="w-24">
                   <StatusBadge status={o.status} />
