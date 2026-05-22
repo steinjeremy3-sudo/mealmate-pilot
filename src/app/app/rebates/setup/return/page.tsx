@@ -3,6 +3,11 @@
 // Astra redirects here with `?code=` once the diner connects a debit
 // card. We exchange the code for the diner's Astra tokens, record
 // their card, and bounce back to the setup screen.
+//
+// TEMPORARY DIAGNOSTIC BUILD: on any failure the screen surfaces the
+// underlying detail (params received, redirect_uri, Astra's error)
+// so we can see why the handoff failed. Trim the diagnostic block
+// back to a plain message once the flow is confirmed working.
 
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -17,14 +22,20 @@ import {
 } from "@/lib/db/diner-astra";
 import { reportError } from "@/lib/observability/report";
 
-type SearchParams = Promise<{ code?: string; state?: string; error?: string }>;
+type SearchParams = Promise<Record<string, string | undefined>>;
 
 function returnUrlFrom(host: string): string {
   const proto = host.startsWith("localhost") ? "http" : "https";
   return `${proto}://${host}/app/rebates/setup/return`;
 }
 
-function Problem({ message }: { message: string }) {
+function Problem({
+  message,
+  detail,
+}: {
+  message: string;
+  detail: string;
+}) {
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-4">
@@ -33,6 +44,12 @@ function Problem({ message }: { message: string }) {
           Couldn&apos;t connect that card
         </Heading>
         <Card className="text-sm text-muted-foreground">{message}</Card>
+        <Card className="space-y-1 bg-cream-warm">
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+            Diagnostic
+          </p>
+          <p className="break-words font-mono text-xs text-ink">{detail}</p>
+        </Card>
         <Link
           href="/app/rebates/setup"
           className="inline-block text-sm text-orange underline underline-offset-4"
@@ -50,24 +67,39 @@ export default async function AstraReturnPage({
   searchParams: SearchParams;
 }) {
   const profile = await requireRole("diner");
-  const { code, error } = await searchParams;
+  const params = await searchParams;
+  const code = params.code;
 
-  if (error) {
+  const paramKeys = Object.keys(params);
+  const seen = `params: ${paramKeys.length ? paramKeys.join(", ") : "(none)"}`;
+
+  if (params.error) {
     return (
-      <Problem message="Astra reported a problem connecting your card. Nothing was saved — give it another go." />
+      <Problem
+        message="Astra reported a problem. Nothing was saved."
+        detail={
+          `${seen} · error="${params.error}"` +
+          (params.error_description ? ` · ${params.error_description}` : "")
+        }
+      />
     );
   }
   if (!code) {
     return (
-      <Problem message="The connection didn't complete. Nothing was saved — give it another go." />
+      <Problem
+        message="Astra didn't return an authorization code. Nothing was saved."
+        detail={seen}
+      />
     );
   }
 
   const host = (await headers()).get("host") ?? "mealmate-pilot.vercel.app";
+  const redirectUri = returnUrlFrom(host);
 
   let ok = false;
+  let detail = "";
   try {
-    const tokens = await exchangeAuthorizationCode(code, returnUrlFrom(host));
+    const tokens = await exchangeAuthorizationCode(code, redirectUri);
     await upsertDinerAstraTokens(profile.id, { tokens });
 
     const cards = await listCards(tokens.accessToken);
@@ -78,9 +110,14 @@ export default async function AstraReturnPage({
         cardId: card.id,
         cardLast4: card.last4,
       });
+      ok = true;
+    } else {
+      detail = `token exchange OK — but GET /v1/cards returned ${cards.length} card(s)`;
     }
-    ok = true;
   } catch (err) {
+    detail =
+      `redirect_uri=${redirectUri} · ` +
+      (err instanceof Error ? err.message : String(err));
     reportError({
       scope: "astra.card-connect.return",
       message: "Failed to complete the Astra card-connect return",
@@ -91,7 +128,10 @@ export default async function AstraReturnPage({
 
   if (!ok) {
     return (
-      <Problem message="Something went wrong finishing the connection. Nothing was charged — please try again." />
+      <Problem
+        message="Couldn't finish connecting your card. Nothing was charged."
+        detail={detail || "unknown"}
+      />
     );
   }
 
