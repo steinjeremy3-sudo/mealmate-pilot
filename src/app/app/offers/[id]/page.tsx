@@ -16,6 +16,7 @@ import {
   buttonVariants,
 } from "@/components/brand";
 import { expiresInMinutes, getActiveClaimForOffer } from "@/lib/db/claims";
+import { getMenuForRestaurant } from "@/lib/db/menu";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
 import {
@@ -51,6 +52,7 @@ export default async function DinerOfferDetail({
   ]);
   if (!offer) notFound();
 
+  const menu = await getMenuForRestaurant(offer.restaurant_id);
   const r = offer.restaurant;
   const name = r?.name ?? "Restaurant";
   const dayRange = formatDayRange(offer.valid_days);
@@ -128,6 +130,34 @@ export default async function DinerOfferDetail({
             {r?.address ? <InfoRow k="Address" v={r.address} /> : null}
           </dl>
         </Card>
+
+        {/* Menu preview */}
+        {menu.length > 0 ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Eyebrow tone="muted">Menu</Eyebrow>
+              <Link
+                href={`/app/offers/${offer.id}/menu`}
+                className="text-xs text-orange underline underline-offset-4"
+              >
+                See full menu →
+              </Link>
+            </div>
+            <Card flush>
+              {menu.slice(0, 4).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-baseline justify-between gap-4 border-b border-border px-4 py-2.5 text-sm last:border-b-0"
+                >
+                  <span>{item.name}</span>
+                  <span className="font-mono text-muted-foreground">
+                    {centsToUsd(item.priceCents)}
+                  </span>
+                </div>
+              ))}
+            </Card>
+          </div>
+        ) : null}
 
         {/* Claim */}
         {activeClaim ? (

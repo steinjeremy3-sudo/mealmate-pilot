@@ -355,6 +355,22 @@ export const dinerAstraAccounts = pgTable("diner_astra_accounts", {
   ...timestamps,
 });
 
+// === menu_items ====================================================
+// A restaurant's menu — sections of named, priced items. Merchants
+// manage these; diners view them on the offer screen.
+// discount_eligible flags items the offer's discount applies to.
+export const menuItems = pgTable("menu_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  restaurantId: uuid("restaurant_id")
+    .notNull()
+    .references(() => restaurants.id, { onDelete: "cascade" }),
+  section: text("section").notNull(),
+  name: text("name").notNull(),
+  priceCents: integer("price_cents").notNull(),
+  discountEligible: boolean("discount_eligible").notNull().default(false),
+  ...timestamps,
+});
+
 // === matched_transactions ==========================================
 // One row per Plaid transaction we ingest (matched or not). Replaces
 // the v1 `payments` table in the rebate model — money math now lives
