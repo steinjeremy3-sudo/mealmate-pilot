@@ -54,6 +54,19 @@ export default async function DinerProfilePage() {
               </Card>
             </Link>
           </li>
+          <li>
+            <Link href="/app/profile/help" className="block">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+                <div>
+                  <p className="font-medium">Help</p>
+                  <p className="text-xs text-muted-foreground">
+                    How MealMate works, answered
+                  </p>
+                </div>
+                <span className="text-muted-foreground">→</span>
+              </Card>
+            </Link>
+          </li>
         </ul>
 
         <div className="border-t border-border pt-4">
