@@ -327,6 +327,31 @@ export const dinerDwollaAccounts = pgTable("diner_dwolla_accounts", {
   ...timestamps,
 });
 
+// === diner_astra_accounts ==========================================
+// Per-diner Astra (push-to-debit cash-back) state. One row per diner,
+// created on the card-connect return after the OAuth code exchange.
+// access_token / refresh_token hold the diner's Astra OAuth tokens,
+// ENCRYPTED at rest (AES-256-GCM — see src/lib/crypto). card_id is the
+// debit card Astra pushes cash back to.
+export const dinerAstraAccounts = pgTable("diner_astra_accounts", {
+  // PK is user_id (1:1 with users).
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  astraUserId: text("astra_user_id"),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token").notNull(),
+  tokenExpiresAt: timestamp("token_expires_at", {
+    withTimezone: true,
+  }).notNull(),
+
+  cardId: text("card_id"),
+  cardLast4: text("card_last4"),
+
+  ...timestamps,
+});
+
 // === matched_transactions ==========================================
 // One row per Plaid transaction we ingest (matched or not). Replaces
 // the v1 `payments` table in the rebate model — money math now lives

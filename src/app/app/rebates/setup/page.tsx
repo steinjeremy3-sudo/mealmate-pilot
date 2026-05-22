@@ -1,157 +1,96 @@
-// Diner-side rebate destination setup.
+// Diner cash-back card setup.
 //
-// Phase 4d.2 ACH path: diners pick one of their Plaid-linked
-// checking accounts. We mint a Plaid processor token, exchange for
-// a Dwolla funding source, and store the URL. No card data, no
-// iframe, no PCI scope — Plaid + Dwolla handle the financial bits.
-//
-// The diner only sees this page when:
-//   (a) they have at least one matched_transactions row with a rebate
-//       waiting on a destination, OR
-//   (b) they navigate here proactively via /app nav.
+// The diner connects a debit card through Astra's hosted card-connect
+// page; Astra redirects back to /app/rebates/setup/return with an
+// OAuth code. MealMate never sees the card number — Astra captures it.
 
-import Link from "next/link";
+import { headers } from "next/headers";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Button, Card, Eyebrow, Heading } from "@/components/brand";
-import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { buttonVariants, Card, Eyebrow, Heading } from "@/components/brand";
+import { cardConnectUrl } from "@/lib/astra/client";
+import { getDinerAstraAccount } from "@/lib/db/diner-astra";
 
-import { setRebateDestination } from "./actions";
+import { CardMockup } from "../../cards/CardMockup";
 
-type CheckingCard = {
-  id: string;
-  name: string | null;
-  mask: string | null;
-  subtype: string | null;
-  institutionName: string | null;
-};
+/** The registered OAuth return URL, derived from the request host. */
+function returnUrlFrom(host: string): string {
+  const proto = host.startsWith("localhost") ? "http" : "https";
+  return `${proto}://${host}/app/rebates/setup/return`;
+}
 
-export default async function RebatesSetupPage() {
+export default async function CashBackCardPage() {
   const profile = await requireRole("diner");
-  const account = await getDinerDwollaAccount(profile.id);
-  const cards = await loadDinerCheckingCards(profile.id);
+  const account = await getDinerAstraAccount(profile.id);
+  const hasCard = !!account?.cardId;
 
-  const isConfigured =
-    !!account?.defaultCardFundingSourceUrl && cards.length > 0;
+  const host =
+    (await headers()).get("host") ?? "mealmate-pilot.vercel.app";
+  const connectUrl = cardConnectUrl(returnUrlFrom(host), profile.id);
 
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6">
         <div className="space-y-1.5">
-          <Eyebrow>Cash-back destination</Eyebrow>
+          <Eyebrow>Cash-back card</Eyebrow>
           <Heading as="h1" size="display">
-            {isConfigured ? (
+            {hasCard ? (
               <>
-                You&apos;re <em>set</em>
+                Your <em>card.</em>
               </>
             ) : (
-              "Pick a checking account"
+              <>
+                Where your <em>cash back</em> lands.
+              </>
             )}
           </Heading>
           <p className="text-sm text-muted-foreground">
-            MealMate sends your cash back via ACH to a linked checking
-            account. Funds arrive in 1–2 business days.
+            Cash back is pushed straight to your debit card — it arrives in
+            minutes, not days.
           </p>
         </div>
 
-        {cards.length === 0 ? (
-          <Card className="space-y-2 border-dashed text-center text-sm text-muted-foreground">
-            <p>
-              You haven&apos;t linked a checking account yet. Link one
-              first, then come back here.
-            </p>
-            <Link
-              href="/app/cards"
-              className="inline-block text-sm text-orange underline underline-offset-4"
+        {hasCard ? (
+          <>
+            <CardMockup
+              mask={account?.cardLast4}
+              label="Cash-back card"
+            />
+            <a
+              href={connectUrl}
+              className={buttonVariants({
+                variant: "ghost",
+                size: "md",
+                className: "w-full",
+              })}
             >
-              Go to your cards →
-            </Link>
-          </Card>
+              Connect a different card
+            </a>
+          </>
         ) : (
-          <ul className="space-y-2">
-            {cards.map((card) => (
-              <li key={card.id}>
-                <Card className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {card.institutionName ?? card.name ?? "Checking"}
-                      {card.mask ? <> ···· {card.mask}</> : null}
-                    </p>
-                    {card.name ? (
-                      <p className="text-xs text-muted-foreground">
-                        {card.name}
-                      </p>
-                    ) : null}
-                  </div>
-                  <form action={setRebateDestination}>
-                    <input
-                      type="hidden"
-                      name="plaid_card_account_id"
-                      value={card.id}
-                    />
-                    <Button type="submit" size="sm">
-                      Use this
-                    </Button>
-                  </form>
-                </Card>
-              </li>
-            ))}
-          </ul>
+          <>
+            <Card className="space-y-2 text-sm text-foreground/80">
+              <p>
+                Connect the debit card you&apos;d like your cash back sent
+                to. Astra captures it securely — MealMate never sees the
+                card number.
+              </p>
+              <p className="text-muted-foreground">
+                You&apos;ll step over to Astra, then come right back.
+              </p>
+            </Card>
+            <a
+              href={connectUrl}
+              className={buttonVariants({
+                size: "lg",
+                className: "w-full",
+              })}
+            >
+              Connect debit card
+            </a>
+          </>
         )}
-
-        {isConfigured ? (
-          <Card className="border-sage/40 bg-sage-tint text-xs text-ink/80">
-            Pending cash back will start flowing within the next sync cycle.
-          </Card>
-        ) : null}
-
-        <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-          Want instant cash back straight to your debit card? That&apos;s
-          coming in a later phase — for now ACH is the path.
-        </p>
       </div>
     </main>
   );
-}
-
-/**
- * All checking-type accounts the diner explicitly linked. We DON'T
- * call Plaid here — we use the cached subtype on plaid_card_accounts
- * (populated at link time since Phase 4d.2). Rows linked before that
- * have subtype=NULL; we surface them anyway so the diner can still
- * pick (Dwolla will validate at attach time).
- */
-async function loadDinerCheckingCards(userId: string): Promise<CheckingCard[]> {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("plaid_card_accounts")
-    .select(
-      `
-      id, name, mask, subtype,
-      plaid_items!inner ( user_id, institution_name )
-      `,
-    )
-    .eq("status", "active")
-    .eq("plaid_items.user_id", userId);
-  if (error) {
-    console.error("loadDinerCheckingCards:", error);
-    return [];
-  }
-  // Filter: subtype must be 'checking' OR null (legacy rows we let
-  // the diner try). 'credit card' subtype excluded.
-  return (data ?? [])
-    .filter((r) => r.subtype !== "credit card")
-    .map((r) => {
-      const item = Array.isArray(r.plaid_items)
-        ? r.plaid_items[0]
-        : r.plaid_items;
-      return {
-        id: r.id,
-        name: r.name,
-        mask: r.mask,
-        subtype: r.subtype,
-        institutionName: item?.institution_name ?? null,
-      };
-    });
 }
