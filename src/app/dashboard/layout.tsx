@@ -3,8 +3,8 @@
 // Phase 1: enforces role=merchant. Unauthenticated → /sign-in.
 // Wrong role → bounced to their own home (see requireRole).
 //
-// Visual reference: design-reference/merchant.html — a desktop
-// dashboard with a dark ink sidebar.
+// Desktop dashboard with the bundle's warm cream sidebar; each page
+// renders its own MerchantPageHeader.
 
 import { requireRole } from "@/lib/auth/require-role";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -25,13 +25,9 @@ export default async function MerchantLayout({
       <DashboardSidebar
         restaurantName={restaurant?.name ?? null}
         displayName={profile.displayName}
+        footerSlot={<SignOutButton className="w-full" />}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-end border-b border-border bg-cream-soft px-6 py-3">
-          <SignOutButton />
-        </header>
-        <main className="flex-1">{children}</main>
-      </div>
+      <main className="flex min-w-0 flex-1 flex-col">{children}</main>
     </div>
   );
 }

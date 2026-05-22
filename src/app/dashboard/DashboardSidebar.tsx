@@ -1,9 +1,9 @@
 "use client";
 
-// Merchant dashboard sidebar — dark ink rail with the brand wordmark,
-// a venue card, and route-aware nav. Client component for usePathname
-// active highlighting; the layout that renders it stays a server
-// component (it does requireRole + data fetching).
+// Merchant dashboard sidebar — the bundle's warm cream rail with the
+// lowercase italic wordmark, route-aware nav, and a venue + sign-out
+// footer. Client component for usePathname active highlighting; the
+// layout that renders it stays a server component (requireRole + data).
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,33 +20,25 @@ const NAV = [
 export function DashboardSidebar({
   restaurantName,
   displayName,
+  footerSlot,
 }: {
   restaurantName: string | null;
   displayName: string;
+  /** Server-rendered sign-out button, passed in from the layout. */
+  footerSlot?: React.ReactNode;
 }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col bg-ink px-4 py-6 text-cream">
+    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
       <Link
         href="/dashboard"
-        className="px-2 font-serif text-xl font-medium tracking-tight text-cream"
+        className="px-3 font-serif text-[26px] font-medium italic tracking-tight text-orange"
       >
-        Meal<span className="text-orange">Mate</span>
+        mealmate
       </Link>
 
-      {restaurantName ? (
-        <div className="mx-1 mt-5 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5">
-          <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-cream/50">
-            Venue
-          </p>
-          <p className="mt-0.5 truncate text-sm font-medium text-cream">
-            {restaurantName}
-          </p>
-        </div>
-      ) : null}
-
-      <nav className="mt-6 flex flex-col gap-1">
+      <nav className="mt-9 flex flex-1 flex-col gap-0.5">
         {NAV.map((item) => {
           const active =
             item.href === "/dashboard"
@@ -57,10 +49,10 @@ export function DashboardSidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-lg px-3.5 py-2.5 text-sm transition-colors",
+                "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-orange/15 font-medium text-cream"
-                  : "text-cream/65 hover:bg-white/5 hover:text-cream",
+                  ? "bg-ink text-cream"
+                  : "text-ink-soft hover:bg-ink/5",
               )}
             >
               {item.label}
@@ -69,11 +61,18 @@ export function DashboardSidebar({
         })}
       </nav>
 
-      <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 pt-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-semibold text-white">
-          {displayName.charAt(0).toUpperCase()}
-        </span>
-        <span className="truncate text-xs text-cream/70">{displayName}</span>
+      <div className="mt-auto space-y-3 border-t border-border pt-4">
+        <div className="px-1">
+          {restaurantName ? (
+            <p className="truncate font-serif text-lg text-ink">
+              {restaurantName}
+            </p>
+          ) : null}
+          <p className="truncate text-xs text-muted-foreground">
+            {displayName}
+          </p>
+        </div>
+        {footerSlot}
       </div>
     </aside>
   );

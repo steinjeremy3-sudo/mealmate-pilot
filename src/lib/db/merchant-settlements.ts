@@ -137,3 +137,78 @@ function toRow(s: SettlementDbRow): MerchantSettlementRow {
     createdAt: s.created_at,
   };
 }
+
+// ====================================================================
+// Merchant dashboard — recent matched transactions
+// ====================================================================
+
+export type MerchantMatchRow = {
+  id: string;
+  transactionDate: string;
+  amountCents: number;
+  discountCents: number | null;
+  matchConfidence: string;
+  merchantNameRaw: string;
+  offerTitle: string | null;
+  /** Diner initials, when the merchant can read the name; else null. */
+  dinerInitials: string | null;
+};
+
+function one<T>(v: T | T[] | null | undefined): T | null {
+  if (!v) return null;
+  return Array.isArray(v) ? (v[0] ?? null) : v;
+}
+
+function initialsOf(name: string): string {
+  const letters = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join("");
+  return letters || "·";
+}
+
+/**
+ * Recent matched transactions for the calling merchant's restaurant.
+ * RLS (matched_transactions_select_merchant) does the scoping.
+ */
+export async function getRecentMatchedTransactionsForMerchant(
+  limit = 25,
+): Promise<MerchantMatchRow[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("matched_transactions")
+    .select(
+      `
+      id, transaction_date, amount_cents, discount_cents,
+      match_confidence, merchant_name_raw,
+      claims (
+        offers ( title ),
+        diner:users!claims_diner_user_id_users_id_fk ( display_name )
+      )
+      `,
+    )
+    .order("transaction_date", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("getRecentMatchedTransactionsForMerchant:", error);
+    return [];
+  }
+  return (data ?? []).map((t) => {
+    const claim = one(t.claims);
+    const offer = claim ? one(claim.offers) : null;
+    const diner = claim ? one(claim.diner) : null;
+    const name = (diner as { display_name?: string } | null)?.display_name;
+    return {
+      id: t.id,
+      transactionDate: t.transaction_date,
+      amountCents: t.amount_cents,
+      discountCents: t.discount_cents,
+      matchConfidence: t.match_confidence,
+      merchantNameRaw: t.merchant_name_raw,
+      offerTitle: offer?.title ?? null,
+      dinerInitials: name ? initialsOf(name) : null,
+    };
+  });
+}
