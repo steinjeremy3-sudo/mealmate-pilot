@@ -61,7 +61,7 @@ export default async function AdminRebatesPage({
   return (
     <>
       <PageHeader
-        eyebrow="Rebates"
+        eyebrow="Cash back"
         title={
           <>
             Every <em>payout.</em>
@@ -105,7 +105,7 @@ export default async function AdminRebatesPage({
 
         {shown.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
-            No rebates {active === "all" ? "yet" : `with status “${active}”`}.
+            No cash back {active === "all" ? "yet" : `with status “${active}”`}.
           </Card>
         ) : (
           <Card flush className="overflow-hidden">
@@ -158,7 +158,7 @@ export default async function AdminRebatesPage({
                     href={`/admin/matches/${r.matchedTransactionId}`}
                     className="text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
                   >
-                    match →
+                    visit →
                   </Link>
                   {r.status === "failed" ? (
                     <form action={retryRebate}>

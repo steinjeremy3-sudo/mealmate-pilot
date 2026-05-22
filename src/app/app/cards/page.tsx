@@ -19,11 +19,11 @@ const ASSURANCES = [
   },
   {
     Icon: Eye,
-    text: "Read-only. We see transaction amounts to match your visits — never your full card number.",
+    text: "Read-only. We see transaction amounts to confirm your visits — never your full card number.",
   },
   {
     Icon: CreditCard,
-    text: "We never charge your card. Rebates are paid out to your bank account.",
+    text: "We never charge your card. Cash back is paid out to your bank account.",
   },
 ];
 

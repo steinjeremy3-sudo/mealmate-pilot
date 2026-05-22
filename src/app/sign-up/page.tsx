@@ -49,8 +49,8 @@ export default async function SignUpPage({
             Create account
           </Heading>
           <p className="text-sm text-muted-foreground">
-            Sign up as a diner to claim offers, or as a restaurant operator
-            to list yours.
+            Sign up as a diner to activate offers, or as a restaurant
+            operator to list yours.
           </p>
         </div>
 

@@ -134,7 +134,7 @@ export default async function DinerOfferDetail({
           <Card className="space-y-3 border-sage/40 bg-sage-tint text-center">
             <div className="space-y-1">
               <p className="font-medium text-ink">
-                You&apos;ve claimed this offer.
+                You&apos;ve activated this offer.
               </p>
               <p className="text-xs text-ink/70">
                 Expires in {expiresInMinutes(activeClaim)} min. Eat at the
@@ -144,7 +144,7 @@ export default async function DinerOfferDetail({
                 href={`/app/claims/${activeClaim.id}`}
                 className="inline-block text-xs text-sage underline underline-offset-4"
               >
-                See your claim →
+                See your offer →
               </Link>
             </div>
             <form action={cancelClaim} className="border-t border-sage/30 pt-3">
@@ -153,7 +153,7 @@ export default async function DinerOfferDetail({
                 type="submit"
                 className="cursor-pointer text-xs text-ink/70 underline underline-offset-4 hover:text-ink"
               >
-                Cancel this claim
+                Cancel this offer
               </button>
             </form>
           </Card>
@@ -163,11 +163,11 @@ export default async function DinerOfferDetail({
               href={`/app/offers/${offer.id}/claim`}
               className={buttonVariants({ size: "lg", className: "w-full" })}
             >
-              Claim {offer.discount_pct}% off
+              Activate {offer.discount_pct}% off
             </Link>
             <p className="text-center text-xs text-muted-foreground">
-              Claims hold for 1 hour. Eat, pay at the restaurant, get cash
-              back.
+              An activated offer holds for an hour. Eat, pay at the
+              restaurant, get cash back.
             </p>
           </div>
         )}

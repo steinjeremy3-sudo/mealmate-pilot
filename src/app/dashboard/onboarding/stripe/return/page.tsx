@@ -37,7 +37,7 @@ export default async function StripeOnboardingReturn() {
         </Heading>
         <p className="text-sm text-muted-foreground">
           {isActive
-            ? "Stripe has verified your account. You're ready to create offers and collect rebates for your diners."
+            ? "Stripe has verified your account. You're ready to create offers for your diners."
             : "Stripe is verifying the details you submitted. This usually takes a few minutes; we'll update your dashboard as soon as your account is active."}
         </p>
         <Link

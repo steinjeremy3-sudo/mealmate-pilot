@@ -42,7 +42,7 @@ export async function approveMatch(formData: FormData): Promise<void> {
   }
   if (!row.claim_id) {
     // UI disables this case, but defend belt-and-suspenders.
-    throw new Error("Cannot approve a match without an attached claim.");
+    throw new Error("Cannot approve a visit without an attached offer.");
   }
 
   const snapshot = await applyApprovedSnapshot({

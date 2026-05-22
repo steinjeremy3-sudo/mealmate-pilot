@@ -56,20 +56,20 @@ export default async function ClaimConfirm({
           <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-orange-tint font-serif text-3xl italic text-orange">
             !
           </span>
-          <Eyebrow className="text-center">Already claimed</Eyebrow>
+          <Eyebrow className="text-center">Already activated</Eyebrow>
           <Heading as="h1" size="page" className="pb-0">
-            You already have a claim at <em>{name}.</em>
+            You already have an active offer at <em>{name}.</em>
           </Heading>
           <p className="text-sm text-muted-foreground">
-            One active claim per offer. Your existing claim is still good —
-            eat, pay with your linked card, and we&apos;ll match it.
+            One activation per offer. Your active offer is still good —
+            eat, pay with your linked card, and we&apos;ll confirm it.
           </p>
           <div className="space-y-2 pt-2">
             <Link
               href={`/app/claims/${activeClaim.id}`}
               className="block w-full rounded-full bg-ink py-3.5 text-center text-[15px] font-semibold text-cream transition-colors hover:bg-ink-soft"
             >
-              View active claim
+              View active offer
             </Link>
             <Link
               href="/app"
@@ -88,7 +88,7 @@ export default async function ClaimConfirm({
     <main className="flex flex-1 items-start justify-center px-6 py-8">
       <div className="w-full max-w-md space-y-5">
         <div className="space-y-1.5">
-          <Eyebrow>Confirm claim</Eyebrow>
+          <Eyebrow>Activate offer</Eyebrow>
           <Heading as="h1" size="page">
             {offer.discount_pct}% off at <em>{name}.</em>
           </Heading>
@@ -114,7 +114,7 @@ export default async function ClaimConfirm({
 
         <Card className="bg-cream-warm text-sm leading-relaxed text-ink/80">
           MealMate keeps 6% of the total bill as a platform fee, capped at
-          $10. Your rebate is the discount minus this fee.
+          $10. Your cash back is the discount minus this fee.
         </Card>
 
         {error ? (
@@ -126,7 +126,7 @@ export default async function ClaimConfirm({
         <form action={claimOffer} className="space-y-2">
           <input type="hidden" name="offer_id" value={offer.id} />
           <Button type="submit" size="lg" className="w-full">
-            Confirm claim
+            Activate offer
           </Button>
           <Link
             href={`/app/offers/${offer.id}`}

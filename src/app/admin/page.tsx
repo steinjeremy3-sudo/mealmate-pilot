@@ -92,12 +92,12 @@ export default async function AdminHome() {
             value={String(pendingRestaurants.length)}
           />
           <KpiCard
-            label="Matches to review"
+            label="Visits to review"
             value={String(pendingMatches.length)}
           />
-          <KpiCard label="Failed rebates" value={String(failedRebates)} />
+          <KpiCard label="Failed cash back" value={String(failedRebates)} />
           <KpiCard
-            label="Rebate volume · 7d"
+            label="Cash back · 7d"
             value={centsToUsd(volume7dCents)}
           />
         </div>
@@ -109,10 +109,10 @@ export default async function AdminHome() {
               <span className="size-2 shrink-0 rounded-full bg-orange" />
               <span className="flex-1">
                 <strong className="font-semibold">
-                  {failedRebates} rebate{failedRebates === 1 ? "" : "s"} failed
-                  to issue.
+                  {failedRebates} cash-back payment
+                  {failedRebates === 1 ? "" : "s"} failed to issue.
                 </strong>{" "}
-                Diners are owed money — resolve in the rebates queue.
+                Diners are owed money — resolve in the cash-back queue.
               </span>
               <span className="shrink-0 font-medium">Review →</span>
             </div>
@@ -156,7 +156,7 @@ export default async function AdminHome() {
             <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
                 <h2 className="font-serif text-xl tracking-tight">
-                  Match review queue
+                  Visit review queue
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   Below the 90% auto-approve line.
@@ -171,7 +171,7 @@ export default async function AdminHome() {
             </div>
             {pendingMatches.length === 0 ? (
               <p className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
-                Queue is empty — every match auto-approved.
+                Queue is empty — every visit auto-confirmed.
               </p>
             ) : (
               <ul className="border-t border-border">

@@ -27,11 +27,11 @@ export default async function DinerRebateDetail({
           href="/app/rebates"
           className="text-sm text-muted-foreground transition-colors hover:text-orange"
         >
-          ← Back to rebates
+          ← Back to wallet
         </Link>
 
         <div className="space-y-1">
-          <Eyebrow>Rebate</Eyebrow>
+          <Eyebrow>Cash back</Eyebrow>
           <Heading as="h1" size="page">
             {r.restaurantName ?? "Restaurant"}
           </Heading>
@@ -44,8 +44,8 @@ export default async function DinerRebateDetail({
               {centsToUsd(r.amountCents)} is on the way.
             </p>
             <p className="mt-1 text-sm text-ink/70">
-              We matched your visit and started your cash-back rebate.
-              Expect it on your linked account within 1–2 business days.
+              We confirmed your visit and started your cash back. Expect it
+              on your linked account within 1–2 business days.
             </p>
           </Card>
         ) : null}
@@ -53,7 +53,7 @@ export default async function DinerRebateDetail({
         {r.status === "settled" ? (
           <Card className="border-orange/30 bg-orange-tint">
             <p className="font-medium text-ink">
-              Your {centsToUsd(r.amountCents)} rebate landed.
+              Your {centsToUsd(r.amountCents)} cash back landed.
             </p>
             <p className="mt-1 text-sm text-orange-deep">
               It&apos;s on the account you linked
@@ -65,17 +65,17 @@ export default async function DinerRebateDetail({
         {r.status === "failed" ? (
           <Card className="space-y-2 border-destructive/40 bg-rose/15">
             <p className="font-medium text-ink">
-              We couldn&apos;t send this rebate.
+              We couldn&apos;t send this cash back.
             </p>
             <p className="text-sm text-ink/70">
               Something went wrong reaching your linked account. Check
-              your rebate destination and we&apos;ll try again.
+              your cash-back destination and we&apos;ll try again.
             </p>
             <Link
               href="/app/rebates/setup"
               className="inline-block text-sm text-destructive underline underline-offset-4"
             >
-              Review rebate destination →
+              Review cash-back destination →
             </Link>
           </Card>
         ) : null}
@@ -104,7 +104,7 @@ export default async function DinerRebateDetail({
             </div>
           ) : null}
           <div className="flex justify-between gap-4 border-t border-border pt-1 font-medium">
-            <span>Your rebate</span>
+            <span>Your cash back</span>
             <span className="text-orange-deep">
               {centsToUsd(r.amountCents)}
             </span>

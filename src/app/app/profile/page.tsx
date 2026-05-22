@@ -45,7 +45,7 @@ export default async function DinerProfilePage() {
             <Link href="/app/rebates/setup" className="block">
               <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
                 <div>
-                  <p className="font-medium">Rebate destination</p>
+                  <p className="font-medium">Cash-back destination</p>
                   <p className="text-xs text-muted-foreground">
                     Where your cash back lands
                   </p>

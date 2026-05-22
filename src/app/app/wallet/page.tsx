@@ -143,7 +143,7 @@ export default async function WalletPage({
         {tab === "active" ? (
           activeClaims.length === 0 && pastClaims.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
-              No claims yet. Browse{" "}
+              No active offers yet. Browse{" "}
               <Link
                 href="/app"
                 className="text-orange underline underline-offset-4"
@@ -187,7 +187,7 @@ export default async function WalletPage({
 
               {pastClaims.length > 0 ? (
                 <div className="space-y-2">
-                  <Eyebrow tone="muted">Past claims</Eyebrow>
+                  <Eyebrow tone="muted">Past offers</Eyebrow>
                   <ul className="space-y-2">
                     {pastClaims.map((c) => (
                       <li key={c.id}>
@@ -204,7 +204,7 @@ export default async function WalletPage({
                             </div>
                             <span className="shrink-0 text-xs text-muted-foreground">
                               {c.status === "matched" || c.status === "consumed"
-                                ? "redeemed"
+                                ? "confirmed"
                                 : c.status === "cancelled"
                                   ? "cancelled"
                                   : "expired"}
@@ -224,8 +224,8 @@ export default async function WalletPage({
         {tab === "pending" ? (
           pendingRebates.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
-              No rebates in flight. Claimed visits show here while we match
-              and send them.
+              No cash back in flight. Confirmed visits show here while we
+              send it.
             </Card>
           ) : (
             <ul className="space-y-3">
@@ -266,7 +266,8 @@ export default async function WalletPage({
         {tab === "completed" ? (
           completedRebates.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
-              No rebates yet. Claim an offer, eat, pay with your linked card.
+              No cash back yet. Activate an offer, eat, pay with your linked
+              card.
             </Card>
           ) : (
             <ul>

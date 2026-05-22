@@ -44,14 +44,14 @@ export async function claimOffer(formData: FormData): Promise<void> {
   // a diner who let theirs expire can re-claim.
   const existing = await getActiveClaimForOffer(offerId);
   if (existing) {
-    redirect(errParam(offerId, "You already have an active claim on this offer."));
+    redirect(errParam(offerId, "You already have an active offer here."));
   }
 
   // Total cap (if set): refuse if the offer is sold out.
   if (offer.max_claims_total != null) {
     const activeCount = await getActiveClaimCount(offerId);
     if (activeCount >= offer.max_claims_total) {
-      redirect(errParam(offerId, "This offer is fully claimed right now."));
+      redirect(errParam(offerId, "This offer is fully booked right now."));
     }
   }
 
@@ -70,7 +70,7 @@ export async function claimOffer(formData: FormData): Promise<void> {
     .single();
 
   if (error || !claim) {
-    redirect(errParam(offerId, error?.message ?? "Couldn't place the claim."));
+    redirect(errParam(offerId, error?.message ?? "Couldn't activate this offer."));
   }
 
   revalidatePath("/app/claims");

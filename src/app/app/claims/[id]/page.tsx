@@ -68,13 +68,13 @@ export default async function DinerClaimDetail({
           <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-sage text-cream-soft">
             <Check className="size-10" strokeWidth={2.5} />
           </span>
-          <Eyebrow className="mb-4">Claim placed</Eyebrow>
+          <Eyebrow className="mb-4">Offer activated</Eyebrow>
           <Heading as="h1" size="display" className="text-cream-soft">
             You&apos;re <em>all set.</em>
           </Heading>
           <p className="max-w-xs text-[15px] leading-relaxed text-cream/70">
             Head to {name} and pay normally with your linked card. We&apos;ll
-            match the transaction and rebate you within 1–2 days.
+            confirm your visit and send your cash back within 1–2 days.
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export default async function DinerClaimDetail({
             {claim.offer.title}
           </Heading>
           <p className="text-xs text-muted-foreground">
-            Claimed {formatDateTime(claim.claimed_at)}
+            Activated {formatDateTime(claim.claimed_at)}
           </p>
         </div>
 
@@ -150,11 +150,11 @@ export default async function DinerClaimDetail({
         {isActive ? (
           <Card className="space-y-3 border-sage/40 bg-sage-tint text-center">
             <p className="font-medium text-ink">
-              Claim active — expires in {expiresInMinutes(claim)} min
+              Offer active — expires in {expiresInMinutes(claim)} min
             </p>
             <p className="text-xs text-ink/70">
-              Eat at {name} and pay with your linked card. We&apos;ll match
-              the transaction and rebate you within 1–2 business days.
+              Eat at {name} and pay with your linked card. We&apos;ll confirm
+              your visit and send your cash back within 1–2 business days.
             </p>
             <form action={cancelClaim} className="border-t border-sage/30 pt-3">
               <input type="hidden" name="claim_id" value={claim.id} />
@@ -162,7 +162,7 @@ export default async function DinerClaimDetail({
                 type="submit"
                 className="cursor-pointer rounded-full border border-sage/40 bg-cream-soft px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-cream-warm"
               >
-                Cancel this claim
+                Cancel this offer
               </button>
             </form>
           </Card>
@@ -170,19 +170,19 @@ export default async function DinerClaimDetail({
 
         {isRedeemed ? (
           <Card className="space-y-2 border-orange/30 bg-orange-tint">
-            <p className="font-medium text-ink">Rebate on its way</p>
+            <p className="font-medium text-ink">Cash back on its way</p>
             <p className="text-xs text-ink/70">
-              We matched your visit to this offer. The cash-back rebate
-              posts to your linked account within 1–2 business days.
+              We confirmed your visit. Your cash back posts to your linked
+              account within 1–2 business days.
             </p>
           </Card>
         ) : null}
 
         {isExpired ? (
           <Card className="space-y-1 text-center text-sm">
-            <p className="font-medium">Claim expired</p>
+            <p className="font-medium">Offer expired</p>
             <p className="text-xs text-muted-foreground">
-              The transaction didn&apos;t come through in time. Re-claim
+              The transaction didn&apos;t come through in time. Re-activate
               from the offer page if it&apos;s still live.
             </p>
             <Link
@@ -196,9 +196,9 @@ export default async function DinerClaimDetail({
 
         {isCancelled ? (
           <Card className="space-y-1 text-center text-sm">
-            <p className="font-medium">Claim cancelled</p>
+            <p className="font-medium">Offer cancelled</p>
             <p className="text-xs text-muted-foreground">
-              You cancelled this claim. Re-claim from the offer page if
+              You cancelled this offer. Re-activate from the offer page if
               it&apos;s still live.
             </p>
             <Link
@@ -215,10 +215,10 @@ export default async function DinerClaimDetail({
           <Card className="space-y-3 bg-cream-warm">
             <Eyebrow>How this works</Eyebrow>
             <ol className="list-decimal space-y-1.5 pl-4 text-sm leading-relaxed text-ink/80 marker:text-muted-foreground">
-              <li>Eat at {name} before your claim expires.</li>
+              <li>Eat at {name} before your offer expires.</li>
               <li>Pay normally with your linked card.</li>
-              <li>We match the transaction within 1–2 days.</li>
-              <li>Your rebate lands in your bank account.</li>
+              <li>We confirm your visit within 1–2 days.</li>
+              <li>Your cash back lands in your bank account.</li>
             </ol>
           </Card>
         ) : null}

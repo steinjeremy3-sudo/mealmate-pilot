@@ -129,7 +129,7 @@ export default async function MerchantOfferDetail({
                 />
                 {offer.status === "live" ? (
                   <Fact
-                    k="Active claims"
+                    k="Active offers"
                     v={`${activeClaimCount} diner${activeClaimCount === 1 ? "" : "s"}`}
                   />
                 ) : null}
@@ -191,7 +191,7 @@ export default async function MerchantOfferDetail({
                   End this offer
                 </button>
                 <p className="text-xs text-muted-foreground">
-                  Active claims keep their hour to redeem. Ended offers
+                  Diners who activated it keep their hour. Ended offers
                   disappear from diner browse.
                 </p>
               </form>

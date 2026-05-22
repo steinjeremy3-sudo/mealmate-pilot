@@ -30,10 +30,10 @@ function StatusBadge({
     status === "claimed"
       ? "expired"
       : status === "matched" || status === "consumed"
-        ? "redeemed"
+        ? "confirmed"
         : status;
   const tone =
-    label === "redeemed"
+    label === "confirmed"
       ? "border-orange/30 bg-orange-tint text-orange-deep"
       : "border-border bg-cream-warm text-muted-foreground";
   return <span className={`${base} ${tone}`}>{label}</span>;
@@ -60,7 +60,7 @@ export default async function MerchantTonightPage() {
           <Eyebrow>Tonight</Eyebrow>
           <Heading as="h1" size="page">
             {active.length === 0 && paid.length === 0 ? (
-              "No claims yet"
+              "No activity yet"
             ) : (
               <>
                 <em>{active.length}</em> holding · {paid.length} paid
@@ -68,14 +68,14 @@ export default async function MerchantTonightPage() {
             )}
           </Heading>
           <p className="text-sm text-muted-foreground">
-            Claims your diners made today, in the order they were claimed.
+            Offers your diners activated today, newest last.
           </p>
         </div>
 
         {claims.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
-            No claims today. They&apos;ll show up here as soon as a diner
-            taps Claim on one of your live offers.
+            No activity today. Diners show up here as soon as they
+            activate one of your live offers.
           </Card>
         ) : (
           <Card flush className="divide-y divide-border overflow-hidden">
@@ -92,7 +92,7 @@ export default async function MerchantTonightPage() {
                     {c.offer?.title ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Claimed at {formatTime(c.claimed_at)}
+                    Activated at {formatTime(c.claimed_at)}
                   </p>
                 </div>
                 <StatusBadge status={c.status} active={isClaimActive(c)} />

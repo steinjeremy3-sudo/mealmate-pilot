@@ -49,7 +49,7 @@ export default async function MerchantOffersPage() {
             Offers you&apos;re <em>running.</em>
           </>
         }
-        sub="Each offer is a daypart window with a discount diners can claim."
+        sub="Each offer is a daypart window with a discount diners can activate."
         actions={
           restaurant.status === "approved" ? (
             <Link

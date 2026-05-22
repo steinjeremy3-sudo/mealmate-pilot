@@ -110,7 +110,7 @@ export default async function MerchantSettlementDetail({
 
         {/* Matched transactions */}
         <div className="space-y-3">
-          <Eyebrow tone="muted">Matched transactions</Eyebrow>
+          <Eyebrow tone="muted">Visits</Eyebrow>
           {s.transactions.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
               No transactions recorded on this settlement.
@@ -127,7 +127,7 @@ export default async function MerchantSettlementDetail({
                       {t.dinerFirstName ?? "A diner"} · {t.transactionDate}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      check {centsToUsd(t.amountCents)} · matched from
+                      check {centsToUsd(t.amountCents)} · confirmed from
                       &ldquo;{t.merchantNameRaw}&rdquo; ·{" "}
                       <span className="font-mono uppercase">
                         {t.matchConfidence}

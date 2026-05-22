@@ -52,7 +52,7 @@ export default async function MerchantSettlementsPage() {
           </Heading>
           <p className="text-sm text-muted-foreground">
             Each week, MealMate invoices you for the discount portion of
-            the visits we matched to your restaurant.
+            the visits we confirmed at your restaurant.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default async function MerchantSettlementsPage() {
                     {s.periodStart} → {s.periodEnd}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {s.transactionCount} matched transaction
+                    {s.transactionCount} visit
                     {s.transactionCount === 1 ? "" : "s"}
                   </p>
                   <p className="pt-0.5">

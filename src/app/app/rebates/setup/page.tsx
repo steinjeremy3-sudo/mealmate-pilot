@@ -39,7 +39,7 @@ export default async function RebatesSetupPage() {
     <main className="flex flex-1 items-start justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6">
         <div className="space-y-1.5">
-          <Eyebrow>Rebate destination</Eyebrow>
+          <Eyebrow>Cash-back destination</Eyebrow>
           <Heading as="h1" size="display">
             {isConfigured ? (
               <>
@@ -50,8 +50,8 @@ export default async function RebatesSetupPage() {
             )}
           </Heading>
           <p className="text-sm text-muted-foreground">
-            MealMate sends your cash-back rebates via ACH to a linked
-            checking account. Funds arrive in 1–2 business days.
+            MealMate sends your cash back via ACH to a linked checking
+            account. Funds arrive in 1–2 business days.
           </p>
         </div>
 
@@ -102,12 +102,12 @@ export default async function RebatesSetupPage() {
 
         {isConfigured ? (
           <Card className="border-sage/40 bg-sage-tint text-xs text-ink/80">
-            Pending rebates will start flowing within the next sync cycle.
+            Pending cash back will start flowing within the next sync cycle.
           </Card>
         ) : null}
 
         <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-          Want instant rebates straight to your debit card? That&apos;s
+          Want instant cash back straight to your debit card? That&apos;s
           coming in a later phase — for now ACH is the path.
         </p>
       </div>

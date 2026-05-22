@@ -38,7 +38,7 @@ export default async function DinerHome() {
           </div>
           <Link
             href="/app/wallet?show=pending"
-            aria-label="Your rebates"
+            aria-label="Your cash back"
             className="flex size-9 shrink-0 items-center justify-center rounded-full bg-cream-warm text-ink transition-colors hover:bg-cream-soft"
           >
             <Bell className="size-[18px]" strokeWidth={1.75} />
@@ -49,8 +49,8 @@ export default async function DinerHome() {
           <Link href="/app/rebates/setup" className="block">
             <Card className="border-orange/30 bg-orange-tint transition-colors hover:bg-orange-soft/30">
               <p className="font-medium text-ink">
-                You have {centsToUsd(rebateBanner.initiatedCents)} in rebates
-                waiting.
+                You have {centsToUsd(rebateBanner.initiatedCents)} in cash
+                back waiting.
               </p>
               <p className="mt-1 text-sm text-orange-deep">
                 Pick a checking account to receive them →

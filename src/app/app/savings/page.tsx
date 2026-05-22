@@ -87,7 +87,7 @@ export default async function SavingsPage() {
           </p>
           <p className="text-base text-foreground/80">
             {visits === 0 ? (
-              "No rebates yet this year — claim an offer to get started."
+              "No cash back yet this year — activate an offer to get started."
             ) : (
               <>
                 across <strong className="font-medium">{visits} meals</strong>{" "}

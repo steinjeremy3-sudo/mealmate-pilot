@@ -60,7 +60,7 @@ export default async function AdminMatchesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Matches"
+        eyebrow="Visits"
         title={
           rows.length === 0 ? (
             "All caught up."
@@ -70,13 +70,13 @@ export default async function AdminMatchesPage() {
             </>
           )
         }
-        sub="Matches auto-approve at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first."
+        sub="Visits auto-confirm at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first."
       />
 
       <div className="px-10 py-8">
         {rows.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
-            Nothing in the queue. The matcher runs on the daily cron.
+            Nothing in the queue. New visits are checked once a day.
           </Card>
         ) : (
           <Card flush className="overflow-hidden">
@@ -107,7 +107,7 @@ export default async function AdminMatchesPage() {
                         {row.restaurant?.name ?? row.merchantNameRaw}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {row.claim?.diner?.displayName ?? "no diner claim"}
+                        {row.claim?.diner?.displayName ?? "no linked offer"}
                         {row.autoApprovalStatus === "flagged" ? (
                           <span className="text-destructive"> · flagged</span>
                         ) : null}

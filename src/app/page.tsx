@@ -26,8 +26,8 @@ export default function Home() {
         </Heading>
 
         <p className="text-base text-cream/70">
-          Claim an offer at an independent Dallas restaurant, pay however
-          you normally would, and a cash-back rebate lands on your linked
+          Activate an offer at an independent Dallas restaurant, pay
+          however you normally would, and cash back lands on your linked
           card a day or two later. No coupons, no apps at the table.
         </p>
 

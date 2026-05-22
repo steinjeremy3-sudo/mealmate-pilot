@@ -51,7 +51,7 @@ export default async function AdminSettlementsPage() {
             Weekly <em>settlements.</em>
           </>
         }
-        sub={`Restaurants are invoiced weekly for the discount portion of their matched transactions — ${centsToUsd(owed)} outstanding right now.`}
+        sub={`Restaurants are invoiced weekly for the discount portion of their confirmed visits — ${centsToUsd(owed)} outstanding right now.`}
       />
 
       <div className="px-10 py-8">

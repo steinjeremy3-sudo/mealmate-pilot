@@ -261,7 +261,7 @@ export default async function MerchantHome() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Active offers" value={String(activeOffers)} />
           <KpiCard
-            label="Matches this week"
+            label="Visits this week"
             value={String(weekMatches.length)}
           />
           <KpiCard
@@ -280,10 +280,10 @@ export default async function MerchantHome() {
             <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
                 <h2 className="font-serif text-xl tracking-tight">
-                  Recent matched transactions
+                  Recent visits
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Diners we matched to your offers. Settles weekly.
+                  Diners who used your offers. Settles weekly.
                 </p>
               </div>
               <Link
@@ -295,8 +295,8 @@ export default async function MerchantHome() {
             </div>
             {recentMatches.length === 0 ? (
               <p className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
-                No matched transactions yet. They appear here 1–2 days
-                after a diner pays.
+                No visits yet. They appear here 1–2 days after a diner
+                pays.
               </p>
             ) : (
               <table className="w-full text-sm">
@@ -357,7 +357,7 @@ export default async function MerchantHome() {
                   {centsToUsd(pendingSettlement.totalDiscountCents)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {pendingSettlement.transactionCount} matched txn
+                  {pendingSettlement.transactionCount} visit
                   {pendingSettlement.transactionCount === 1 ? "" : "s"} ·{" "}
                   {shortDate(pendingSettlement.periodStart)}–
                   {shortDate(pendingSettlement.periodEnd)}
@@ -375,8 +375,8 @@ export default async function MerchantHome() {
               </>
             ) : (
               <p className="pt-3 text-sm text-muted-foreground">
-                No invoice due right now. Matched transactions roll up into
-                a weekly invoice, settled via Stripe.
+                No invoice due right now. Visits roll up into a weekly
+                invoice, settled via Stripe.
               </p>
             )}
           </Card>
@@ -387,7 +387,7 @@ export default async function MerchantHome() {
           {(
             [
               ["Create offer", "Add a new daypart or window.", "/dashboard/offers/new"],
-              ["Tonight", "Claims diners are holding right now.", "/dashboard/claims"],
+              ["Tonight", "Offers diners are holding right now.", "/dashboard/claims"],
               ["Settlements", "Weekly invoices and history.", "/dashboard/settlements"],
             ] as const
           ).map(([label, sub, href]) => (

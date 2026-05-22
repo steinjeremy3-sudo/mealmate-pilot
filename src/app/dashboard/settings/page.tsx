@@ -116,8 +116,8 @@ export default async function MerchantSettingsPage() {
               <Fact k="Address" v={restaurant.address} />
             </dl>
             <p className="mt-4 text-xs text-muted-foreground">
-              Restaurant details affect transaction matching, so changes
-              go through the MealMate team. Email{" "}
+              Restaurant details affect how visits are confirmed, so
+              changes go through the MealMate team. Email{" "}
               <Link
                 href="mailto:ops@mealmate.co"
                 className="text-orange underline underline-offset-4"

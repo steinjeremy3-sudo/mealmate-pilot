@@ -65,7 +65,7 @@ export default async function AdminMatchDetailPage({
             href="/admin/matches"
             className="transition-colors hover:text-orange"
           >
-            ← Match queue
+            ← Visit queue
           </Link>
         }
         title={row.restaurant?.name ?? row.merchantNameRaw}
@@ -94,7 +94,7 @@ export default async function AdminMatchDetailPage({
               }
             />
             <KpiCard
-              label="Diner rebate"
+              label="Diner cash back"
               value={
                 previewBreakdown
                   ? centsToUsd(previewBreakdown.rebateCents)
@@ -124,7 +124,7 @@ export default async function AdminMatchDetailPage({
                   Six-check rubric
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  A high-confidence match the rubric still flagged.
+                  A high-confidence visit the rubric still flagged.
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -192,7 +192,7 @@ export default async function AdminMatchDetailPage({
             </Card>
 
             <Card className="space-y-1 p-6">
-              <Eyebrow tone="muted">Diner claim</Eyebrow>
+              <Eyebrow tone="muted">Diner offer</Eyebrow>
               {row.claim ? (
                 <>
                   <p className="font-medium">
@@ -208,8 +208,8 @@ export default async function AdminMatchDetailPage({
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No claim attached. Approving without a claim doesn&apos;t
-                  make sense — reject this row, or attach a claim manually
+                  No offer attached. Approving without one doesn&apos;t
+                  make sense — reject this row, or attach an offer manually
                   via psql for now.
                 </p>
               )}
@@ -220,7 +220,7 @@ export default async function AdminMatchDetailPage({
           {scoreBreakdown ? (
             <Card className="space-y-2 p-6">
               <Eyebrow tone="muted">
-                Match confidence · {pct(scoreBreakdown.combinedScore)} combined
+                Visit confidence · {pct(scoreBreakdown.combinedScore)} combined
               </Eyebrow>
               <ul className="space-y-1 text-sm">
                 {(
@@ -243,7 +243,7 @@ export default async function AdminMatchDetailPage({
           {/* Rebate preview */}
           {previewBreakdown ? (
             <Card className="space-y-1 p-6">
-              <Eyebrow tone="muted">Rebate preview</Eyebrow>
+              <Eyebrow tone="muted">Cash-back preview</Eyebrow>
               <ul className="space-y-0.5 text-sm">
                 <li>Check total: {centsToUsd(row.amountCents)}</li>
                 <li>
@@ -254,7 +254,7 @@ export default async function AdminMatchDetailPage({
                   Platform fee: {centsToUsd(previewBreakdown.platformFeeCents)}
                 </li>
                 <li className="font-medium text-orange-deep">
-                  Rebate to diner: {centsToUsd(previewBreakdown.rebateCents)}
+                  Cash back to diner: {centsToUsd(previewBreakdown.rebateCents)}
                 </li>
               </ul>
             </Card>
@@ -265,11 +265,11 @@ export default async function AdminMatchDetailPage({
             <form action={approveMatch}>
               <input type="hidden" name="match_id" value={row.id} />
               <Button type="submit" disabled={!row.claim}>
-                Approve &amp; queue rebate
+                Approve &amp; queue cash back
               </Button>
               {!row.claim ? (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  No claim attached — nothing to approve against.
+                  No offer attached — nothing to approve against.
                 </p>
               ) : null}
             </form>
@@ -298,8 +298,8 @@ export default async function AdminMatchDetailPage({
               </Button>
             </form>
             <p className="text-xs text-muted-foreground">
-              Rejecting cancels the rebate and notifies the diner. The
-              merchant is not invoiced for this transaction.
+              Rejecting cancels the cash back and notifies the diner. The
+              merchant is not invoiced for this visit.
             </p>
           </Card>
         </div>
