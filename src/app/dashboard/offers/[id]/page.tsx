@@ -16,7 +16,7 @@ import {
 } from "@/lib/offers/format";
 import { cn } from "@/lib/utils";
 
-import { MerchantPageHeader } from "../../_components/MerchantPageHeader";
+import { PageHeader } from "@/components/console/PageHeader";
 import { endOffer, publishOffer } from "./actions";
 
 type Params = Promise<{ id: string }>;
@@ -66,7 +66,7 @@ export default async function MerchantOfferDetail({
 
   return (
     <>
-      <MerchantPageHeader
+      <PageHeader
         eyebrow={
           <Link
             href="/dashboard/offers"

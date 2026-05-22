@@ -1,134 +1,254 @@
-// Admin / ops home — restaurant approval queue + quick links into the
-// match review, rebate, and settlement sections.
+// Admin / ops control room — approvals, match-review depth, rebate
+// health, and a live activity feed. Everything here is real data.
 
 import Link from "next/link";
 
+import { Card, Eyebrow } from "@/components/brand";
+import { KpiCard } from "@/components/console/KpiCard";
+import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
-import { getPendingReviewMatches } from "@/lib/db/matched-transactions";
+import { getAuditLogEntries } from "@/lib/db/audit-log-read";
+import {
+  getPendingReviewMatches,
+  type MatchConfidence,
+} from "@/lib/db/matched-transactions";
+import { getAllRebates } from "@/lib/db/rebates";
 import { getPendingRestaurants } from "@/lib/db/restaurants";
+import { centsToUsd } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string }> = {
+  high: { label: "High", cls: "bg-sage-tint text-sage" },
+  medium: { label: "Medium", cls: "bg-amber/15 text-ink/80" },
+  low: { label: "Low", cls: "bg-orange-tint text-orange-deep" },
+  none: { label: "None", cls: "bg-cream-warm text-muted-foreground" },
+};
 
-function SectionLink({
-  href,
-  eyebrow,
-  title,
-  hint,
-}: {
-  href: string;
-  eyebrow: string;
-  title: string;
-  hint: string;
-}) {
+function initialsOf(name: string | null | undefined): string {
+  if (!name) return "·";
   return (
-    <Link href={href} className="block">
-      <Card className="h-full space-y-1 transition-colors hover:bg-cream-warm">
-        <Eyebrow>{eyebrow}</Eyebrow>
-        <p className="font-serif text-lg font-medium tracking-tight">
-          {title}
-        </p>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </Card>
-    </Link>
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p.charAt(0).toUpperCase())
+      .join("") || "·"
   );
 }
 
+function dateTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export default async function AdminHome() {
-  await requireRole("admin");
-  const [pendingRestaurants, pendingMatches] = await Promise.all([
-    getPendingRestaurants(),
-    getPendingReviewMatches(),
-  ]);
+  const profile = await requireRole("admin");
+  const [pendingRestaurants, pendingMatches, rebates, audit] =
+    await Promise.all([
+      getPendingRestaurants(),
+      getPendingReviewMatches(),
+      getAllRebates(),
+      getAuditLogEntries(),
+    ]);
+
+  const failedRebates = rebates.filter((r) => r.status === "failed").length;
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const volume7dCents = rebates
+    .filter((r) => new Date(r.createdAt) >= weekAgo)
+    .reduce((sum, r) => sum + r.amountCents, 0);
+
+  const firstName = profile.displayName?.trim().split(/\s+/)[0] || "team";
 
   return (
-    <div className="px-6 py-10">
-      <div className="mx-auto w-full max-w-3xl space-y-8">
-        <div className="space-y-1.5">
-          <Eyebrow>Ops</Eyebrow>
-          <Heading as="h1" size="page">
-            Control room
-          </Heading>
+    <>
+      <PageHeader
+        eyebrow="Operations"
+        title={
+          <>
+            Control <em>room.</em>
+          </>
+        }
+        sub={`Morning, ${firstName}. Here's what needs a human today.`}
+        actions={
+          <Link
+            href="/admin/matches"
+            className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-ink-soft"
+          >
+            Review queue ({pendingMatches.length})
+          </Link>
+        }
+      />
+
+      <div className="space-y-8 px-10 py-8">
+        {/* KPIs */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <KpiCard
+            label="Pending approvals"
+            value={String(pendingRestaurants.length)}
+          />
+          <KpiCard
+            label="Matches to review"
+            value={String(pendingMatches.length)}
+          />
+          <KpiCard label="Failed rebates" value={String(failedRebates)} />
+          <KpiCard
+            label="Rebate volume · 7d"
+            value={centsToUsd(volume7dCents)}
+          />
         </div>
 
-        {/* ===== Restaurant approval queue ===== */}
-        <section className="space-y-3">
-          <div className="space-y-1">
-            <Eyebrow>Restaurant approvals</Eyebrow>
-            <Heading size="section">
-              {pendingRestaurants.length === 0 ? (
-                "All caught up"
-              ) : (
-                <>
-                  <em>{pendingRestaurants.length}</em> pending
-                </>
-              )}
-            </Heading>
-          </div>
+        {/* Alert — only when something needs attention */}
+        {failedRebates > 0 ? (
+          <Link href="/admin/rebates" className="block">
+            <div className="flex items-center gap-3 rounded-xl border border-orange/30 bg-orange-tint px-5 py-3.5 text-sm text-orange-deep transition-colors hover:bg-orange-soft/25">
+              <span className="size-2 shrink-0 rounded-full bg-orange" />
+              <span className="flex-1">
+                <strong className="font-semibold">
+                  {failedRebates} rebate{failedRebates === 1 ? "" : "s"} failed
+                  to issue.
+                </strong>{" "}
+                Diners are owed money — resolve in the rebates queue.
+              </span>
+              <span className="shrink-0 font-medium">Review →</span>
+            </div>
+          </Link>
+        ) : null}
 
+        {/* Restaurant approvals */}
+        <section className="space-y-3">
+          <Eyebrow>Restaurant approvals</Eyebrow>
           {pendingRestaurants.length === 0 ? (
             <Card className="border-dashed text-center text-sm text-muted-foreground">
-              No restaurants waiting.
+              No restaurants waiting for approval.
             </Card>
           ) : (
-            <Card flush className="divide-y divide-border overflow-hidden">
+            <Card flush className="overflow-hidden">
               {pendingRestaurants.map((r) => (
                 <Link
                   key={r.id}
                   href={`/admin/restaurants/${r.id}`}
-                  className="flex items-start justify-between gap-4 p-4 transition-colors hover:bg-cream-warm"
+                  className="flex items-center justify-between gap-4 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-cream-warm"
                 >
-                  <div className="space-y-1">
-                    <p className="font-medium">{r.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-serif text-base">{r.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {r.cuisine} · {r.neighborhood}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {r.owner?.display_name ?? "Unknown owner"} ·{" "}
-                      {r.owner?.email ?? "no email"}
+                      {r.cuisine} · {r.neighborhood} ·{" "}
+                      {r.owner?.display_name ?? "Unknown owner"}
                     </p>
                   </div>
-                  <div className="shrink-0 text-right text-xs text-muted-foreground">
-                    submitted {formatDate(r.created_at)}
-                  </div>
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                    {dateTime(r.created_at)}
+                  </span>
                 </Link>
               ))}
             </Card>
           )}
         </section>
 
-        {/* ===== Section links ===== */}
-        <section className="grid gap-3 sm:grid-cols-3">
-          <SectionLink
-            href="/admin/matches"
-            eyebrow="Plaid matches"
-            title={
-              pendingMatches.length === 0
-                ? "Queue empty"
-                : `${pendingMatches.length} to review`
-            }
-            hint="Medium / low confidence + flagged matches"
-          />
-          <SectionLink
-            href="/admin/rebates"
-            eyebrow="Rebates · Dwolla"
-            title="Issuance status"
-            hint="Cash-back pushed to diners"
-          />
-          <SectionLink
-            href="/admin/settlements"
-            eyebrow="Settlements"
-            title="Restaurant invoicing"
-            hint="Weekly Stripe invoices"
-          />
-        </section>
+        {/* Match queue + activity */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card flush className="overflow-hidden">
+            <div className="flex items-center justify-between gap-4 px-6 py-5">
+              <div>
+                <h2 className="font-serif text-xl tracking-tight">
+                  Match review queue
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Below the 90% auto-approve line.
+                </p>
+              </div>
+              <Link
+                href="/admin/matches"
+                className="shrink-0 text-sm font-medium text-orange hover:text-orange-deep"
+              >
+                Open queue →
+              </Link>
+            </div>
+            {pendingMatches.length === 0 ? (
+              <p className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
+                Queue is empty — every match auto-approved.
+              </p>
+            ) : (
+              <ul className="border-t border-border">
+                {pendingMatches.slice(0, 5).map((m) => {
+                  const conf = CONFIDENCE[m.matchConfidence];
+                  return (
+                    <li key={m.id}>
+                      <Link
+                        href={`/admin/matches/${m.id}`}
+                        className="flex items-center gap-3 border-b border-border px-6 py-3.5 transition-colors last:border-b-0 hover:bg-cream-warm"
+                      >
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cream-warm font-mono text-[11px]">
+                          {initialsOf(m.claim?.diner?.displayName)}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
+                            {m.restaurant?.name ?? m.merchantNameRaw}
+                          </p>
+                          <p className="font-mono text-[11px] text-muted-foreground">
+                            {centsToUsd(m.amountCents)} · {m.transactionDate}
+                          </p>
+                        </div>
+                        <span
+                          className={cn(
+                            "shrink-0 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em]",
+                            conf.cls,
+                          )}
+                        >
+                          {conf.label}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </Card>
+
+          <Card flush className="overflow-hidden">
+            <div className="flex items-center justify-between gap-4 px-6 py-5">
+              <h2 className="font-serif text-xl tracking-tight">
+                Recent activity
+              </h2>
+              <Link
+                href="/admin/audit"
+                className="shrink-0 text-sm font-medium text-orange hover:text-orange-deep"
+              >
+                Full log →
+              </Link>
+            </div>
+            {audit.length === 0 ? (
+              <p className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
+                No activity recorded yet.
+              </p>
+            ) : (
+              <ul className="border-t border-border">
+                {audit.slice(0, 6).map((e) => (
+                  <li
+                    key={e.id}
+                    className="flex items-center gap-3 border-b border-border px-6 py-3 text-sm last:border-b-0"
+                  >
+                    <span className="w-28 shrink-0 font-mono text-[11px] text-muted-foreground">
+                      {dateTime(e.createdAt)}
+                    </span>
+                    <span className="shrink-0 rounded bg-orange-tint px-2 py-0.5 font-mono text-[10px] text-orange-deep">
+                      {e.action}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                      {e.subjectType}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

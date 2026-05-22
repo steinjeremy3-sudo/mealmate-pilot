@@ -1,10 +1,11 @@
-// Merchant page header — the editorial topbar every dashboard screen
-// opens with: eyebrow, a large Fraunces title (nested <em> renders
-// italic orange), an optional subhead, and right-aligned actions.
+// Console page header — the editorial topbar every desktop dashboard
+// screen (merchant + admin) opens with: eyebrow, a large Fraunces
+// title (nested <em> renders italic orange), an optional subhead,
+// and right-aligned actions.
 
 import { Eyebrow } from "@/components/brand";
 
-export function MerchantPageHeader({
+export function PageHeader({
   eyebrow,
   title,
   sub,

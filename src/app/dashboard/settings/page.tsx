@@ -17,7 +17,7 @@ import {
 } from "@/lib/db/stripe-accounts";
 import { cn } from "@/lib/utils";
 
-import { MerchantPageHeader } from "../_components/MerchantPageHeader";
+import { PageHeader } from "@/components/console/PageHeader";
 import {
   refreshStripeAccountStatus,
   startStripeOnboarding,
@@ -86,7 +86,7 @@ export default async function MerchantSettingsPage() {
 
   return (
     <>
-      <MerchantPageHeader
+      <PageHeader
         eyebrow="Settings"
         title={
           <>

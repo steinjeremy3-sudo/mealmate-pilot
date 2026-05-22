@@ -9,7 +9,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
 import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 
-import { MerchantPageHeader } from "../../_components/MerchantPageHeader";
+import { PageHeader } from "@/components/console/PageHeader";
 import { OfferForm } from "./OfferForm";
 
 type SearchParams = Promise<{ error?: string }>;
@@ -38,7 +38,7 @@ export default async function NewOfferPage({
 
   return (
     <>
-      <MerchantPageHeader
+      <PageHeader
         eyebrow="Offers · new"
         title={
           <>

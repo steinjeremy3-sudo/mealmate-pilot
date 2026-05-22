@@ -29,8 +29,8 @@ import {
 import { centsToUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
-import { MerchantPageHeader } from "./_components/MerchantPageHeader";
-import { KpiCard } from "./_components/KpiCard";
+import { PageHeader } from "@/components/console/PageHeader";
+import { KpiCard } from "@/components/console/KpiCard";
 import {
   refreshStripeAccountStatus,
   startStripeOnboarding,
@@ -109,7 +109,7 @@ export default async function MerchantHome() {
   if (!canCreateOffers) {
     return (
       <>
-        <MerchantPageHeader
+        <PageHeader
           eyebrow="Your restaurant"
           title={
             <>
@@ -238,7 +238,7 @@ export default async function MerchantHome() {
 
   return (
     <>
-      <MerchantPageHeader
+      <PageHeader
         eyebrow="This week"
         title={
           <>

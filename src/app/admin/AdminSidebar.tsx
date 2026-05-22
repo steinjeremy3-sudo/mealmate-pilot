@@ -1,8 +1,8 @@
 "use client";
 
-// Ops dashboard sidebar — dark ink rail, route-aware nav. Mirrors the
-// merchant DashboardSidebar; the layout that renders it stays a server
-// component (requireRole).
+// Ops console sidebar — the bundle's warm cream rail with the
+// lowercase wordmark + OPS badge and route-aware nav. Client component
+// for usePathname; the layout stays a server component (requireRole).
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,21 +17,27 @@ const NAV = [
   { href: "/admin/audit", label: "Audit log" },
 ];
 
-export function AdminSidebar({ displayName }: { displayName: string }) {
+export function AdminSidebar({
+  displayName,
+  footerSlot,
+}: {
+  displayName: string;
+  footerSlot?: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col bg-ink px-4 py-6 text-cream">
-      <Link href="/admin" className="flex items-baseline gap-2 px-2">
-        <span className="font-serif text-xl font-medium tracking-tight text-cream">
-          Meal<span className="text-orange">Mate</span>
+    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
+      <Link href="/admin" className="flex items-center gap-2 px-3">
+        <span className="font-serif text-[26px] font-medium italic tracking-tight text-orange">
+          mealmate
         </span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-cream/40">
+        <span className="rounded bg-orange-tint px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-orange-deep">
           Ops
         </span>
       </Link>
 
-      <nav className="mt-7 flex flex-col gap-1">
+      <nav className="mt-9 flex flex-1 flex-col gap-0.5">
         {NAV.map((item) => {
           const active =
             item.href === "/admin"
@@ -42,10 +48,10 @@ export function AdminSidebar({ displayName }: { displayName: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-lg px-3.5 py-2.5 text-sm transition-colors",
+                "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-orange/15 font-medium text-cream"
-                  : "text-cream/65 hover:bg-white/5 hover:text-cream",
+                  ? "bg-ink text-cream"
+                  : "text-ink-soft hover:bg-ink/5",
               )}
             >
               {item.label}
@@ -54,11 +60,12 @@ export function AdminSidebar({ displayName }: { displayName: string }) {
         })}
       </nav>
 
-      <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 pt-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-semibold text-white">
-          {displayName.charAt(0).toUpperCase()}
-        </span>
-        <span className="truncate text-xs text-cream/70">{displayName}</span>
+      <div className="mt-auto space-y-3 border-t border-border pt-4">
+        <div className="px-1">
+          <p className="truncate font-serif text-lg text-ink">{displayName}</p>
+          <p className="text-xs text-muted-foreground">Operations</p>
+        </div>
+        {footerSlot}
       </div>
     </aside>
   );

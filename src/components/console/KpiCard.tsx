@@ -1,5 +1,5 @@
-// Merchant KPI tile — a mono uppercase label over a large Fraunces
-// value, with an optional quiet hint line.
+// Console KPI tile — a mono uppercase label over a large Fraunces
+// value, with an optional quiet hint line. Shared by merchant + admin.
 
 import { Card } from "@/components/brand";
 

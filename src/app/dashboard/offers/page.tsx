@@ -11,7 +11,7 @@ import { centsToUsd } from "@/lib/money";
 import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
 import { cn } from "@/lib/utils";
 
-import { MerchantPageHeader } from "../_components/MerchantPageHeader";
+import { PageHeader } from "@/components/console/PageHeader";
 
 const OFFER_BADGE: Record<OfferStatus, string> = {
   draft: "border-border bg-cream-warm text-muted-foreground",
@@ -42,7 +42,7 @@ export default async function MerchantOffersPage() {
 
   return (
     <>
-      <MerchantPageHeader
+      <PageHeader
         eyebrow={restaurant.name}
         title={
           <>
