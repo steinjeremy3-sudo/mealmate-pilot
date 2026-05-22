@@ -15,7 +15,11 @@ import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow, Heading } from "@/components/brand";
-import { exchangeAuthorizationCode, listCards } from "@/lib/astra/client";
+import {
+  exchangeAuthorizationCode,
+  getAstraUser,
+  listCards,
+} from "@/lib/astra/client";
 import {
   setDinerAstraCard,
   upsertDinerAstraTokens,
@@ -100,7 +104,11 @@ export default async function AstraReturnPage({
   let detail = "";
   try {
     const tokens = await exchangeAuthorizationCode(code, redirectUri);
-    await upsertDinerAstraTokens(profile.id, { tokens });
+    const astraUser = await getAstraUser(tokens.accessToken);
+    await upsertDinerAstraTokens(profile.id, {
+      astraUserId: astraUser.userId,
+      tokens,
+    });
 
     const cards = await listCards(tokens.accessToken);
     const card =

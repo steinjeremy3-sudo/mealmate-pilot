@@ -130,18 +130,20 @@ export async function astraFetch<T = unknown>(
 // --- Card-connect (diner-facing OAuth) -----------------------------
 
 /**
- * The hosted page a diner is sent to in order to connect their debit
- * card and authorize MealMate. Astra redirects back to redirectUri
- * with an OAuth `code`.
+ * Astra's OAuth authorize endpoint — the hosted flow that authorizes
+ * the diner, verifies their phone, and prompts them to add a debit
+ * card. Astra then redirects back to redirectUri with `?code=`.
  *
- * Defaults to Astra's sandbox host (sandbox credentials are rejected
- * by the production host). At launch, set ASTRA_CONNECT_URL to the
- * production host: https://app.astra.finance/cards/connect
+ * This is /login/oauth/authorize — NOT /cards/connect (that page is
+ * only the card-capture UI and never issues an OAuth code).
+ *
+ * Defaults to Astra's sandbox host; at launch set ASTRA_CONNECT_URL
+ * to https://app.astra.finance/login/oauth/authorize
  */
 export function cardConnectUrl(redirectUri: string, state: string): string {
   const base =
     process.env.ASTRA_CONNECT_URL ??
-    "https://app-sandbox.astra.finance/cards/connect";
+    "https://app-sandbox.astra.finance/login/oauth/authorize";
   const params = new URLSearchParams({
     client_id: clientCredentials().id,
     redirect_uri: redirectUri,
@@ -149,6 +151,17 @@ export function cardConnectUrl(redirectUri: string, state: string): string {
     state,
   });
   return `${base}?${params.toString()}`;
+}
+
+export type AstraUser = { userId: string };
+
+/** The authorized diner's Astra profile (GET /v1/user). */
+export async function getAstraUser(accessToken: string): Promise<AstraUser> {
+  const data = await astraFetch<Record<string, unknown>>(
+    accessToken,
+    "/v1/user",
+  );
+  return { userId: String(data?.user_id ?? data?.id ?? "") };
 }
 
 export type AstraCard = {
