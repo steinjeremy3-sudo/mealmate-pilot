@@ -1,8 +1,9 @@
 // Admin audit-log viewer (A3). The full append-only event trail,
 // filterable by subject type / subject id / action.
 
+import { Card } from "@/components/brand";
+import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getAuditLogEntries } from "@/lib/db/audit-log-read";
 
 function formatWhen(iso: string): string {
@@ -33,24 +34,18 @@ export default async function AdminAuditPage({
   });
 
   return (
-    <div className="px-6 py-10">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <div className="space-y-1.5">
-          <Eyebrow>Audit log</Eyebrow>
-          <Heading as="h1" size="page">
-            Event trail
-          </Heading>
-          <p className="text-sm text-muted-foreground">
-            Append-only. Filter by a subject (e.g. type{" "}
-            <code className="font-mono text-foreground">restaurant</code>,{" "}
-            <code className="font-mono text-foreground">rebate</code>,{" "}
-            <code className="font-mono text-foreground">
-              matched_transaction
-            </code>
-            ) and its id.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        eyebrow="Audit log"
+        title={
+          <>
+            Every action, <em>recorded.</em>
+          </>
+        }
+        sub="Append-only. Diner activity, merchant edits, admin decisions, system jobs — filter by a subject and its id."
+      />
 
+      <div className="space-y-5 px-10 py-8">
         {/* Filter — a plain GET form so filters live in the URL. */}
         <form method="get" className="flex flex-wrap items-end gap-3">
           <label className="space-y-1 text-xs text-muted-foreground">
@@ -96,21 +91,25 @@ export default async function AdminAuditPage({
             No audit entries match.
           </Card>
         ) : (
-          <Card flush className="divide-y divide-border overflow-hidden">
+          <Card flush className="overflow-hidden">
             {entries.map((e) => (
-              <div key={e.id} className="space-y-1 p-4">
+              <div
+                key={e.id}
+                className="space-y-1.5 border-b border-border p-4 last:border-b-0"
+              >
                 <div className="flex items-baseline justify-between gap-4">
-                  <p className="font-mono text-sm text-foreground">
+                  <span className="rounded bg-orange-tint px-2 py-0.5 font-mono text-[11px] text-orange-deep">
                     {e.action}
-                  </p>
-                  <p className="shrink-0 text-xs text-muted-foreground">
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
                     {formatWhen(e.createdAt)}
-                  </p>
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {e.actorRole}
                   {e.actorUserId ? ` · ${e.actorUserId}` : ""} →{" "}
-                  {e.subjectType} {e.subjectId}
+                  {e.subjectType}{" "}
+                  <span className="font-mono">{e.subjectId}</span>
                 </p>
                 {e.metadata && Object.keys(e.metadata).length > 0 ? (
                   <pre className="overflow-x-auto rounded-md bg-cream-warm px-3 py-2 font-mono text-[11px] text-muted-foreground">
@@ -122,6 +121,6 @@ export default async function AdminAuditPage({
           </Card>
         )}
       </div>
-    </div>
+    </>
   );
 }

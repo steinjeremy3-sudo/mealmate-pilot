@@ -7,23 +7,27 @@
 
 import Link from "next/link";
 
+import { Card } from "@/components/brand";
+import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getAllSettlements } from "@/lib/db/settlements";
 import { centsToUsd } from "@/lib/money";
+import { cn } from "@/lib/utils";
+
+const STATUS_TONE: Record<string, string> = {
+  paid: "border-sage/40 bg-sage-tint text-sage",
+  invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
+  overdue: "border-destructive/40 bg-rose/15 text-destructive",
+  pending: "border-border bg-cream-warm text-muted-foreground",
+};
 
 function StatusBadge({ status }: { status: string }) {
-  const tone =
-    status === "paid"
-      ? "border-sage/40 bg-sage-tint text-sage"
-      : status === "invoiced"
-        ? "border-orange/30 bg-orange-tint text-orange-deep"
-        : status === "overdue"
-          ? "border-destructive/40 bg-rose/15 text-destructive"
-          : "border-border bg-cream-warm text-muted-foreground";
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
+      className={cn(
+        "inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em]",
+        STATUS_TONE[status] ?? STATUS_TONE.pending,
+      )}
     >
       {status}
     </span>
@@ -39,76 +43,57 @@ export default async function AdminSettlementsPage() {
     .reduce((sum, s) => sum + s.totalDiscountCents, 0);
 
   return (
-    <div className="px-6 py-10">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <div className="space-y-1.5">
-          <Eyebrow>Settlements · weekly batches</Eyebrow>
-          <Heading as="h1" size="page">
-            {settlements.length === 0 ? (
-              "No settlements yet"
-            ) : (
-              <>
-                <em>{centsToUsd(owed)}</em> outstanding
-              </>
-            )}
-          </Heading>
-          <p className="text-sm text-muted-foreground">
-            Restaurants are invoiced weekly for the discount portion of
-            their matched transactions. Cron runs Tuesdays.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        eyebrow="Settlements"
+        title={
+          <>
+            Weekly <em>settlements.</em>
+          </>
+        }
+        sub={`Restaurants are invoiced weekly for the discount portion of their matched transactions — ${centsToUsd(owed)} outstanding right now.`}
+      />
 
+      <div className="px-10 py-8">
         {settlements.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
             No settlement batches have run yet.
           </Card>
         ) : (
-          <Card flush className="divide-y divide-border overflow-hidden">
+          <Card flush className="overflow-hidden">
+            <div className="flex items-center gap-4 border-b border-border px-5 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+              <span className="flex-1">Restaurant</span>
+              <span className="w-48">Period</span>
+              <span className="w-16 text-right">Txns</span>
+              <span className="w-24">Status</span>
+              <span className="w-28 text-right">Owed</span>
+            </div>
             {settlements.map((s) => (
               <Link
                 key={s.id}
                 href={`/admin/settlements/${s.id}`}
-                className="block p-4 transition-colors hover:bg-cream-warm"
+                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {s.restaurant?.name ?? "Unknown restaurant"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {s.periodStart} → {s.periodEnd} ·{" "}
-                      {s.transactionCount} transaction
-                      {s.transactionCount === 1 ? "" : "s"}
-                    </p>
-                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <StatusBadge status={s.status} />
-                      {s.stripeInvoiceId ? (
-                        <span>
-                          invoice {s.stripeInvoiceId.slice(0, 18)}…
-                        </span>
-                      ) : null}
-                      {s.paidAt ? (
-                        <span>
-                          · paid{" "}
-                          {new Date(s.paidAt).toLocaleDateString()}
-                        </span>
-                      ) : null}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-medium">
-                      {centsToUsd(s.totalDiscountCents)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      owed to MealMate
-                    </p>
-                  </div>
-                </div>
+                <span className="min-w-0 flex-1 truncate font-serif text-base">
+                  {s.restaurant?.name ?? "Unknown restaurant"}
+                </span>
+                <span className="w-48 font-mono text-xs text-muted-foreground">
+                  {s.periodStart} → {s.periodEnd}
+                </span>
+                <span className="w-16 text-right font-mono text-sm">
+                  {s.transactionCount}
+                </span>
+                <span className="w-24">
+                  <StatusBadge status={s.status} />
+                </span>
+                <span className="w-28 text-right font-mono text-sm">
+                  {centsToUsd(s.totalDiscountCents)}
+                </span>
               </Link>
             ))}
           </Card>
         )}
       </div>
-    </div>
+    </>
   );
 }

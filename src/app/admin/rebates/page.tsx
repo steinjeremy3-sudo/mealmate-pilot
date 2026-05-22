@@ -1,128 +1,179 @@
-// Admin rebate visibility — read-only list of every rebate and its
-// Dwolla state (initiated → sent → settled / failed).
+// Admin rebate visibility — every rebate and its Dwolla state
+// (initiated → sent → settled / failed). Failed rebates can be retried.
 
 import Link from "next/link";
 
+import { Button, Card } from "@/components/brand";
+import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
-import { Button, Card, Eyebrow, Heading } from "@/components/brand";
-import { getAllRebates } from "@/lib/db/rebates";
+import { getAllRebates, type RebateStatus } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 import { retryRebate } from "./actions";
 
-function StatusBadge({ status }: { status: string }) {
-  const tone =
-    status === "settled"
-      ? "border-sage/40 bg-sage-tint text-sage"
-      : status === "sent"
-        ? "border-orange/30 bg-orange-tint text-orange-deep"
-        : status === "failed"
-          ? "border-destructive/40 bg-rose/15 text-destructive"
-          : "border-border bg-cream-warm text-muted-foreground";
+const STATUS_TONE: Record<RebateStatus, string> = {
+  initiated: "border-border bg-cream-warm text-muted-foreground",
+  sent: "border-orange/30 bg-orange-tint text-orange-deep",
+  settled: "border-sage/40 bg-sage-tint text-sage",
+  failed: "border-destructive/40 bg-rose/15 text-destructive",
+};
+
+const FILTERS: { key: string; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "initiated", label: "Initiated" },
+  { key: "sent", label: "Sent" },
+  { key: "settled", label: "Settled" },
+  { key: "failed", label: "Failed" },
+];
+
+function StatusBadge({ status }: { status: RebateStatus }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
+      className={cn(
+        "inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em]",
+        STATUS_TONE[status],
+      )}
     >
       {status}
     </span>
   );
 }
 
-export default async function AdminRebatesPage() {
+export default async function AdminRebatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   await requireRole("admin");
+  const { status } = await searchParams;
   const rebates = await getAllRebates();
 
-  const counts = rebates.reduce(
-    (acc, r) => ({ ...acc, [r.status]: (acc[r.status] ?? 0) + 1 }),
-    {} as Record<string, number>,
-  );
+  const counts: Record<string, number> = { all: rebates.length };
+  for (const r of rebates) counts[r.status] = (counts[r.status] ?? 0) + 1;
+
+  const active =
+    status && FILTERS.some((f) => f.key === status) ? status : "all";
+  const shown =
+    active === "all" ? rebates : rebates.filter((r) => r.status === active);
+  const failedCount = counts.failed ?? 0;
 
   return (
-    <div className="px-6 py-10">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <div className="space-y-1.5">
-          <Eyebrow>Rebates · Dwolla</Eyebrow>
-          <Heading as="h1" size="page">
-            {rebates.length === 0 ? (
-              "No rebates yet"
-            ) : (
-              <>
-                <em>{rebates.length}</em> total
-              </>
-            )}
-          </Heading>
-          <p className="text-sm text-muted-foreground">
-            {counts.initiated ? `${counts.initiated} initiated · ` : ""}
-            {counts.sent ? `${counts.sent} sent · ` : ""}
-            {counts.settled ? `${counts.settled} settled · ` : ""}
-            {counts.failed ? `${counts.failed} failed` : ""}
-            {Object.keys(counts).length === 0 ? "—" : ""}
-          </p>
+    <>
+      <PageHeader
+        eyebrow="Rebates"
+        title={
+          <>
+            Every <em>payout.</em>
+          </>
+        }
+        sub="Cash back moving from MealMate to diners via Dwolla ACH."
+        actions={
+          failedCount > 0 ? (
+            <Link
+              href="/admin/rebates?status=failed"
+              className="inline-flex items-center gap-2 rounded-full bg-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-deep"
+            >
+              <span className="size-2 rounded-full bg-white" />
+              {failedCount} failed · review
+            </Link>
+          ) : undefined
+        }
+      />
+
+      <div className="space-y-5 px-10 py-8">
+        {/* Status filter */}
+        <div className="flex flex-wrap gap-2">
+          {FILTERS.map((f) => (
+            <Link
+              key={f.key}
+              href={f.key === "all" ? "/admin/rebates" : `/admin/rebates?status=${f.key}`}
+              className={cn(
+                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
+                active === f.key
+                  ? "border-ink bg-ink text-cream"
+                  : "border-border bg-transparent text-ink hover:bg-cream-warm",
+              )}
+            >
+              {f.label}{" "}
+              <span className="font-mono text-muted-foreground">
+                {counts[f.key] ?? 0}
+              </span>
+            </Link>
+          ))}
         </div>
 
-        {rebates.length === 0 ? (
+        {shown.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
-            No rebates created yet. They&apos;ll show up once approved
-            matches start landing.
+            No rebates {active === "all" ? "yet" : `with status “${active}”`}.
           </Card>
         ) : (
-          <Card flush className="divide-y divide-border overflow-hidden">
-            {rebates.map((r) => (
-              <div key={r.id} className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {r.diner?.displayName ?? "Unknown diner"}
-                      {r.restaurant ? <> · {r.restaurant.name}</> : null}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {r.diner?.email ?? "no email"}
-                      {r.cardMask ? <> · card ····{r.cardMask}</> : null}
-                    </p>
-                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <StatusBadge status={r.status} />
-                      <span>provider {r.provider}</span>
-                      {r.providerTransferId ? (
-                        <span>
-                          · transfer {r.providerTransferId.slice(0, 12)}…
-                        </span>
-                      ) : null}
-                    </p>
-                    {r.errorMessage ? (
-                      <p className="text-xs text-destructive">
-                        {r.errorMessage}
-                      </p>
+          <Card flush className="overflow-hidden">
+            <div className="flex items-center gap-4 border-b border-border px-5 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+              <span className="flex-1">Diner · Restaurant</span>
+              <span className="w-24 text-right">Amount</span>
+              <span className="w-24">Status</span>
+              <span className="w-44">Transfer</span>
+              <span className="w-36 text-right">—</span>
+            </div>
+            {shown.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-serif text-base">
+                    {r.diner?.displayName ?? "Unknown diner"}
+                    {r.restaurant ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {r.restaurant.name}
+                      </span>
                     ) : null}
-                  </div>
-                  <div className="shrink-0 space-y-1 text-right">
-                    <p className="font-medium">
-                      {centsToUsd(r.amountCents)}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {r.diner?.email ?? "no email"}
+                    {r.cardMask ? ` · card ····${r.cardMask}` : ""}
+                  </p>
+                  {r.errorMessage ? (
+                    <p className="truncate text-xs text-destructive">
+                      {r.errorMessage}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      created{" "}
-                      {new Date(r.createdAt).toLocaleDateString()}
-                    </p>
-                    <Link
-                      href={`/admin/matches/${r.matchedTransactionId}`}
-                      className="block text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
-                    >
-                      match details →
-                    </Link>
-                    {r.status === "failed" ? (
-                      <form action={retryRebate}>
-                        <input type="hidden" name="rebate_id" value={r.id} />
-                        <Button type="submit" size="sm">
-                          Retry
-                        </Button>
-                      </form>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
+                <span className="w-24 text-right font-mono text-sm">
+                  {centsToUsd(r.amountCents)}
+                </span>
+                <span className="w-24">
+                  <StatusBadge status={r.status} />
+                </span>
+                <span className="w-44 truncate font-mono text-[11px] text-muted-foreground">
+                  {r.provider}
+                  {r.providerTransferId
+                    ? ` · ${r.providerTransferId.slice(0, 14)}…`
+                    : ""}
+                </span>
+                <span className="flex w-36 items-center justify-end gap-3">
+                  <Link
+                    href={`/admin/matches/${r.matchedTransactionId}`}
+                    className="text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
+                  >
+                    match →
+                  </Link>
+                  {r.status === "failed" ? (
+                    <form action={retryRebate}>
+                      <input type="hidden" name="rebate_id" value={r.id} />
+                      <Button type="submit" size="sm">
+                        Retry
+                      </Button>
+                    </form>
+                  ) : null}
+                </span>
               </div>
             ))}
           </Card>
         )}
       </div>
-    </div>
+    </>
   );
 }
