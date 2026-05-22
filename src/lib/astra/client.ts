@@ -134,14 +134,14 @@ export async function astraFetch<T = unknown>(
  * card and authorize MealMate. Astra redirects back to redirectUri
  * with an OAuth `code`.
  *
- * NOTE: Astra's hosted-flow host + params couldn't be fully extracted
- * from their (client-rendered) docs — verify on the first sandbox
- * run. ASTRA_CONNECT_URL overrides the base without a code change.
+ * Defaults to Astra's sandbox host (sandbox credentials are rejected
+ * by the production host). At launch, set ASTRA_CONNECT_URL to the
+ * production host: https://app.astra.finance/cards/connect
  */
 export function cardConnectUrl(redirectUri: string, state: string): string {
   const base =
     process.env.ASTRA_CONNECT_URL ??
-    "https://app.astra.finance/cards/connect";
+    "https://app-sandbox.astra.finance/cards/connect";
   const params = new URLSearchParams({
     client_id: clientCredentials().id,
     redirect_uri: redirectUri,
