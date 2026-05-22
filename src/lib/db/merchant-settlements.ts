@@ -212,3 +212,49 @@ export async function getRecentMatchedTransactionsForMerchant(
     };
   });
 }
+
+/**
+ * Matched transactions for the calling merchant's restaurant since a
+ * given date (YYYY-MM-DD), oldest first. RLS scopes to the merchant.
+ * Backs the Performance page.
+ */
+export async function getMatchedTransactionsForMerchantSince(
+  since: string,
+): Promise<MerchantMatchRow[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("matched_transactions")
+    .select(
+      `
+      id, transaction_date, amount_cents, discount_cents,
+      match_confidence, merchant_name_raw,
+      claims (
+        offers ( title ),
+        diner:users!claims_diner_user_id_users_id_fk ( display_name )
+      )
+      `,
+    )
+    .gte("transaction_date", since)
+    .order("transaction_date", { ascending: true })
+    .limit(2000);
+  if (error) {
+    console.error("getMatchedTransactionsForMerchantSince:", error);
+    return [];
+  }
+  return (data ?? []).map((t) => {
+    const claim = one(t.claims);
+    const offer = claim ? one(claim.offers) : null;
+    const diner = claim ? one(claim.diner) : null;
+    const name = (diner as { display_name?: string } | null)?.display_name;
+    return {
+      id: t.id,
+      transactionDate: t.transaction_date,
+      amountCents: t.amount_cents,
+      discountCents: t.discount_cents,
+      matchConfidence: t.match_confidence,
+      merchantNameRaw: t.merchant_name_raw,
+      offerTitle: offer?.title ?? null,
+      dinerInitials: name ? initialsOf(name) : null,
+    };
+  });
+}
