@@ -51,22 +51,24 @@ type TokenResponse = {
   token_type: string;
 };
 
-/** POST /v1/oauth/token — client_id/secret go in username/password fields. */
+/**
+ * POST /v1/oauth/token. Client authentication is HTTP Basic
+ * (client_secret_basic) — client_id:client_secret in the
+ * Authorization header. The grant params go in the form body.
+ */
 async function postToken(
   params: Record<string, string>,
 ): Promise<AstraTokens> {
   const { id, secret } = clientCredentials();
+  const basic = Buffer.from(`${id}:${secret}`).toString("base64");
   const res = await fetch(`${BASE_URL}/v1/oauth/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
+      Authorization: `Basic ${basic}`,
     },
-    body: new URLSearchParams({
-      username: id,
-      password: secret,
-      ...params,
-    }),
+    body: new URLSearchParams(params),
   });
   const text = await res.text();
   if (!res.ok) throw new AstraError(res.status, text);
