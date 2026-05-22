@@ -6,107 +6,152 @@
 //   - auto_approval_status='flagged': matcher was 'high' confidence
 //     but the 6-check rubric rejected something. Ops inspects.
 //
-// Already-reviewed rows (reviewed_at IS NOT NULL) drop out of the list.
+// Sorted riskiest-first (ascending confidence).
 
 import Link from "next/link";
 
+import { Card } from "@/components/brand";
+import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, Eyebrow, Heading } from "@/components/brand";
-import { getPendingReviewMatches } from "@/lib/db/matched-transactions";
+import {
+  getPendingReviewMatches,
+  type MatchConfidence,
+} from "@/lib/db/matched-transactions";
 import { centsToUsd } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
-function ConfidenceBadge({ confidence }: { confidence: string }) {
-  const tone =
-    confidence === "high"
-      ? "border-sage/40 bg-sage-tint text-sage"
-      : confidence === "medium"
-        ? "border-orange/30 bg-orange-tint text-orange-deep"
-        : "border-border bg-cream-warm text-muted-foreground";
+// The 6-check rubric (src/lib/rubric.ts). flagged_reasons holds the
+// FAILED check keys.
+const RUBRIC_KEYS = [
+  "timing",
+  "day",
+  "min_spend",
+  "mcc",
+  "max_per_diner",
+  "card_match",
+];
+
+const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string; rank: number }> = {
+  none: { label: "None", cls: "bg-cream-warm text-muted-foreground", rank: 0 },
+  low: { label: "Low", cls: "bg-orange-tint text-orange-deep", rank: 1 },
+  medium: { label: "Medium", cls: "bg-amber/15 text-ink/80", rank: 2 },
+  high: { label: "High", cls: "bg-sage-tint text-sage", rank: 3 },
+};
+
+function initialsOf(name: string | null | undefined): string {
+  if (!name) return "·";
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${tone}`}
-    >
-      {confidence}
-    </span>
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p.charAt(0).toUpperCase())
+      .join("") || "·"
   );
 }
 
 export default async function AdminMatchesPage() {
   await requireRole("admin");
-  const rows = await getPendingReviewMatches();
+  const rows = (await getPendingReviewMatches()).sort(
+    (a, b) =>
+      CONFIDENCE[a.matchConfidence].rank - CONFIDENCE[b.matchConfidence].rank,
+  );
 
   return (
-    <div className="px-6 py-10">
-      <div className="mx-auto w-full max-w-3xl space-y-6">
-        <div className="space-y-1.5">
-          <Eyebrow>Plaid matches · review queue</Eyebrow>
-          <Heading as="h1" size="page">
-            {rows.length === 0 ? (
-              "All caught up"
-            ) : (
-              <>
-                <em>{rows.length}</em> pending
-              </>
-            )}
-          </Heading>
-          <p className="text-sm text-muted-foreground">
-            Medium- and low-confidence matches, plus high-confidence
-            matches that the rubric flagged. Decide each one.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        eyebrow="Matches"
+        title={
+          rows.length === 0 ? (
+            "All caught up."
+          ) : (
+            <>
+              {rows.length} waiting for <em>a human.</em>
+            </>
+          )
+        }
+        sub="Matches auto-approve at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first."
+      />
 
+      <div className="px-10 py-8">
         {rows.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
             Nothing in the queue. The matcher runs on the daily cron.
           </Card>
         ) : (
-          <Card flush className="divide-y divide-border overflow-hidden">
-            {rows.map((row) => (
-              <Link
-                key={row.id}
-                href={`/admin/matches/${row.id}`}
-                className="block p-4 transition-colors hover:bg-cream-warm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <p className="font-medium">{row.merchantNameRaw}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {row.restaurant ? (
-                        <>guess: {row.restaurant.name} · </>
-                      ) : (
-                        <>no restaurant guess · </>
+          <Card flush className="overflow-hidden">
+            {/* Header row */}
+            <div className="flex items-center gap-4 border-b border-border px-5 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+              <span className="flex-1">Diner · Restaurant</span>
+              <span className="w-24 text-right">Amount</span>
+              <span className="w-28">Txn date</span>
+              <span className="w-20">Confidence</span>
+              <span className="w-28">Rubric</span>
+            </div>
+            {rows.map((row) => {
+              const conf = CONFIDENCE[row.matchConfidence];
+              const failed = new Set(row.flaggedReasons ?? []);
+              const passCount = RUBRIC_KEYS.filter((k) => !failed.has(k)).length;
+              return (
+                <Link
+                  key={row.id}
+                  href={`/admin/matches/${row.id}`}
+                  className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cream-warm font-mono text-[11px]">
+                      {initialsOf(row.claim?.diner?.displayName)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-serif text-base">
+                        {row.restaurant?.name ?? row.merchantNameRaw}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {row.claim?.diner?.displayName ?? "no diner claim"}
+                        {row.autoApprovalStatus === "flagged" ? (
+                          <span className="text-destructive"> · flagged</span>
+                        ) : null}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="w-24 text-right font-mono text-sm">
+                    {centsToUsd(row.amountCents)}
+                  </span>
+                  <span className="w-28 font-mono text-xs text-muted-foreground">
+                    {row.transactionDate}
+                  </span>
+                  <span className="w-20">
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em]",
+                        conf.cls,
                       )}
-                      {row.claim?.diner?.displayName ?? "no diner claim"}
-                      {row.claim?.offer ? (
-                        <> · {row.claim.offer.title}</>
-                      ) : null}
-                    </p>
-                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <ConfidenceBadge confidence={row.matchConfidence} />
-                      {row.autoApprovalStatus === "flagged" ? (
-                        <span className="text-destructive">
-                          flagged
-                          {row.flaggedReasons?.length
-                            ? `: ${row.flaggedReasons.join(", ")}`
-                            : ""}
-                        </span>
-                      ) : null}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-medium">
-                      {centsToUsd(row.amountCents)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {row.transactionDate}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                    >
+                      {conf.label}
+                    </span>
+                  </span>
+                  <span className="flex w-28 items-center gap-1.5">
+                    <span className="flex gap-1">
+                      {RUBRIC_KEYS.map((k) => (
+                        <span
+                          key={k}
+                          className={cn(
+                            "size-2.5 rounded-[2px]",
+                            failed.has(k) ? "bg-orange-deep" : "bg-sage",
+                          )}
+                        />
+                      ))}
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {passCount}/6
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
           </Card>
         )}
       </div>
-    </div>
+    </>
   );
 }
