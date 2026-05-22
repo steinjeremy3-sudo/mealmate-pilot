@@ -134,6 +134,9 @@ export const users = pgTable("users", {
   // auto-approval rubric. A+, A, B, etc.
   trustScore: text("trust_score"),
 
+  // Diner cuisine preferences — drives the "For you" home section.
+  preferredCuisines: text("preferred_cuisines").array().notNull().default([]),
+
   status: userStatusEnum("status").notNull().default("active"),
   ...timestamps,
 });

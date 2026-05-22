@@ -55,6 +55,19 @@ export default async function DinerProfilePage() {
             </Link>
           </li>
           <li>
+            <Link href="/app/profile/preferences" className="block">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+                <div>
+                  <p className="font-medium">Your tastes</p>
+                  <p className="text-xs text-muted-foreground">
+                    Cuisines we&apos;ll feature on your home screen
+                  </p>
+                </div>
+                <span className="text-muted-foreground">→</span>
+              </Card>
+            </Link>
+          </li>
+          <li>
             <Link href="/app/profile/help" className="block">
               <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
                 <div>

@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow } from "@/components/brand";
 import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
+import { getDinerCuisines } from "@/lib/db/diner-preferences";
 import { getRebatesForDiner } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
 
@@ -16,11 +17,13 @@ import { VisitBanner } from "./VisitBanner";
 
 export default async function DinerHome() {
   const profile = await requireRole("diner");
-  const [offers, rebateBanner, rebates] = await Promise.all([
-    getLiveOffers(),
-    getDinerRebateBannerSummary(profile.id),
-    getRebatesForDiner(profile.id),
-  ]);
+  const [offers, rebateBanner, rebates, preferredCuisines] =
+    await Promise.all([
+      getLiveOffers(),
+      getDinerRebateBannerSummary(profile.id),
+      getRebatesForDiner(profile.id),
+      getDinerCuisines(profile.id),
+    ]);
   const showRebateSetupBanner =
     !rebateBanner.hasDestination && rebateBanner.initiatedCents > 0;
 
@@ -78,7 +81,10 @@ export default async function DinerHome() {
             them.
           </Card>
         ) : (
-          <OfferBrowse offers={offers as OfferCardData[]} />
+          <OfferBrowse
+            offers={offers as OfferCardData[]}
+            preferredCuisines={preferredCuisines}
+          />
         )}
       </div>
     </main>

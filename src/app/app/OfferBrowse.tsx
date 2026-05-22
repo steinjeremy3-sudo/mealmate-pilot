@@ -20,7 +20,13 @@ function SectionHead({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
+export function OfferBrowse({
+  offers,
+  preferredCuisines = [],
+}: {
+  offers: OfferCardData[];
+  preferredCuisines?: string[];
+}) {
   const cuisines = useMemo(() => {
     const set = new Set<string>();
     for (const o of offers) {
@@ -38,6 +44,14 @@ export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
   const hero = offers[0];
   const nearYou = offers.slice(1, 5);
   const bigDiscount = offers.filter((o) => o.discount_pct >= 20).slice(0, 4);
+
+  const prefSet = new Set(preferredCuisines);
+  const forYou =
+    prefSet.size > 0
+      ? offers
+          .filter((o) => o.restaurant && prefSet.has(o.restaurant.cuisine))
+          .slice(0, 4)
+      : [];
 
   return (
     <div className="space-y-7">
@@ -73,6 +87,21 @@ export function OfferBrowse({ offers }: { offers: OfferCardData[] }) {
         )
       ) : (
         <>
+          {forYou.length > 0 ? (
+            <section className="space-y-3">
+              <SectionHead>
+                For <em>you</em>
+              </SectionHead>
+              <ul className="space-y-3">
+                {forYou.map((o) => (
+                  <li key={o.id}>
+                    <OfferCard offer={o} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
           {hero ? (
             <section className="space-y-3">
               <SectionHead>

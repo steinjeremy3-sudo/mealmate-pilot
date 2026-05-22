@@ -64,6 +64,13 @@
       "when": 1779282000000,
       "tag": "0008_diner_astra_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779289200000,
+      "tag": "0009_user_preferred_cuisines",
+      "breakpoints": true
     }
   ]
 }
