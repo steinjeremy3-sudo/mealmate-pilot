@@ -80,3 +80,17 @@ export async function getRestaurantById(id: string): Promise<RestaurantWithOwner
   }
   return data as RestaurantWithOwner | null;
 }
+
+/** Admin-only: every restaurant, any status, newest first. */
+export async function getAllRestaurants(): Promise<RestaurantWithOwner[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("*, owner:users!owner_user_id(email, display_name)")
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("getAllRestaurants:", error);
+    return [];
+  }
+  return (data ?? []) as RestaurantWithOwner[];
+}
