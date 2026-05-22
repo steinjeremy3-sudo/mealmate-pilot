@@ -7,19 +7,30 @@ import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow } from "@/components/brand";
 import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
+import { getRebatesForDiner } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
 
 import { OfferBrowse } from "./OfferBrowse";
 import type { OfferCardData } from "./OfferCard";
+import { VisitBanner } from "./VisitBanner";
 
 export default async function DinerHome() {
   const profile = await requireRole("diner");
-  const [offers, rebateBanner] = await Promise.all([
+  const [offers, rebateBanner, rebates] = await Promise.all([
     getLiveOffers(),
     getDinerRebateBannerSummary(profile.id),
+    getRebatesForDiner(profile.id),
   ]);
   const showRebateSetupBanner =
     !rebateBanner.hasDestination && rebateBanner.initiatedCents > 0;
+
+  // Newest cash back from the last week, surfaced as a home banner.
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const recentRebate =
+    rebates[0] && new Date(rebates[0].createdAt) >= weekAgo
+      ? rebates[0]
+      : null;
 
   const firstName =
     profile.displayName?.trim().split(/\s+/)[0] || "there";
@@ -57,6 +68,8 @@ export default async function DinerHome() {
               </p>
             </Card>
           </Link>
+        ) : recentRebate ? (
+          <VisitBanner rebate={recentRebate} />
         ) : null}
 
         {offers.length === 0 ? (
