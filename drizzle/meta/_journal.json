@@ -78,6 +78,13 @@
       "when": 1779296400000,
       "tag": "0010_menu_items",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1779303600000,
+      "tag": "0011_user_payout_method",
+      "breakpoints": true
     }
   ]
 }

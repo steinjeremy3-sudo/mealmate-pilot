@@ -27,6 +27,7 @@ import {
   upsertDinerDwollaCustomer,
 } from "@/lib/db/diner-dwolla";
 import { getPlaidItemForUse } from "@/lib/db/plaid-items";
+import { setPayoutMethod } from "@/lib/db/users-payout";
 import {
   attachPlaidFundingSource,
   createReceiveOnlyCustomer,
@@ -129,8 +130,9 @@ export async function setRebateDestination(formData: FormData): Promise<void> {
       }),
   );
 
-  // 5. Persist as default.
+  // 5. Persist as default + record the diner's payout-method choice.
   await setDefaultCardFundingSource(profile.id, fundingSourceUrl);
+  await setPayoutMethod(profile.id, "dwolla");
 
   await logAuditEvent({
     actor: { id: profile.id, role: profile.role },

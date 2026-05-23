@@ -24,6 +24,7 @@ import {
   setDinerAstraCard,
   upsertDinerAstraTokens,
 } from "@/lib/db/diner-astra";
+import { setPayoutMethod } from "@/lib/db/users-payout";
 import { reportError } from "@/lib/observability/report";
 
 type SearchParams = Promise<Record<string, string | undefined>>;
@@ -118,6 +119,7 @@ export default async function AstraReturnPage({
         cardId: card.id,
         cardLast4: card.last4,
       });
+      await setPayoutMethod(profile.id, "astra");
       ok = true;
     } else {
       detail = `token exchange OK — but GET /v1/cards returned ${cards.length} card(s)`;

@@ -33,6 +33,8 @@ import {
 
 export const userRoleEnum = pgEnum("user_role", ["diner", "merchant", "admin"]);
 export const userStatusEnum = pgEnum("user_status", ["active", "suspended", "deleted"]);
+// 'astra' = push-to-debit-card (Astra), 'dwolla' = ACH (Dwolla).
+export const payoutMethodEnum = pgEnum("payout_method", ["astra", "dwolla"]);
 export const restaurantStatusEnum = pgEnum("restaurant_status", ["pending", "approved", "suspended"]);
 
 // `paused` added for offers that hit monthly_budget_cents.
@@ -136,6 +138,12 @@ export const users = pgTable("users", {
 
   // Diner cuisine preferences — drives the "For you" home section.
   preferredCuisines: text("preferred_cuisines").array().notNull().default([]),
+
+  // Where the diner chose to receive cash back. Null until they pick on
+  // /app/rebates/setup; 'astra' = push to debit card, 'dwolla' = ACH to
+  // bank account. Drives which setup screen they bounce to and (later)
+  // which send rail rebates use.
+  payoutMethod: payoutMethodEnum("payout_method"),
 
   status: userStatusEnum("status").notNull().default("active"),
   ...timestamps,
