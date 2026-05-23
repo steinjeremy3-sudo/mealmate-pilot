@@ -6,7 +6,6 @@
 
 import Link from "next/link";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { buttonVariants, Card, Eyebrow, Heading } from "@/components/brand";
@@ -21,11 +20,6 @@ function returnUrlFrom(host: string): string {
 }
 
 export default async function CashBackDebitPage() {
-  // Hide the screen entirely if the Astra rail isn't live yet.
-  if (process.env.ASTRA_DEBIT_ENABLED !== "true") {
-    redirect("/app/rebates/setup");
-  }
-
   const profile = await requireRole("diner");
   const account = await getDinerAstraAccount(profile.id);
   const hasCard = !!account?.cardId;

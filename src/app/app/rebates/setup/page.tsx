@@ -1,11 +1,14 @@
 // Cash-back destination chooser.
 //
-// Two rails today: Astra push-to-debit-card (fast — minutes, gated
-// behind ASTRA_DEBIT_ENABLED while the vendor enables it on our
-// account) and Dwolla ACH to a checking account (1–2 business days).
-// If the diner has already picked one — either explicitly via
-// users.payout_method or implicitly by completing a setup flow — we
-// short-circuit to a summary with a "switch" affordance.
+// Two rails today: Astra push-to-debit-card (fast — minutes) and
+// Dwolla ACH to a checking account (1–2 business days). The Astra
+// flow is wired end-to-end but the vendor still has debit
+// functionality off on our account, so connecting a card may surface
+// a diagnostic error on the return page — that's expected until
+// Astra clears the block. If the diner has already picked one rail —
+// either explicitly via users.payout_method or implicitly by
+// completing a setup flow — we short-circuit to a summary with a
+// "switch" affordance.
 
 import Link from "next/link";
 import { ArrowRight, Building2, Wallet } from "lucide-react";
@@ -20,7 +23,6 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getDinerAstraAccount } from "@/lib/db/diner-astra";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { getPayoutMethod, type PayoutMethod } from "@/lib/db/users-payout";
-import { cn } from "@/lib/utils";
 
 /**
  * Decide which rail this diner is on, even if users.payout_method was
@@ -41,7 +43,6 @@ function inferMethod(args: {
 
 export default async function CashBackSetupPage() {
   const profile = await requireRole("diner");
-  const debitEnabled = process.env.ASTRA_DEBIT_ENABLED === "true";
 
   const [explicit, astraAccount, dwollaAccount] = await Promise.all([
     getPayoutMethod(profile.id),
@@ -83,8 +84,7 @@ export default async function CashBackSetupPage() {
           icon={<Wallet className="size-5" strokeWidth={1.75} />}
           title="On your debit card"
           subtitle="Lands in minutes."
-          badge={debitEnabled ? "Recommended" : "Coming soon"}
-          disabled={!debitEnabled}
+          badge="Recommended"
         />
 
         {/* ACH option */}
@@ -105,56 +105,37 @@ function OptionCard({
   title,
   subtitle,
   badge,
-  disabled = false,
 }: {
   href: string;
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   badge?: string;
-  disabled?: boolean;
 }) {
-  const inner = (
-    <div className="flex items-center gap-4">
-      <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-cream-warm text-ink">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-serif text-lg leading-tight">{title}</p>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-      {badge ? (
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em]",
-            disabled
-              ? "bg-cream-warm text-muted-foreground"
-              : "bg-sage/15 text-sage",
-          )}
-        >
-          {badge}
-        </span>
-      ) : (
-        <ArrowRight
-          className="size-4 shrink-0 text-muted-foreground"
-          strokeWidth={1.75}
-        />
-      )}
-    </div>
-  );
-
-  if (disabled) {
-    return (
-      <Card className="cursor-not-allowed opacity-60">{inner}</Card>
-    );
-  }
-
   return (
     <Link
       href={href}
       className="block rounded-2xl border border-border bg-white p-5 transition-colors hover:border-orange"
     >
-      {inner}
+      <div className="flex items-center gap-4">
+        <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-cream-warm text-ink">
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-serif text-lg leading-tight">{title}</p>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+        {badge ? (
+          <span className="shrink-0 rounded-full bg-sage/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-sage">
+            {badge}
+          </span>
+        ) : (
+          <ArrowRight
+            className="size-4 shrink-0 text-muted-foreground"
+            strokeWidth={1.75}
+          />
+        )}
+      </div>
     </Link>
   );
 }
@@ -166,7 +147,6 @@ function ActiveSummary({
   kind: PayoutMethod;
   mask?: string | null;
 }) {
-  const debitEnabled = process.env.ASTRA_DEBIT_ENABLED === "true";
   const isAstra = kind === "astra";
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
@@ -214,22 +194,12 @@ function ActiveSummary({
           >
             Manage {isAstra ? "card" : "bank account"}
           </Link>
-          {/* Offer to switch — only show the other rail if it's available. */}
-          {isAstra ? (
-            <Link
-              href="/app/rebates/setup/ach"
-              className="block text-center text-xs text-muted-foreground underline underline-offset-4"
-            >
-              Switch to a bank account instead
-            </Link>
-          ) : debitEnabled ? (
-            <Link
-              href="/app/rebates/setup/debit"
-              className="block text-center text-xs text-muted-foreground underline underline-offset-4"
-            >
-              Switch to a debit card instead
-            </Link>
-          ) : null}
+          <Link
+            href={isAstra ? "/app/rebates/setup/ach" : "/app/rebates/setup/debit"}
+            className="block text-center text-xs text-muted-foreground underline underline-offset-4"
+          >
+            Switch to a {isAstra ? "bank account" : "debit card"} instead
+          </Link>
         </div>
       </div>
     </main>
