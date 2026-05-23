@@ -15,7 +15,7 @@ import { retryRebate } from "./actions";
 const STATUS_TONE: Record<RebateStatus, string> = {
   initiated: "border-border bg-cream-warm text-muted-foreground",
   sent: "border-orange/30 bg-orange-tint text-orange-deep",
-  settled: "border-sage/40 bg-sage-tint text-sage",
+  settled: "border-ink/15 bg-cream-warm text-ink",
   failed: "border-destructive/40 bg-rose/15 text-destructive",
 };
 

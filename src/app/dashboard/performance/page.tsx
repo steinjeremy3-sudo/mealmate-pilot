@@ -165,7 +165,7 @@ export default async function MerchantPerformancePage({
                   >
                     <div className="flex w-full flex-1 items-end">
                       <div
-                        className="w-full rounded-t bg-sage"
+                        className="w-full rounded-t bg-ink"
                         style={{
                           height: `${Math.max(2, (count / maxDow) * 100)}%`,
                         }}

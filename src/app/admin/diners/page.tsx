@@ -7,7 +7,7 @@ import { getAllDiners, type DinerStatus } from "@/lib/db/diners";
 import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<DinerStatus, string> = {
-  active: "border-sage/40 bg-sage-tint text-sage",
+  active: "border-ink/15 bg-cream-warm text-ink",
   suspended: "border-amber/50 bg-amber/15 text-ink/80",
   deleted: "border-border bg-cream-warm text-muted-foreground",
 };

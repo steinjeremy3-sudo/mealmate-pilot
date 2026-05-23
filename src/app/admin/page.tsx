@@ -18,7 +18,7 @@ import { centsToUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string }> = {
-  high: { label: "High", cls: "bg-sage-tint text-sage" },
+  high: { label: "High", cls: "bg-cream-warm text-ink" },
   medium: { label: "Medium", cls: "bg-amber/15 text-ink/80" },
   low: { label: "Low", cls: "bg-orange-tint text-orange-deep" },
   none: { label: "None", cls: "bg-cream-warm text-muted-foreground" },

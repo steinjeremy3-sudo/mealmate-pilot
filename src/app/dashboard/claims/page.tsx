@@ -21,7 +21,7 @@ function StatusBadge({
     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
   if (active) {
     return (
-      <span className={`${base} border-sage/40 bg-sage-tint text-sage`}>
+      <span className={`${base} border-ink/15 bg-cream-warm text-ink`}>
         active
       </span>
     );

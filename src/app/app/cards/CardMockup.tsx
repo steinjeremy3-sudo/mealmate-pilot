@@ -32,7 +32,7 @@ export function CardMockup({
           <span className="truncate font-mono text-[10px] uppercase tracking-[0.12em] text-cream/55">
             {label ?? "Linked card"}
           </span>
-          <span className="font-sans text-xl font-bold italic tracking-tight">
+          <span className="font-sans text-xl font-bold tracking-tight">
             VISA
           </span>
         </div>

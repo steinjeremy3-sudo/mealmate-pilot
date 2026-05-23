@@ -83,7 +83,7 @@ export default async function MerchantSettlementDetail({
             </p>
           </div>
           {s.status === "paid" ? (
-            <p className="border-t border-border pt-3 text-sm text-sage">
+            <p className="border-t border-border pt-3 text-sm text-orange">
               Paid{s.paidAt ? ` ${new Date(s.paidAt).toLocaleDateString()}` : ""}.
               Thank you.
             </p>

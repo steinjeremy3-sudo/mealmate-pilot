@@ -35,7 +35,7 @@ const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string; rank: nu
   none: { label: "None", cls: "bg-cream-warm text-muted-foreground", rank: 0 },
   low: { label: "Low", cls: "bg-orange-tint text-orange-deep", rank: 1 },
   medium: { label: "Medium", cls: "bg-amber/15 text-ink/80", rank: 2 },
-  high: { label: "High", cls: "bg-sage-tint text-sage", rank: 3 },
+  high: { label: "High", cls: "bg-cream-warm text-ink", rank: 3 },
 };
 
 function initialsOf(name: string | null | undefined): string {
@@ -137,7 +137,7 @@ export default async function AdminMatchesPage() {
                           key={k}
                           className={cn(
                             "size-2.5 rounded-[2px]",
-                            failed.has(k) ? "bg-orange-deep" : "bg-sage",
+                            failed.has(k) ? "bg-orange-deep" : "bg-ink",
                           )}
                         />
                       ))}

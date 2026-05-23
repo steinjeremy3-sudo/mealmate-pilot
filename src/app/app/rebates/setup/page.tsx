@@ -126,7 +126,7 @@ function OptionCard({
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
         {badge ? (
-          <span className="shrink-0 rounded-full bg-sage/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-sage">
+          <span className="shrink-0 rounded-full bg-orange-tint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
             {badge}
           </span>
         ) : (
@@ -159,7 +159,7 @@ function ActiveSummary({
         </div>
 
         <Card className="space-y-1.5 text-sm">
-          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-sage">
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
             {isAstra ? "Debit card" : "Bank account"}
           </p>
           <p className="text-foreground/80">

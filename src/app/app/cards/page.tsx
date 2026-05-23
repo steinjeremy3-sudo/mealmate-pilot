@@ -64,7 +64,7 @@ export default async function CardsPage() {
               {ASSURANCES.map(({ Icon, text }) => (
                 <div key={text} className="flex gap-3">
                   <Icon
-                    className="mt-0.5 size-4 shrink-0 text-sage"
+                    className="mt-0.5 size-4 shrink-0 text-orange"
                     strokeWidth={1.75}
                   />
                   <p className="text-sm text-foreground/80">{text}</p>
@@ -79,7 +79,7 @@ export default async function CardsPage() {
                 <CardMockup mask={card.mask} label={card.name ?? "Card"} />
                 <div className="flex items-center justify-between px-1">
                   {card.is_default ? (
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-sage">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-orange">
                       Default card
                     </span>
                   ) : (

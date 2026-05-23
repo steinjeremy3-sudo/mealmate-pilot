@@ -65,7 +65,7 @@ export default async function DinerClaimDetail({
     return (
       <main className="flex flex-1 flex-col bg-ink-deep px-7 py-12 text-cream-soft">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-sage text-cream-soft">
+          <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-ink text-cream-soft">
             <Check className="size-10" strokeWidth={2.5} />
           </span>
           <Eyebrow className="mb-4">Offer activated</Eyebrow>
@@ -148,7 +148,7 @@ export default async function DinerClaimDetail({
 
         {/* ===== State-specific panel ===== */}
         {isActive ? (
-          <Card className="space-y-3 border-sage/40 bg-sage-tint text-center">
+          <Card className="space-y-3 border-orange/30 bg-orange-tint text-center">
             <p className="font-medium text-ink">
               Offer active — expires in {expiresInMinutes(claim)} min
             </p>
@@ -156,11 +156,11 @@ export default async function DinerClaimDetail({
               Eat at {name} and pay with your linked card. We&apos;ll confirm
               your visit and send your cash back within 1–2 business days.
             </p>
-            <form action={cancelClaim} className="border-t border-sage/30 pt-3">
+            <form action={cancelClaim} className="border-t border-border pt-3">
               <input type="hidden" name="claim_id" value={claim.id} />
               <button
                 type="submit"
-                className="cursor-pointer rounded-full border border-sage/40 bg-cream-soft px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-cream-warm"
+                className="cursor-pointer rounded-full border border-border bg-cream-soft px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-cream-warm"
               >
                 Cancel this offer
               </button>

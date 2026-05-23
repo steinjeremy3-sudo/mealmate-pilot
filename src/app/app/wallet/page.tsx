@@ -106,7 +106,7 @@ export default async function WalletPage({
                 {monthLabel} so far
               </Eyebrow>
               <p className="mt-1.5 font-serif text-3xl">
-                <span className="italic text-orange-soft">
+                <span className="text-orange-soft">
                   {centsToUsd(monthSavedCents)}
                 </span>{" "}
                 saved
@@ -161,7 +161,7 @@ export default async function WalletPage({
                     return (
                       <li key={c.id}>
                         <Link href={`/app/claims/${c.id}`} className="block">
-                          <div className="flex items-center gap-3.5 rounded-2xl border border-sage/40 bg-sage-tint p-3 transition-colors hover:bg-sage-soft/40">
+                          <div className="flex items-center gap-3.5 rounded-2xl border border-orange/30 bg-orange-tint p-3 transition-colors hover:bg-cream-warm">
                             <PlaceholderImg
                               name={name}
                               className="size-[70px] shrink-0 rounded-xl"
@@ -288,7 +288,7 @@ export default async function WalletPage({
                           landed
                         </p>
                       </div>
-                      <p className="shrink-0 font-serif text-lg text-sage">
+                      <p className="shrink-0 font-serif text-lg text-orange">
                         +{centsToUsd(r.amountCents)}
                       </p>
                     </div>

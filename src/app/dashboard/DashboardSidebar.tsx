@@ -1,13 +1,14 @@
 "use client";
 
 // Merchant dashboard sidebar — the bundle's warm cream rail with the
-// lowercase italic wordmark, route-aware nav, and a venue + sign-out
-// footer. Client component for usePathname active highlighting; the
-// layout that renders it stays a server component (requireRole + data).
+// wordmark, route-aware nav, and a venue + sign-out footer. Client
+// component for usePathname active highlighting; the layout that
+// renders it stays a server component (requireRole + data).
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Wordmark } from "@/components/brand";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -34,12 +35,7 @@ export function DashboardSidebar({
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
-      <Link
-        href="/dashboard"
-        className="px-3 font-serif text-[26px] font-medium italic tracking-tight text-orange"
-      >
-        mealmate
-      </Link>
+      <Wordmark href="/dashboard" className="px-3" />
 
       <nav className="mt-9 flex flex-1 flex-col gap-0.5">
         {NAV.map((item) => {

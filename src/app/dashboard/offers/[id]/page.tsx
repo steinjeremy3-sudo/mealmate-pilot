@@ -25,7 +25,7 @@ type SearchParams = Promise<{ error?: string }>;
 const OFFER_BADGE: Record<OfferStatus, string> = {
   draft: "border-border bg-cream-warm text-muted-foreground",
   scheduled: "border-amber/50 bg-amber/15 text-ink/80",
-  live: "border-sage/40 bg-sage-tint text-sage",
+  live: "border-ink/15 bg-cream-warm text-ink",
   ended: "border-border bg-cream-warm text-muted-foreground",
 };
 

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { adjustSettlement } from "./actions";
 
 const STATUS_TONE: Record<string, string> = {
-  paid: "border-sage/40 bg-sage-tint text-sage",
+  paid: "border-ink/15 bg-cream-warm text-ink",
   invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
   overdue: "border-destructive/40 bg-rose/15 text-destructive",
   pending: "border-border bg-cream-warm text-muted-foreground",

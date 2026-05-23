@@ -39,7 +39,7 @@ import {
 type BadgeTone = "positive" | "warning" | "negative";
 
 const toneClasses: Record<BadgeTone, string> = {
-  positive: "border-sage/40 bg-sage-tint text-sage",
+  positive: "border-ink/15 bg-cream-warm text-ink",
   warning: "border-amber/50 bg-amber/15 text-ink/80",
   negative: "border-destructive/40 bg-rose/15 text-destructive",
 };

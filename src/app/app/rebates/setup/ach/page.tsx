@@ -74,7 +74,7 @@ export default async function CashBackAchPage() {
 
         {hasDestination ? (
           <Card className="space-y-2 text-sm">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-sage">
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
               Connected
             </p>
             <p className="text-foreground/80">

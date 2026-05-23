@@ -82,7 +82,7 @@ export default async function SavingsPage() {
 
         <div className="space-y-1">
           <Eyebrow>{year} so far</Eyebrow>
-          <p className="pb-2 font-serif text-[72px] italic leading-none text-orange">
+          <p className="pb-2 font-serif text-[72px] leading-none text-orange">
             {dollars(ytdCents)}
           </p>
           <p className="text-base text-foreground/80">
@@ -160,7 +160,7 @@ export default async function SavingsPage() {
                             {spot.visits} visit{spot.visits === 1 ? "" : "s"}
                           </p>
                         </div>
-                        <span className="shrink-0 font-serif text-lg text-sage">
+                        <span className="shrink-0 font-serif text-lg text-orange">
                           {centsToUsd(spot.cents)}
                         </span>
                       </Card>

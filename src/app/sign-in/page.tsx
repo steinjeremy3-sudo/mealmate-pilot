@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 
-import { Button, Card, Eyebrow, Heading } from "@/components/brand";
+import { Button, Card, Heading, Wordmark } from "@/components/brand";
 import { signIn } from "@/app/auth/actions";
 
 type SearchParams = Promise<{ error?: string; sent?: string; email?: string }>;
@@ -28,18 +28,17 @@ export default async function SignInPage({
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <Eyebrow className="flex justify-center">MealMate</Eyebrow>
-          <Heading as="h1" size="page">
-            Sign in
+        <div className="space-y-3 text-center">
+          <div className="flex justify-center">
+            <Wordmark />
+          </div>
+          <Heading as="h1" size="page" className="pb-0">
+            Your favorite food, for less.
           </Heading>
-          <p className="text-sm text-muted-foreground">
-            Diners, restaurants, and ops all sign in here.
-          </p>
         </div>
 
         {sent ? (
-          <Card className="border-sage/40 bg-sage-tint text-sm text-ink/80">
+          <Card className="border-orange/30 bg-orange-tint text-sm text-ink/80">
             We sent a sign-in link to{" "}
             <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
             Click the link in the email to finish signing in — you can close

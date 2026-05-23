@@ -39,7 +39,7 @@ export default async function DinerRebateDetail({
 
         {/* State panel — the message changes with the rebate's state. */}
         {r.status === "initiated" || r.status === "sent" ? (
-          <Card className="border-sage/40 bg-sage-tint">
+          <Card className="border-orange/30 bg-orange-tint">
             <p className="font-medium text-ink">
               {centsToUsd(r.amountCents)} is on the way.
             </p>

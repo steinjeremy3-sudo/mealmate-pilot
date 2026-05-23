@@ -14,7 +14,7 @@ import { centsToUsd } from "@/lib/money";
 const STATUS_TONE: Record<SettlementStatus, string> = {
   pending: "border-border bg-cream-warm text-muted-foreground",
   invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
-  paid: "border-sage/40 bg-sage-tint text-sage",
+  paid: "border-ink/15 bg-cream-warm text-ink",
   overdue: "border-destructive/40 bg-rose/15 text-destructive",
 };
 

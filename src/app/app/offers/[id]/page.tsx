@@ -103,7 +103,7 @@ export default async function DinerOfferDetail({
               <Eyebrow tone="muted" className="text-cream/60">
                 Active offer
               </Eyebrow>
-              <p className="mt-1.5 font-serif text-3xl italic text-orange-soft">
+              <p className="mt-1.5 font-serif text-3xl text-orange-soft">
                 {offer.discount_pct}% off
               </p>
             </div>
@@ -161,7 +161,7 @@ export default async function DinerOfferDetail({
 
         {/* Claim */}
         {activeClaim ? (
-          <Card className="space-y-3 border-sage/40 bg-sage-tint text-center">
+          <Card className="space-y-3 border-orange/30 bg-orange-tint text-center">
             <div className="space-y-1">
               <p className="font-medium text-ink">
                 You&apos;ve activated this offer.
@@ -172,12 +172,12 @@ export default async function DinerOfferDetail({
               </p>
               <Link
                 href={`/app/claims/${activeClaim.id}`}
-                className="inline-block text-xs text-sage underline underline-offset-4"
+                className="inline-block text-xs text-orange underline underline-offset-4"
               >
                 See your offer →
               </Link>
             </div>
-            <form action={cancelClaim} className="border-t border-sage/30 pt-3">
+            <form action={cancelClaim} className="border-t border-border pt-3">
               <input type="hidden" name="claim_id" value={activeClaim.id} />
               <button
                 type="submit"

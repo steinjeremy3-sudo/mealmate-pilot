@@ -10,7 +10,7 @@
 
 import Link from "next/link";
 
-import { Button, Card, Eyebrow, Heading } from "@/components/brand";
+import { Button, Card, Heading, Wordmark } from "@/components/brand";
 import { signUp } from "@/app/auth/actions";
 
 type SearchParams = Promise<{
@@ -43,9 +43,11 @@ export default async function SignUpPage({
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <Eyebrow className="flex justify-center">MealMate</Eyebrow>
-          <Heading as="h1" size="page">
+        <div className="space-y-3 text-center">
+          <div className="flex justify-center">
+            <Wordmark />
+          </div>
+          <Heading as="h1" size="page" className="pb-0">
             Create account
           </Heading>
           <p className="text-sm text-muted-foreground">
@@ -55,7 +57,7 @@ export default async function SignUpPage({
         </div>
 
         {sent ? (
-          <Card className="border-sage/40 bg-sage-tint text-sm text-ink/80">
+          <Card className="border-orange/30 bg-orange-tint text-sm text-ink/80">
             We sent a confirmation link to{" "}
             <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
             Click it to finish creating your account.

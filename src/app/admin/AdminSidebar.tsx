@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Wordmark } from "@/components/brand";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -30,14 +31,12 @@ export function AdminSidebar({
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
-      <Link href="/admin" className="flex items-center gap-2 px-3">
-        <span className="font-serif text-[26px] font-medium italic tracking-tight text-orange">
-          mealmate
-        </span>
+      <div className="flex items-center gap-2 px-3">
+        <Wordmark href="/admin" />
         <span className="rounded bg-orange-tint px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-orange-deep">
           Ops
         </span>
-      </Link>
+      </div>
 
       <nav className="mt-9 flex flex-1 flex-col gap-0.5">
         {NAV.map((item) => {

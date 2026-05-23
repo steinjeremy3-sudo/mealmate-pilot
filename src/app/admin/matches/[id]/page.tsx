@@ -137,13 +137,13 @@ export default async function AdminMatchDetailPage({
                         "flex items-center gap-3 rounded-lg border p-3.5",
                         failed
                           ? "border-orange/30 bg-orange-tint"
-                          : "border-sage/25 bg-sage-tint",
+                          : "border-ink/15 bg-cream-warm",
                       )}
                     >
                       <span
                         className={cn(
                           "flex size-6 shrink-0 items-center justify-center rounded-full text-cream-soft",
-                          failed ? "bg-orange-deep" : "bg-sage",
+                          failed ? "bg-orange-deep" : "bg-ink",
                         )}
                       >
                         {failed ? (

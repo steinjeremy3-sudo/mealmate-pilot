@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<RestaurantStatus, string> = {
   pending: "border-amber/50 bg-amber/15 text-ink/80",
-  approved: "border-sage/40 bg-sage-tint text-sage",
+  approved: "border-ink/15 bg-cream-warm text-ink",
   suspended: "border-destructive/40 bg-rose/15 text-destructive",
 };
 

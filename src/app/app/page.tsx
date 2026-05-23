@@ -47,7 +47,7 @@ export default async function DinerHome() {
           <div className="space-y-1.5">
             <Eyebrow>Dallas · {weekday}</Eyebrow>
             <p className="font-serif text-[22px] leading-tight tracking-tight">
-              Evening, <em className="italic text-orange">{firstName}.</em>
+              Evening, <em className="not-italic text-orange">{firstName}.</em>
             </p>
           </div>
           <Link

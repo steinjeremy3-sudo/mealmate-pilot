@@ -7,9 +7,9 @@
 
 import { cn } from "@/lib/utils";
 
-type Tone = "warm" | "sage" | "cream";
+type Tone = "warm" | "cream";
 
-const TONES: Tone[] = ["warm", "sage", "cream"];
+const TONES: Tone[] = ["warm", "cream"];
 
 function toneFor(seed: string): Tone {
   let h = 0;
@@ -43,14 +43,8 @@ export function PlaceholderImg({
   className,
 }: PlaceholderImgProps) {
   const tone = toneFor(name);
-  const bg =
-    tone === "sage"
-      ? "var(--sage-tint)"
-      : tone === "cream"
-        ? "var(--cream-soft)"
-        : "var(--cream-warm)";
-  const accent =
-    tone === "sage" ? "rgba(122,150,112,0.35)" : "rgba(232,117,74,0.35)";
+  const bg = tone === "cream" ? "var(--cream-soft)" : "var(--cream-warm)";
+  const accent = "rgba(232,117,74,0.35)";
   const stripes = `repeating-linear-gradient(135deg, transparent 0 22px, ${accent} 22px 23px)`;
 
   return (
@@ -72,7 +66,7 @@ export function PlaceholderImg({
         <div className="absolute inset-x-3.5 bottom-3.5">
           <p
             className={cn(
-              "font-serif text-lg italic leading-tight",
+              "font-serif text-lg leading-tight",
               dark ? "text-cream-soft" : "text-ink",
             )}
           >

@@ -53,7 +53,7 @@ export default async function ClaimConfirm({
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-5 text-center">
-          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-orange-tint font-serif text-3xl italic text-orange">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-orange-tint font-serif text-3xl text-orange">
             !
           </span>
           <Eyebrow className="text-center">Already activated</Eyebrow>
