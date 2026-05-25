@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
   <rect width="180" height="180" rx="40" ry="40" fill="#0A0A0A"/>
-  <text
-    x="90"
-    y="128"
-    text-anchor="middle"
-    fill="#F4EFE3"
-    font-family="'Archivo Black','Arial Black','Helvetica Neue',Helvetica,sans-serif"
-    font-weight="900"
-    font-size="104"
-    letter-spacing="-8"
-    style="font-feature-settings: 'kern' 0;"
-  >:)</text>
+  <!-- Eyes -->
+  <circle cx="64" cy="70" r="13" fill="#F4EFE3"/>
+  <circle cx="116" cy="70" r="13" fill="#F4EFE3"/>
+  <!-- Smile (open arc) -->
+  <path
+    d="M 51 106 Q 90 148 129 106"
+    fill="none"
+    stroke="#F4EFE3"
+    stroke-width="13"
+    stroke-linecap="round"
+  />
 </svg>
