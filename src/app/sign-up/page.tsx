@@ -21,13 +21,13 @@ type SearchParams = Promise<{
 }>;
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange";
+  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
 
 const roleClass =
   "flex cursor-pointer items-center gap-2 rounded-lg border border-border " +
-  "bg-cream-soft px-3 py-2 text-sm has-checked:border-orange " +
-  "has-checked:bg-orange-tint";
+  "bg-bone px-3 py-2 text-sm has-checked:border-paprika " +
+  "has-checked:bg-paprika-tint";
 
 export default async function SignUpPage({
   searchParams,
@@ -57,7 +57,7 @@ export default async function SignUpPage({
         </div>
 
         {sent ? (
-          <Card className="border-orange/30 bg-orange-tint text-sm text-ink/80">
+          <Card className="border-paprika/30 bg-paprika-tint text-sm text-ink/80">
             We sent a confirmation link to{" "}
             <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
             Click it to finish creating your account.
@@ -76,7 +76,7 @@ export default async function SignUpPage({
                       name="role"
                       value="diner"
                       defaultChecked={preselected === "diner"}
-                      className="accent-orange"
+                      className="accent-paprika"
                     />
                     Diner
                   </label>
@@ -86,7 +86,7 @@ export default async function SignUpPage({
                       name="role"
                       value="merchant"
                       defaultChecked={preselected === "merchant"}
-                      className="accent-orange"
+                      className="accent-paprika"
                     />
                     Restaurant
                   </label>
@@ -148,7 +148,7 @@ export default async function SignUpPage({
           Already have one?{" "}
           <Link
             href="/sign-in"
-            className="text-orange underline underline-offset-4"
+            className="text-paprika underline underline-offset-4"
           >
             Sign in
           </Link>

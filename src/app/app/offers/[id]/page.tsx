@@ -75,7 +75,7 @@ export default async function DinerOfferDetail({
         <Link
           href="/app"
           aria-label="Back"
-          className="absolute left-4 top-4 flex size-9 items-center justify-center rounded-full bg-cream-soft text-ink shadow-sm transition-colors hover:bg-cream-warm"
+          className="absolute left-4 top-4 flex size-9 items-center justify-center rounded-full bg-bone text-ink shadow-sm transition-colors hover:bg-bone-deep"
         >
           <ArrowLeft className="size-5" strokeWidth={1.75} />
         </Link>
@@ -86,7 +86,7 @@ export default async function DinerOfferDetail({
           <Eyebrow>
             {r ? `${r.cuisine} · ${r.neighborhood}` : "Offer"}
           </Eyebrow>
-          <h1 className="pb-1 font-serif text-[32px] font-medium leading-[1.1] tracking-tight">
+          <h1 className="pb-1 font-display text-[32px] font-medium leading-[1.1] tracking-tight">
             {name}
           </h1>
           {offer.description ? (
@@ -97,23 +97,23 @@ export default async function DinerOfferDetail({
         </div>
 
         {/* Active offer — dark card */}
-        <div className="space-y-3 rounded-2xl bg-ink-deep p-5 text-cream-soft">
+        <div className="space-y-3 rounded-2xl bg-ink-deep p-5 text-bone">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <Eyebrow tone="muted" className="text-cream/60">
+              <Eyebrow tone="muted" className="text-bone/60">
                 Active offer
               </Eyebrow>
-              <p className="mt-1.5 font-serif text-3xl text-orange-soft">
+              <p className="mt-1.5 font-display text-3xl text-paprika">
                 {offer.discount_pct}% off
               </p>
             </div>
             {dayRange ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-orange px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
+              <span className="inline-flex shrink-0 items-center rounded-full bg-paprika px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
                 {dayRange}
               </span>
             ) : null}
           </div>
-          <p className="text-sm text-cream/70">
+          <p className="text-sm text-bone/70">
             Valid {timeRange}
             {offer.min_check_cents > 0
               ? ` · Minimum check ${centsToUsd(offer.min_check_cents)}`
@@ -138,7 +138,7 @@ export default async function DinerOfferDetail({
               <Eyebrow tone="muted">Menu</Eyebrow>
               <Link
                 href={`/app/offers/${offer.id}/menu`}
-                className="text-xs text-orange underline underline-offset-4"
+                className="text-xs text-paprika underline underline-offset-4"
               >
                 See full menu →
               </Link>
@@ -161,7 +161,7 @@ export default async function DinerOfferDetail({
 
         {/* Claim */}
         {activeClaim ? (
-          <Card className="space-y-3 border-orange/30 bg-orange-tint text-center">
+          <Card className="space-y-3 border-paprika/30 bg-paprika-tint text-center">
             <div className="space-y-1">
               <p className="font-medium text-ink">
                 You&apos;ve activated this offer.
@@ -172,7 +172,7 @@ export default async function DinerOfferDetail({
               </p>
               <Link
                 href={`/app/claims/${activeClaim.id}`}
-                className="inline-block text-xs text-orange underline underline-offset-4"
+                className="inline-block text-xs text-paprika underline underline-offset-4"
               >
                 See your offer →
               </Link>

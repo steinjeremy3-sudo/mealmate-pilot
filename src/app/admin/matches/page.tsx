@@ -32,10 +32,10 @@ const RUBRIC_KEYS = [
 ];
 
 const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string; rank: number }> = {
-  none: { label: "None", cls: "bg-cream-warm text-muted-foreground", rank: 0 },
-  low: { label: "Low", cls: "bg-orange-tint text-orange-deep", rank: 1 },
-  medium: { label: "Medium", cls: "bg-amber/15 text-ink/80", rank: 2 },
-  high: { label: "High", cls: "bg-cream-warm text-ink", rank: 3 },
+  none: { label: "None", cls: "bg-bone-deep text-muted-foreground", rank: 0 },
+  low: { label: "Low", cls: "bg-paprika-tint text-paprika-deep", rank: 1 },
+  medium: { label: "Medium", cls: "bg-paprika/15 text-ink/80", rank: 2 },
+  high: { label: "High", cls: "bg-bone-deep text-ink", rank: 3 },
 };
 
 function initialsOf(name: string | null | undefined): string {
@@ -96,14 +96,14 @@ export default async function AdminMatchesPage() {
                 <Link
                   key={row.id}
                   href={`/admin/matches/${row.id}`}
-                  className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                  className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cream-warm font-mono text-[11px]">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bone-deep font-mono text-[11px]">
                       {initialsOf(row.claim?.diner?.displayName)}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate font-serif text-base">
+                      <p className="truncate font-display text-base">
                         {row.restaurant?.name ?? row.merchantNameRaw}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
@@ -137,7 +137,7 @@ export default async function AdminMatchesPage() {
                           key={k}
                           className={cn(
                             "size-2.5 rounded-[2px]",
-                            failed.has(k) ? "bg-orange-deep" : "bg-ink",
+                            failed.has(k) ? "bg-paprika-deep" : "bg-ink",
                           )}
                         />
                       ))}

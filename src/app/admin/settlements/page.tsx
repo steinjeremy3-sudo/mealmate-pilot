@@ -15,10 +15,10 @@ import { centsToUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, string> = {
-  paid: "border-ink/15 bg-cream-warm text-ink",
-  invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
-  overdue: "border-destructive/40 bg-rose/15 text-destructive",
-  pending: "border-border bg-cream-warm text-muted-foreground",
+  paid: "border-ink/15 bg-bone-deep text-ink",
+  invoiced: "border-paprika/30 bg-paprika-tint text-paprika-deep",
+  overdue: "border-destructive/40 bg-burnt/15 text-destructive",
+  pending: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -72,9 +72,9 @@ export default async function AdminSettlementsPage() {
               <Link
                 key={s.id}
                 href={`/admin/settlements/${s.id}`}
-                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
               >
-                <span className="min-w-0 flex-1 truncate font-serif text-base">
+                <span className="min-w-0 flex-1 truncate font-display text-base">
                   {s.restaurant?.name ?? "Unknown restaurant"}
                 </span>
                 <span className="w-48 font-mono text-xs text-muted-foreground">

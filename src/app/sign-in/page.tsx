@@ -12,8 +12,8 @@ import { signIn } from "@/app/auth/actions";
 type SearchParams = Promise<{ error?: string; sent?: string; email?: string }>;
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange";
+  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
 
 export default async function SignInPage({
   searchParams,
@@ -38,7 +38,7 @@ export default async function SignInPage({
         </div>
 
         {sent ? (
-          <Card className="border-orange/30 bg-orange-tint text-sm text-ink/80">
+          <Card className="border-paprika/30 bg-paprika-tint text-sm text-ink/80">
             We sent a sign-in link to{" "}
             <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
             Click the link in the email to finish signing in — you can close
@@ -90,7 +90,7 @@ export default async function SignInPage({
           New here?{" "}
           <Link
             href="/sign-up"
-            className="text-orange underline underline-offset-4"
+            className="text-paprika underline underline-offset-4"
           >
             Create an account
           </Link>

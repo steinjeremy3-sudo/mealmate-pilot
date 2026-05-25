@@ -14,7 +14,7 @@ import { HeroOffer, OfferCard, OfferTile, type OfferCardData } from "./OfferCard
 
 function SectionHead({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-serif text-[22px] font-medium leading-tight tracking-tight [&_em]:not-italic [&_em]:text-orange">
+    <h2 className="font-display text-[22px] font-medium leading-tight tracking-tight [&_em]:not-italic [&_em]:text-paprika">
       {children}
     </h2>
   );

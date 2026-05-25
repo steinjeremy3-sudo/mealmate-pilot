@@ -2,7 +2,7 @@
 //
 // The diner connects a debit card through Astra's hosted card-connect
 // page; Astra redirects back to /app/rebates/setup/return with an
-// OAuth code. MealMate never sees the card number — Astra captures it.
+// OAuth code. Mealmate never sees the card number — Astra captures it.
 
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -72,7 +72,7 @@ export default async function CashBackDebitPage() {
             <Card className="space-y-2 text-sm text-foreground/80">
               <p>
                 Connect the debit card you&apos;d like your cash back sent
-                to. Astra captures it securely — MealMate never sees the
+                to. Astra captures it securely — Mealmate never sees the
                 card number.
               </p>
               <p className="text-muted-foreground">

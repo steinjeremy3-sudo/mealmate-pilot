@@ -56,7 +56,7 @@ export async function matchPendingTransactions(): Promise<MatchSummary> {
     )
     .eq("match_confidence", "none")
     .is("restaurant_id", null)
-    .is("dismissed_at", null); // skip rows ops marked "not a MealMate visit"
+    .is("dismissed_at", null); // skip rows ops marked "not a Mealmate visit"
   if (error) {
     console.error("matchPendingTransactions: list pending:", error);
     return { ...zeroSummary(), errors: 1 };

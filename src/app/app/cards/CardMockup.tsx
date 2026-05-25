@@ -18,7 +18,7 @@ export function CardMockup({
     <div
       className={cn(
         "flex aspect-[1.6/1] w-full flex-col justify-between rounded-2xl",
-        "bg-gradient-to-br from-ink-soft to-ink p-5 text-cream-soft shadow-xl",
+        "bg-gradient-to-br from-ink-soft to-ink p-5 text-bone shadow-xl",
         className,
       )}
     >
@@ -29,7 +29,7 @@ export function CardMockup({
           ···· ···· ···· {mask ?? "••••"}
         </p>
         <div className="flex items-end justify-between gap-3">
-          <span className="truncate font-mono text-[10px] uppercase tracking-[0.12em] text-cream/55">
+          <span className="truncate font-mono text-[10px] uppercase tracking-[0.12em] text-bone/55">
             {label ?? "Linked card"}
           </span>
           <span className="font-sans text-xl font-bold tracking-tight">

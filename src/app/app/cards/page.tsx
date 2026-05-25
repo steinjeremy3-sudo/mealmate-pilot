@@ -15,7 +15,7 @@ import { PlaidLinkButton } from "./PlaidLinkButton";
 const ASSURANCES = [
   {
     Icon: ShieldCheck,
-    text: "Bank-grade encryption. Your bank login goes to Plaid, never to MealMate.",
+    text: "Bank-grade encryption. Your bank login goes to Plaid, never to Mealmate.",
   },
   {
     Icon: Eye,
@@ -64,7 +64,7 @@ export default async function CardsPage() {
               {ASSURANCES.map(({ Icon, text }) => (
                 <div key={text} className="flex gap-3">
                   <Icon
-                    className="mt-0.5 size-4 shrink-0 text-orange"
+                    className="mt-0.5 size-4 shrink-0 text-paprika"
                     strokeWidth={1.75}
                   />
                   <p className="text-sm text-foreground/80">{text}</p>
@@ -79,7 +79,7 @@ export default async function CardsPage() {
                 <CardMockup mask={card.mask} label={card.name ?? "Card"} />
                 <div className="flex items-center justify-between px-1">
                   {card.is_default ? (
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-orange">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-paprika">
                       Default card
                     </span>
                   ) : (
@@ -91,7 +91,7 @@ export default async function CardsPage() {
                         <input type="hidden" name="card_id" value={card.id} />
                         <button
                           type="submit"
-                          className="cursor-pointer text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
+                          className="cursor-pointer text-xs text-muted-foreground underline underline-offset-4 hover:text-paprika"
                         >
                           Make default
                         </button>

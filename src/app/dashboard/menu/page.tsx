@@ -13,8 +13,8 @@ import { centsToUsd } from "@/lib/money";
 import { createMenuItem, removeMenuItem } from "./actions";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange";
+  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
 const labelClass =
   "mb-1.5 block font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
 
@@ -42,7 +42,7 @@ export default async function MerchantMenuPage() {
         <div className="grid w-full max-w-3xl gap-6 md:grid-cols-[1fr_1.4fr]">
           {/* Add an item */}
           <Card className="h-fit p-6">
-            <h2 className="font-serif text-xl tracking-tight">Add an item</h2>
+            <h2 className="font-display text-xl tracking-tight">Add an item</h2>
             <form action={createMenuItem} className="mt-4 space-y-4">
               <div>
                 <label className={labelClass} htmlFor="section">
@@ -86,7 +86,7 @@ export default async function MerchantMenuPage() {
                 <input
                   type="checkbox"
                   name="discount_eligible"
-                  className="accent-orange"
+                  className="accent-paprika"
                 />
                 The discount applies to this item
               </label>
@@ -117,7 +117,7 @@ export default async function MerchantMenuPage() {
                             {it.name}
                           </p>
                           {it.discountEligible ? (
-                            <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-orange-deep">
+                            <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-paprika-deep">
                               Discount applies
                             </p>
                           ) : null}

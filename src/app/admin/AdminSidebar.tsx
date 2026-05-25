@@ -1,6 +1,6 @@
 "use client";
 
-// Ops console sidebar — the bundle's warm cream rail with the
+// Ops console sidebar — the bundle's warm bone rail with the
 // lowercase wordmark + OPS badge and route-aware nav. Client component
 // for usePathname; the layout stays a server component (requireRole).
 
@@ -30,10 +30,10 @@ export function AdminSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
+    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-bone-deep px-4 py-7">
       <div className="flex items-center gap-2 px-3">
         <Wordmark href="/admin" />
-        <span className="rounded bg-orange-tint px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-orange-deep">
+        <span className="rounded bg-paprika-tint px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-paprika-deep">
           Ops
         </span>
       </div>
@@ -51,7 +51,7 @@ export function AdminSidebar({
               className={cn(
                 "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-ink text-cream"
+                  ? "bg-ink text-bone"
                   : "text-ink-soft hover:bg-ink/5",
               )}
             >
@@ -63,7 +63,7 @@ export function AdminSidebar({
 
       <div className="mt-auto space-y-3 border-t border-border pt-4">
         <div className="px-1">
-          <p className="truncate font-serif text-lg text-ink">{displayName}</p>
+          <p className="truncate font-display text-lg text-ink">{displayName}</p>
           <p className="text-xs text-muted-foreground">Operations</p>
         </div>
         {footerSlot}

@@ -18,7 +18,7 @@
 //     the next run retries; counted as `deferred`, not `failed`.
 //   terminal / user_action (ValidationError, closed account) — mark
 //     the rebate 'failed' with the error.
-//   unexpected (InsufficientFunds — the MealMate balance is dry — or
+//   unexpected (InsufficientFunds — the Mealmate balance is dry — or
 //     any unrecognized code) — mark 'failed' AND reportError so a
 //     human investigates.
 //   DB write failure AFTER a successful transfer — money moved but our

@@ -49,7 +49,7 @@ function Problem({
           Couldn&apos;t connect that card
         </Heading>
         <Card className="text-sm text-muted-foreground">{message}</Card>
-        <Card className="space-y-1 bg-cream-warm">
+        <Card className="space-y-1 bg-bone-deep">
           <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
             Diagnostic
           </p>
@@ -57,7 +57,7 @@ function Problem({
         </Card>
         <Link
           href="/app/rebates/setup"
-          className="inline-block text-sm text-orange underline underline-offset-4"
+          className="inline-block text-sm text-paprika underline underline-offset-4"
         >
           Try again →
         </Link>

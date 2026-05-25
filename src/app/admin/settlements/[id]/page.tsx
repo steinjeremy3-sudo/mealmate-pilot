@@ -16,10 +16,10 @@ import { cn } from "@/lib/utils";
 import { adjustSettlement } from "./actions";
 
 const STATUS_TONE: Record<string, string> = {
-  paid: "border-ink/15 bg-cream-warm text-ink",
-  invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
-  overdue: "border-destructive/40 bg-rose/15 text-destructive",
-  pending: "border-border bg-cream-warm text-muted-foreground",
+  paid: "border-ink/15 bg-bone-deep text-ink",
+  invoiced: "border-paprika/30 bg-paprika-tint text-paprika-deep",
+  overdue: "border-destructive/40 bg-burnt/15 text-destructive",
+  pending: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function Fact({ k, v }: { k: string; v: React.ReactNode }) {
@@ -52,7 +52,7 @@ export default async function AdminSettlementDetail({
         eyebrow={
           <Link
             href="/admin/settlements"
-            className="transition-colors hover:text-orange"
+            className="transition-colors hover:text-paprika"
           >
             ← Settlements
           </Link>
@@ -74,7 +74,7 @@ export default async function AdminSettlementDetail({
       <div className="px-10 py-8">
         <div className="w-full max-w-2xl space-y-6">
           <Card className="p-6">
-            <h2 className="font-serif text-xl tracking-tight">Settlement</h2>
+            <h2 className="font-display text-xl tracking-tight">Settlement</h2>
             <dl className="mt-3 border-t border-border">
               <Fact k="Period" v={`${s.periodStart} → ${s.periodEnd}`} />
               <Fact k="Transactions" v={s.transactionCount} />
@@ -134,7 +134,7 @@ export default async function AdminSettlementDetail({
                     min={0}
                     required
                     defaultValue={(s.totalDiscountCents / 100).toFixed(2)}
-                    className="block w-40 rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+                    className="block w-40 rounded-lg border border-border bg-bone px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika"
                   />
                 </label>
                 <Button type="submit" variant="ghost">

@@ -30,7 +30,7 @@ export default async function DinerProfilePage() {
         <ul className="space-y-2">
           <li>
             <Link href="/app/cards" className="block">
-              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-bone-deep">
                 <div>
                   <p className="font-medium">Linked cards</p>
                   <p className="text-xs text-muted-foreground">
@@ -43,7 +43,7 @@ export default async function DinerProfilePage() {
           </li>
           <li>
             <Link href="/app/rebates/setup" className="block">
-              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-bone-deep">
                 <div>
                   <p className="font-medium">Cash-back destination</p>
                   <p className="text-xs text-muted-foreground">
@@ -56,7 +56,7 @@ export default async function DinerProfilePage() {
           </li>
           <li>
             <Link href="/app/profile/preferences" className="block">
-              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-bone-deep">
                 <div>
                   <p className="font-medium">Your tastes</p>
                   <p className="text-xs text-muted-foreground">
@@ -69,11 +69,11 @@ export default async function DinerProfilePage() {
           </li>
           <li>
             <Link href="/app/profile/help" className="block">
-              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+              <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-bone-deep">
                 <div>
                   <p className="font-medium">Help</p>
                   <p className="text-xs text-muted-foreground">
-                    How MealMate works, answered
+                    How Mealmate works, answered
                   </p>
                 </div>
                 <span className="text-muted-foreground">→</span>

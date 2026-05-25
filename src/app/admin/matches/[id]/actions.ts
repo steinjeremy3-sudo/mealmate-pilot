@@ -86,7 +86,7 @@ export async function rejectMatch(formData: FormData): Promise<void> {
       auto_approval_status: "rejected",
       reviewed_by_user_id: reviewer.id,
       reviewed_at: new Date().toISOString(),
-      // "Not a MealMate visit" also dismisses the transaction so the
+      // "Not a Mealmate visit" also dismisses the transaction so the
       // matcher never re-evaluates it.
       ...(reason === "not_a_visit"
         ? { dismissed_at: new Date().toISOString() }

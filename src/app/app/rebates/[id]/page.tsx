@@ -25,7 +25,7 @@ export default async function DinerRebateDetail({
       <div className="w-full max-w-md space-y-6">
         <Link
           href="/app/rebates"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← Back to wallet
         </Link>
@@ -39,7 +39,7 @@ export default async function DinerRebateDetail({
 
         {/* State panel — the message changes with the rebate's state. */}
         {r.status === "initiated" || r.status === "sent" ? (
-          <Card className="border-orange/30 bg-orange-tint">
+          <Card className="border-paprika/30 bg-paprika-tint">
             <p className="font-medium text-ink">
               {centsToUsd(r.amountCents)} is on the way.
             </p>
@@ -51,11 +51,11 @@ export default async function DinerRebateDetail({
         ) : null}
 
         {r.status === "settled" ? (
-          <Card className="border-orange/30 bg-orange-tint">
+          <Card className="border-paprika/30 bg-paprika-tint">
             <p className="font-medium text-ink">
               Your {centsToUsd(r.amountCents)} cash back landed.
             </p>
-            <p className="mt-1 text-sm text-orange-deep">
+            <p className="mt-1 text-sm text-paprika-deep">
               It&apos;s on the account you linked
               {r.cardMask ? ` ····${r.cardMask}` : ""}.
             </p>
@@ -63,7 +63,7 @@ export default async function DinerRebateDetail({
         ) : null}
 
         {r.status === "failed" ? (
-          <Card className="space-y-2 border-destructive/40 bg-rose/15">
+          <Card className="space-y-2 border-destructive/40 bg-burnt/15">
             <p className="font-medium text-ink">
               We couldn&apos;t send this cash back.
             </p>
@@ -99,13 +99,13 @@ export default async function DinerRebateDetail({
           ) : null}
           {r.platformFeeCents != null ? (
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">MealMate fee</span>
+              <span className="text-muted-foreground">Mealmate fee</span>
               <span>−{centsToUsd(r.platformFeeCents)}</span>
             </div>
           ) : null}
           <div className="flex justify-between gap-4 border-t border-border pt-1 font-medium">
             <span>Your cash back</span>
-            <span className="text-orange-deep">
+            <span className="text-paprika-deep">
               {centsToUsd(r.amountCents)}
             </span>
           </div>

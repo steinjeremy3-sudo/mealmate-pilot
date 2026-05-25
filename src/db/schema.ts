@@ -1,4 +1,4 @@
-// MealMate database schema (rebate model — see BRIEF.md).
+// Mealmate database schema (rebate model — see BRIEF.md).
 //
 // Conventions:
 //   - All primary keys are uuid default gen_random_uuid() unless noted
@@ -292,7 +292,7 @@ export const plaidItems = pgTable("plaid_items", {
 
 // === plaid_card_accounts ===========================================
 // Specific card accounts inside a Plaid Item that the diner linked to
-// MealMate. We match Plaid transactions against accounts here.
+// Mealmate. We match Plaid transactions against accounts here.
 export const plaidCardAccounts = pgTable("plaid_card_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
 
@@ -420,7 +420,7 @@ export const matchedTransactions = pgTable("matched_transactions", {
   reviewedByUserId: uuid("reviewed_by_user_id").references(() => users.id, { onDelete: "set null" }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 
-  // Set when ops marks this transaction "not a MealMate visit" (A3).
+  // Set when ops marks this transaction "not a Mealmate visit" (A3).
   // The matcher skips dismissed rows so it stops re-evaluating them.
   dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
 
@@ -465,7 +465,7 @@ export const rebates = pgTable("rebates", {
 
 // === settlements ===================================================
 // Weekly invoice batch. One row per (restaurant, period) — restaurant
-// owes MealMate the sum of discount_cents for matched transactions in
+// owes Mealmate the sum of discount_cents for matched transactions in
 // that period.
 export const settlements = pgTable("settlements", {
   id: uuid("id").primaryKey().defaultRandom(),

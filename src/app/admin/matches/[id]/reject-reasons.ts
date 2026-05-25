@@ -7,7 +7,7 @@ export const REJECT_REASONS = {
   amount_mismatch: "Amount mismatch",
   outside_window: "Outside time window",
   diner_cancelled: "Diner cancelled",
-  not_a_visit: "Not a MealMate visit",
+  not_a_visit: "Not a Mealmate visit",
   other: "Other",
 } as const;
 

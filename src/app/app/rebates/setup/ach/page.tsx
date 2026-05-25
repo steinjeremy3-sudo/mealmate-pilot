@@ -74,7 +74,7 @@ export default async function CashBackAchPage() {
 
         {hasDestination ? (
           <Card className="space-y-2 text-sm">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-paprika">
               Connected
             </p>
             <p className="text-foreground/80">
@@ -85,7 +85,7 @@ export default async function CashBackAchPage() {
           <Card className="space-y-3 text-sm text-foreground/80">
             <p>
               You don&apos;t have a checking account linked yet. Add one
-              through Plaid first — you&apos;ll grant MealMate read-only
+              through Plaid first — you&apos;ll grant Mealmate read-only
               access; we never see your card number.
             </p>
             <Link
@@ -109,7 +109,7 @@ export default async function CashBackAchPage() {
                 key={acc.id}
                 className={cn(
                   "flex cursor-pointer items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3.5",
-                  "hover:border-orange has-[:checked]:border-orange has-[:checked]:bg-orange/5",
+                  "hover:border-paprika has-[:checked]:border-paprika has-[:checked]:bg-paprika/5",
                 )}
               >
                 <input
@@ -118,7 +118,7 @@ export default async function CashBackAchPage() {
                   value={acc.id}
                   required
                   defaultChecked={i === 0}
-                  className="accent-orange"
+                  className="accent-paprika"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">

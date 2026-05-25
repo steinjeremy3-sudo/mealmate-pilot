@@ -8,7 +8,7 @@ import { buttonVariants, Eyebrow, Heading } from "@/components/brand";
 export default function Home() {
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-ink px-6 py-20">
-      {/* Warm orange glow, top-right — the welcome-screen signature. */}
+      {/* Warm paprika glow, top-right — the welcome-screen signature. */}
       <div
         aria-hidden
         className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem]"
@@ -19,13 +19,13 @@ export default function Home() {
       />
 
       <div className="relative w-full max-w-xl space-y-6 text-center">
-        <Eyebrow className="flex justify-center">MealMate · Dallas</Eyebrow>
+        <Eyebrow className="flex justify-center">Mealmate · Dallas</Eyebrow>
 
-        <Heading as="h1" size="display" className="text-cream">
+        <Heading as="h1" size="display" className="text-bone">
           Eat well. Get a <em>little back</em>.
         </Heading>
 
-        <p className="text-base text-cream/70">
+        <p className="text-base text-bone/70">
           Activate an offer at an independent Dallas restaurant, pay
           however you normally would, and cash back lands on your linked
           card a day or two later. No coupons, no apps at the table.
@@ -46,11 +46,11 @@ export default function Home() {
           </Link>
         </div>
 
-        <p className="pt-1 text-sm text-cream/50">
+        <p className="pt-1 text-sm text-bone/50">
           Already have an account?{" "}
           <Link
             href="/sign-in"
-            className="text-cream underline underline-offset-4 hover:text-orange"
+            className="text-bone underline underline-offset-4 hover:text-paprika"
           >
             Sign in
           </Link>

@@ -14,10 +14,10 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/console/PageHeader";
 
 const OFFER_BADGE: Record<OfferStatus, string> = {
-  draft: "border-border bg-cream-warm text-muted-foreground",
-  scheduled: "border-amber/50 bg-amber/15 text-ink/80",
-  live: "border-ink/15 bg-cream-warm text-ink",
-  ended: "border-border bg-cream-warm text-muted-foreground",
+  draft: "border-border bg-bone-deep text-muted-foreground",
+  scheduled: "border-paprika/50 bg-paprika/15 text-ink/80",
+  live: "border-ink/15 bg-bone-deep text-ink",
+  ended: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function StatusBadge({ status }: { status: OfferStatus }) {
@@ -85,10 +85,10 @@ export default async function MerchantOffersPage() {
               <Link
                 key={o.id}
                 href={`/dashboard/offers/${o.id}`}
-                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-base">{o.title}</p>
+                  <p className="truncate font-display text-base">{o.title}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {o.description}
                   </p>
@@ -104,7 +104,7 @@ export default async function MerchantOffersPage() {
                 <span className="w-40">
                   <span className="block h-1.5 overflow-hidden rounded-full bg-border">
                     <span
-                      className="block h-full rounded-full bg-orange"
+                      className="block h-full rounded-full bg-paprika"
                       style={{
                         width: `${
                           o.monthly_budget_cents > 0

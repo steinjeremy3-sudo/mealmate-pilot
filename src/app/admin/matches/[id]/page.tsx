@@ -63,7 +63,7 @@ export default async function AdminMatchDetailPage({
         eyebrow={
           <Link
             href="/admin/matches"
-            className="transition-colors hover:text-orange"
+            className="transition-colors hover:text-paprika"
           >
             ← Visit queue
           </Link>
@@ -120,7 +120,7 @@ export default async function AdminMatchDetailPage({
           {isFlagged ? (
             <Card className="space-y-3 p-6">
               <div>
-                <h2 className="font-serif text-xl tracking-tight">
+                <h2 className="font-display text-xl tracking-tight">
                   Six-check rubric
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -136,14 +136,14 @@ export default async function AdminMatchDetailPage({
                       className={cn(
                         "flex items-center gap-3 rounded-lg border p-3.5",
                         failed
-                          ? "border-orange/30 bg-orange-tint"
-                          : "border-ink/15 bg-cream-warm",
+                          ? "border-paprika/30 bg-paprika-tint"
+                          : "border-ink/15 bg-bone-deep",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-full text-cream-soft",
-                          failed ? "bg-orange-deep" : "bg-ink",
+                          "flex size-6 shrink-0 items-center justify-center rounded-full text-bone",
+                          failed ? "bg-paprika-deep" : "bg-ink",
                         )}
                       >
                         {failed ? (
@@ -253,7 +253,7 @@ export default async function AdminMatchDetailPage({
                 <li>
                   Platform fee: {centsToUsd(previewBreakdown.platformFeeCents)}
                 </li>
-                <li className="font-medium text-orange-deep">
+                <li className="font-medium text-paprika-deep">
                   Cash back to diner: {centsToUsd(previewBreakdown.rebateCents)}
                 </li>
               </ul>
@@ -284,7 +284,7 @@ export default async function AdminMatchDetailPage({
                 <select
                   name="reason"
                   defaultValue="wrong_restaurant"
-                  className="block rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+                  className="block rounded-lg border border-border bg-bone px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika"
                 >
                   {Object.entries(REJECT_REASONS).map(([value, label]) => (
                     <option key={value} value={value}>

@@ -39,7 +39,7 @@ export default async function DinerMapPage() {
 
         {/* Decorative map panel — faint grid + offer pins. */}
         <div
-          className="relative h-64 overflow-hidden rounded-2xl border border-border bg-cream-warm"
+          className="relative h-64 overflow-hidden rounded-2xl border border-border bg-bone-deep"
           style={{
             backgroundImage:
               "linear-gradient(rgba(26,26,31,0.04) 1px, transparent 1px)," +
@@ -57,7 +57,7 @@ export default async function DinerMapPage() {
                 className="absolute -translate-x-1/2 -translate-y-1/2"
                 title={o.restaurant?.name ?? "Offer"}
               >
-                <span className="flex size-9 items-center justify-center rounded-full border-2 border-cream bg-orange text-[11px] font-semibold text-white shadow-sm">
+                <span className="flex size-9 items-center justify-center rounded-full border-2 border-bone bg-paprika text-[11px] font-semibold text-white shadow-sm">
                   {o.discount_pct}%
                 </span>
               </Link>

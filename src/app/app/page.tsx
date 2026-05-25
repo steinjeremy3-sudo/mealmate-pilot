@@ -46,14 +46,14 @@ export default async function DinerHome() {
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5">
             <Eyebrow>Dallas · {weekday}</Eyebrow>
-            <p className="font-serif text-[22px] leading-tight tracking-tight">
-              Evening, <em className="not-italic text-orange">{firstName}.</em>
+            <p className="font-display text-[22px] leading-tight tracking-tight">
+              Evening, <em className="not-italic text-paprika">{firstName}.</em>
             </p>
           </div>
           <Link
             href="/app/wallet?show=pending"
             aria-label="Your cash back"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-cream-warm text-ink transition-colors hover:bg-cream-soft"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bone-deep text-ink transition-colors hover:bg-bone"
           >
             <Bell className="size-[18px]" strokeWidth={1.75} />
           </Link>
@@ -61,12 +61,12 @@ export default async function DinerHome() {
 
         {showRebateSetupBanner ? (
           <Link href="/app/rebates/setup" className="block">
-            <Card className="border-orange/30 bg-orange-tint transition-colors hover:bg-orange-soft/30">
+            <Card className="border-paprika/30 bg-paprika-tint transition-colors hover:bg-paprika/30">
               <p className="font-medium text-ink">
                 You have {centsToUsd(rebateBanner.initiatedCents)} in cash
                 back waiting.
               </p>
-              <p className="mt-1 text-sm text-orange-deep">
+              <p className="mt-1 text-sm text-paprika-deep">
                 Pick a checking account to receive them →
               </p>
             </Card>

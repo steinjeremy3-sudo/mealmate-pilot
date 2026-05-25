@@ -88,7 +88,7 @@ export default async function MerchantPerformancePage({
             How you&apos;re <em>doing.</em>
           </>
         }
-        sub="Visits MealMate confirmed at your restaurant over the chosen window."
+        sub="Visits Mealmate confirmed at your restaurant over the chosen window."
       />
 
       <div className="space-y-8 px-10 py-8">
@@ -101,8 +101,8 @@ export default async function MerchantPerformancePage({
               className={cn(
                 "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                 r.key === x.key
-                  ? "border-ink bg-ink text-cream"
-                  : "border-border bg-transparent text-ink hover:bg-cream-warm",
+                  ? "border-ink bg-ink text-bone"
+                  : "border-border bg-transparent text-ink hover:bg-bone-deep",
               )}
             >
               Last {x.label}
@@ -129,7 +129,7 @@ export default async function MerchantPerformancePage({
           <>
             {/* Visits over time */}
             <Card className="p-6">
-              <h2 className="font-serif text-xl tracking-tight">
+              <h2 className="font-display text-xl tracking-tight">
                 Visits over time
               </h2>
               <p className="text-xs text-muted-foreground">
@@ -140,7 +140,7 @@ export default async function MerchantPerformancePage({
                   <div
                     key={d.key}
                     title={`${d.key}: ${d.count}`}
-                    className="flex-1 rounded-t bg-orange"
+                    className="flex-1 rounded-t bg-paprika"
                     style={{
                       height: `${Math.max(2, (d.count / maxDay) * 100)}%`,
                     }}
@@ -151,7 +151,7 @@ export default async function MerchantPerformancePage({
 
             {/* By day of week */}
             <Card className="p-6">
-              <h2 className="font-serif text-xl tracking-tight">
+              <h2 className="font-display text-xl tracking-tight">
                 By day of week
               </h2>
               <p className="text-xs text-muted-foreground">
@@ -181,7 +181,7 @@ export default async function MerchantPerformancePage({
 
             {/* By offer */}
             <div className="space-y-3">
-              <h2 className="font-serif text-xl tracking-tight">By offer</h2>
+              <h2 className="font-display text-xl tracking-tight">By offer</h2>
               <Card flush className="overflow-hidden">
                 {byOffer.map((o) => (
                   <div
@@ -194,7 +194,7 @@ export default async function MerchantPerformancePage({
                     <span className="w-24 text-right font-mono text-sm">
                       {o.visits} visit{o.visits === 1 ? "" : "s"}
                     </span>
-                    <span className="w-24 text-right font-mono text-sm text-orange-deep">
+                    <span className="w-24 text-right font-mono text-sm text-paprika-deep">
                       −{centsToUsd(o.discount)}
                     </span>
                   </div>

@@ -1,5 +1,5 @@
 // Merchant settlements (B5) — the weekly invoices a restaurant owes
-// MealMate for the discounts it granted.
+// Mealmate for the discounts it granted.
 
 import Link from "next/link";
 
@@ -12,10 +12,10 @@ import {
 import { centsToUsd } from "@/lib/money";
 
 const STATUS_TONE: Record<SettlementStatus, string> = {
-  pending: "border-border bg-cream-warm text-muted-foreground",
-  invoiced: "border-orange/30 bg-orange-tint text-orange-deep",
-  paid: "border-ink/15 bg-cream-warm text-ink",
-  overdue: "border-destructive/40 bg-rose/15 text-destructive",
+  pending: "border-border bg-bone-deep text-muted-foreground",
+  invoiced: "border-paprika/30 bg-paprika-tint text-paprika-deep",
+  paid: "border-ink/15 bg-bone-deep text-ink",
+  overdue: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 function StatusPill({ status }: { status: SettlementStatus }) {
@@ -51,7 +51,7 @@ export default async function MerchantSettlementsPage() {
             )}
           </Heading>
           <p className="text-sm text-muted-foreground">
-            Each week, MealMate invoices you for the discount portion of
+            Each week, Mealmate invoices you for the discount portion of
             the visits we confirmed at your restaurant.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default async function MerchantSettlementsPage() {
               <Link
                 key={s.id}
                 href={`/dashboard/settlements/${s.id}`}
-                className="flex items-start justify-between gap-4 p-4 transition-colors hover:bg-cream-warm"
+                className="flex items-start justify-between gap-4 p-4 transition-colors hover:bg-bone-deep"
               >
                 <div className="space-y-1">
                   <p className="font-medium">

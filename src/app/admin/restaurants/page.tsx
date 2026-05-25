@@ -13,9 +13,9 @@ import {
 import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<RestaurantStatus, string> = {
-  pending: "border-amber/50 bg-amber/15 text-ink/80",
-  approved: "border-ink/15 bg-cream-warm text-ink",
-  suspended: "border-destructive/40 bg-rose/15 text-destructive",
+  pending: "border-paprika/50 bg-paprika/15 text-ink/80",
+  approved: "border-ink/15 bg-bone-deep text-ink",
+  suspended: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 const FILTERS: { key: string; label: string }[] = [
@@ -75,8 +75,8 @@ export default async function AdminRestaurantsPage({
               className={cn(
                 "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                 active === f.key
-                  ? "border-ink bg-ink text-cream"
-                  : "border-border bg-transparent text-ink hover:bg-cream-warm",
+                  ? "border-ink bg-ink text-bone"
+                  : "border-border bg-transparent text-ink hover:bg-bone-deep",
               )}
             >
               {f.label}{" "}
@@ -104,10 +104,10 @@ export default async function AdminRestaurantsPage({
               <Link
                 key={r.id}
                 href={`/admin/restaurants/${r.id}`}
-                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-base">{r.name}</p>
+                  <p className="truncate font-display text-base">{r.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {r.cuisine} · {r.neighborhood}
                   </p>

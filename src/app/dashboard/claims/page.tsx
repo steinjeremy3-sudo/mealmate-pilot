@@ -21,7 +21,7 @@ function StatusBadge({
     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
   if (active) {
     return (
-      <span className={`${base} border-ink/15 bg-cream-warm text-ink`}>
+      <span className={`${base} border-ink/15 bg-bone-deep text-ink`}>
         active
       </span>
     );
@@ -34,8 +34,8 @@ function StatusBadge({
         : status;
   const tone =
     label === "confirmed"
-      ? "border-orange/30 bg-orange-tint text-orange-deep"
-      : "border-border bg-cream-warm text-muted-foreground";
+      ? "border-paprika/30 bg-paprika-tint text-paprika-deep"
+      : "border-border bg-bone-deep text-muted-foreground";
   return <span className={`${base} ${tone}`}>{label}</span>;
 }
 

@@ -18,10 +18,10 @@ import { centsToUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const CONFIDENCE: Record<MatchConfidence, { label: string; cls: string }> = {
-  high: { label: "High", cls: "bg-cream-warm text-ink" },
-  medium: { label: "Medium", cls: "bg-amber/15 text-ink/80" },
-  low: { label: "Low", cls: "bg-orange-tint text-orange-deep" },
-  none: { label: "None", cls: "bg-cream-warm text-muted-foreground" },
+  high: { label: "High", cls: "bg-bone-deep text-ink" },
+  medium: { label: "Medium", cls: "bg-paprika/15 text-ink/80" },
+  low: { label: "Low", cls: "bg-paprika-tint text-paprika-deep" },
+  none: { label: "None", cls: "bg-bone-deep text-muted-foreground" },
 };
 
 function initialsOf(name: string | null | undefined): string {
@@ -77,7 +77,7 @@ export default async function AdminHome() {
         actions={
           <Link
             href="/admin/matches"
-            className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-ink-soft"
+            className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
           >
             Review queue ({pendingMatches.length})
           </Link>
@@ -105,8 +105,8 @@ export default async function AdminHome() {
         {/* Alert — only when something needs attention */}
         {failedRebates > 0 ? (
           <Link href="/admin/rebates" className="block">
-            <div className="flex items-center gap-3 rounded-xl border border-orange/30 bg-orange-tint px-5 py-3.5 text-sm text-orange-deep transition-colors hover:bg-orange-soft/25">
-              <span className="size-2 shrink-0 rounded-full bg-orange" />
+            <div className="flex items-center gap-3 rounded-xl border border-paprika/30 bg-paprika-tint px-5 py-3.5 text-sm text-paprika-deep transition-colors hover:bg-paprika/25">
+              <span className="size-2 shrink-0 rounded-full bg-paprika" />
               <span className="flex-1">
                 <strong className="font-semibold">
                   {failedRebates} cash-back payment
@@ -132,10 +132,10 @@ export default async function AdminHome() {
                 <Link
                   key={r.id}
                   href={`/admin/restaurants/${r.id}`}
-                  className="flex items-center justify-between gap-4 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-cream-warm"
+                  className="flex items-center justify-between gap-4 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-bone-deep"
                 >
                   <div className="min-w-0">
-                    <p className="font-serif text-base">{r.name}</p>
+                    <p className="font-display text-base">{r.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {r.cuisine} · {r.neighborhood} ·{" "}
                       {r.owner?.display_name ?? "Unknown owner"}
@@ -155,7 +155,7 @@ export default async function AdminHome() {
           <Card flush className="overflow-hidden">
             <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
-                <h2 className="font-serif text-xl tracking-tight">
+                <h2 className="font-display text-xl tracking-tight">
                   Visit review queue
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -164,7 +164,7 @@ export default async function AdminHome() {
               </div>
               <Link
                 href="/admin/matches"
-                className="shrink-0 text-sm font-medium text-orange hover:text-orange-deep"
+                className="shrink-0 text-sm font-medium text-paprika hover:text-paprika-deep"
               >
                 Open queue →
               </Link>
@@ -181,9 +181,9 @@ export default async function AdminHome() {
                     <li key={m.id}>
                       <Link
                         href={`/admin/matches/${m.id}`}
-                        className="flex items-center gap-3 border-b border-border px-6 py-3.5 transition-colors last:border-b-0 hover:bg-cream-warm"
+                        className="flex items-center gap-3 border-b border-border px-6 py-3.5 transition-colors last:border-b-0 hover:bg-bone-deep"
                       >
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cream-warm font-mono text-[11px]">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-bone-deep font-mono text-[11px]">
                           {initialsOf(m.claim?.diner?.displayName)}
                         </span>
                         <div className="min-w-0 flex-1">
@@ -212,12 +212,12 @@ export default async function AdminHome() {
 
           <Card flush className="overflow-hidden">
             <div className="flex items-center justify-between gap-4 px-6 py-5">
-              <h2 className="font-serif text-xl tracking-tight">
+              <h2 className="font-display text-xl tracking-tight">
                 Recent activity
               </h2>
               <Link
                 href="/admin/audit"
-                className="shrink-0 text-sm font-medium text-orange hover:text-orange-deep"
+                className="shrink-0 text-sm font-medium text-paprika hover:text-paprika-deep"
               >
                 Full log →
               </Link>
@@ -236,7 +236,7 @@ export default async function AdminHome() {
                     <span className="w-28 shrink-0 font-mono text-[11px] text-muted-foreground">
                       {dateTime(e.createdAt)}
                     </span>
-                    <span className="shrink-0 rounded bg-orange-tint px-2 py-0.5 font-mono text-[10px] text-orange-deep">
+                    <span className="shrink-0 rounded bg-paprika-tint px-2 py-0.5 font-mono text-[10px] text-paprika-deep">
                       {e.action}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-muted-foreground">

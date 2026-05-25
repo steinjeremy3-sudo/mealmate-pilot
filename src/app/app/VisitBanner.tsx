@@ -33,15 +33,15 @@ export function VisitBanner({ rebate }: { rebate: VisitBannerData }) {
 
   return (
     <Link href={`/app/rebates/${rebate.id}`} className="block">
-      <div className="flex items-center gap-3 rounded-2xl bg-ink-deep p-4 text-cream-soft transition-transform active:scale-[0.99]">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange text-white">
+      <div className="flex items-center gap-3 rounded-2xl bg-ink-deep p-4 text-bone transition-transform active:scale-[0.99]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paprika text-white">
           <Check className="size-5" strokeWidth={2.5} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{line}</p>
-          <p className="text-xs text-cream/60">{sub}</p>
+          <p className="text-xs text-bone/60">{sub}</p>
         </div>
-        <span className="shrink-0 text-cream/40">→</span>
+        <span className="shrink-0 text-bone/40">→</span>
       </div>
     </Link>
   );

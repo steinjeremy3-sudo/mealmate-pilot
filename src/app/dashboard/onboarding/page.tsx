@@ -14,8 +14,8 @@ import { createRestaurant } from "./actions";
 type SearchParams = Promise<{ error?: string }>;
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-cream-soft px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange";
+  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
 
 export default async function OnboardingPage({
   searchParams,

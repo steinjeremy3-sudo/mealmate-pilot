@@ -53,7 +53,7 @@ export default async function MerchantSettlementDetail({
       <div className="mx-auto w-full max-w-3xl space-y-6">
         <Link
           href="/dashboard/settlements"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← Back to settlements
         </Link>
@@ -70,9 +70,9 @@ export default async function MerchantSettlementDetail({
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                Total owed to MealMate
+                Total owed to Mealmate
               </p>
-              <p className="font-serif text-3xl font-medium text-foreground">
+              <p className="font-display text-3xl font-medium text-foreground">
                 {centsToUsd(s.totalDiscountCents)}
               </p>
             </div>
@@ -83,7 +83,7 @@ export default async function MerchantSettlementDetail({
             </p>
           </div>
           {s.status === "paid" ? (
-            <p className="border-t border-border pt-3 text-sm text-orange">
+            <p className="border-t border-border pt-3 text-sm text-paprika">
               Paid{s.paidAt ? ` ${new Date(s.paidAt).toLocaleDateString()}` : ""}.
               Thank you.
             </p>
@@ -92,7 +92,7 @@ export default async function MerchantSettlementDetail({
               href={payUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full bg-orange px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-deep"
+              className="inline-flex items-center justify-center rounded-full bg-paprika px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-paprika-deep"
             >
               Pay this invoice →
             </a>

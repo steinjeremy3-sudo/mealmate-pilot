@@ -1,4 +1,4 @@
-// Diner Help / FAQ — how MealMate works, in a plain-language
+// Diner Help / FAQ — how Mealmate works, in a plain-language
 // accordion. Native <details> so it stays a server component.
 
 import Link from "next/link";
@@ -13,15 +13,15 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Why do I need to link a card?",
-    a: "We use read-only access to your card's transactions so we can confirm your restaurant visits. We never charge your card, and your bank login is handled by Plaid — never stored by MealMate.",
+    a: "We use read-only access to your card's transactions so we can confirm your restaurant visits. We never charge your card, and your bank login is handled by Plaid — never stored by Mealmate.",
   },
   {
-    q: "What's the MealMate fee?",
-    a: "MealMate keeps 6% of the total bill as a platform fee, capped at $10. Your cash back is the discount minus that fee — the full breakdown shows on every cash-back detail page.",
+    q: "What's the Mealmate fee?",
+    a: "Mealmate keeps 6% of the total bill as a platform fee, capped at $10. Your cash back is the discount minus that fee — the full breakdown shows on every cash-back detail page.",
   },
   {
     q: "Can I pay with a different card?",
-    a: "It needs to be a card you've linked to MealMate — otherwise we have no way to confirm the visit. You can link more than one under Profile → Linked cards.",
+    a: "It needs to be a card you've linked to Mealmate — otherwise we have no way to confirm the visit. You can link more than one under Profile → Linked cards.",
   },
   {
     q: "What if I cancel an offer I activated?",
@@ -29,7 +29,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Do restaurants see who I am?",
-    a: "No. Restaurants see anonymous initials only. MealMate shares aggregate stats with them — never your name and never your card.",
+    a: "No. Restaurants see anonymous initials only. Mealmate shares aggregate stats with them — never your name and never your card.",
   },
 ];
 
@@ -41,7 +41,7 @@ export default async function DinerHelpPage() {
       <div className="w-full max-w-md space-y-6">
         <Link
           href="/app/profile"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← Profile
         </Link>
@@ -57,7 +57,7 @@ export default async function DinerHelpPage() {
           {FAQS.map((f) => (
             <details
               key={f.q}
-              className="group rounded-xl border border-border bg-cream-soft px-4 py-3"
+              className="group rounded-xl border border-border bg-bone px-4 py-3"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
                 {f.q}
@@ -76,7 +76,7 @@ export default async function DinerHelpPage() {
           Still stuck? Email{" "}
           <a
             href="mailto:support@mealmate.co"
-            className="text-orange underline underline-offset-4"
+            className="text-paprika underline underline-offset-4"
           >
             support@mealmate.co
           </a>{" "}

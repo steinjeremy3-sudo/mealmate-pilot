@@ -16,9 +16,9 @@ type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
 
 const STATUS_TONE: Record<string, string> = {
-  approved: "border-ink/15 bg-cream-warm text-ink",
-  pending: "border-amber/50 bg-amber/15 text-ink/80",
-  suspended: "border-destructive/40 bg-rose/15 text-destructive",
+  approved: "border-ink/15 bg-bone-deep text-ink",
+  pending: "border-paprika/50 bg-paprika/15 text-ink/80",
+  suspended: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 function Fact({ k, v }: { k: string; v: React.ReactNode }) {
@@ -50,7 +50,7 @@ export default async function AdminRestaurantReview({
     <>
       <PageHeader
         eyebrow={
-          <Link href="/admin" className="transition-colors hover:text-orange">
+          <Link href="/admin" className="transition-colors hover:text-paprika">
             ← Control room
           </Link>
         }
@@ -71,7 +71,7 @@ export default async function AdminRestaurantReview({
       <div className="px-10 py-8">
         <div className="w-full max-w-2xl space-y-6">
           <Card className="p-6">
-            <h2 className="font-serif text-xl tracking-tight">
+            <h2 className="font-display text-xl tracking-tight">
               Submitted info
             </h2>
             <dl className="mt-3 border-t border-border">

@@ -1,4 +1,4 @@
-// Rebate-model pricing. Diner pays the full check at the POS — MealMate
+// Rebate-model pricing. Diner pays the full check at the POS — Mealmate
 // only sees the transaction after Plaid surfaces it. We then compute
 // the rebate that gets pushed back to the diner's card via Visa Direct.
 //
@@ -27,7 +27,7 @@ export type RebateBreakdown = {
   totalCents: number;
   /** Discount the offer entitles them to (% of total, rounded). */
   discountCents: number;
-  /** MealMate's cut, after applying the min/max bounds. */
+  /** Mealmate's cut, after applying the min/max bounds. */
   platformFeeCents: number;
   /** Net rebate pushed to the diner's card via Visa Direct. */
   rebateCents: number;

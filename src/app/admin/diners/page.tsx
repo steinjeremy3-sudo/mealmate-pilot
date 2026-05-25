@@ -7,9 +7,9 @@ import { getAllDiners, type DinerStatus } from "@/lib/db/diners";
 import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<DinerStatus, string> = {
-  active: "border-ink/15 bg-cream-warm text-ink",
-  suspended: "border-amber/50 bg-amber/15 text-ink/80",
-  deleted: "border-border bg-cream-warm text-muted-foreground",
+  active: "border-ink/15 bg-bone-deep text-ink",
+  suspended: "border-paprika/50 bg-paprika/15 text-ink/80",
+  deleted: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function shortDate(iso: string): string {
@@ -34,7 +34,7 @@ export default async function AdminDinersPage() {
             <em>member{diners.length === 1 ? "" : "s"}.</em>
           </>
         }
-        sub="Everyone who's signed up to dine with MealMate."
+        sub="Everyone who's signed up to dine with Mealmate."
       />
 
       <div className="px-10 py-8">
@@ -55,7 +55,7 @@ export default async function AdminDinersPage() {
                 key={d.id}
                 className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
               >
-                <span className="min-w-0 flex-1 truncate font-serif text-base">
+                <span className="min-w-0 flex-1 truncate font-display text-base">
                   {d.displayName}
                 </span>
                 <span className="w-72 truncate text-sm text-muted-foreground">

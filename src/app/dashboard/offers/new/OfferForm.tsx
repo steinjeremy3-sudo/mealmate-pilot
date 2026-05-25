@@ -23,8 +23,8 @@ const DAYS: [string, string][] = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-cream-soft px-3 py-2.5 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange";
+  "w-full rounded-lg border border-border bg-bone px-3 py-2.5 text-sm " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
 const labelClass =
   "mb-2 block font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
 
@@ -107,7 +107,7 @@ export function OfferForm({
               max={50}
               value={discount}
               onChange={(e) => setDiscount(Number(e.target.value))}
-              className="w-full accent-orange"
+              className="w-full accent-paprika"
             />
             <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
               <span>15%</span>
@@ -128,8 +128,8 @@ export function OfferForm({
                     className={cn(
                       "flex-1 rounded-lg border py-2.5 font-mono text-[11px] uppercase tracking-[0.06em] transition-colors",
                       on
-                        ? "border-ink bg-ink text-cream"
-                        : "border-border bg-cream-soft text-muted-foreground hover:bg-cream-warm",
+                        ? "border-ink bg-ink text-bone"
+                        : "border-border bg-bone text-muted-foreground hover:bg-bone-deep",
                     )}
                   >
                     {label}
@@ -253,13 +253,13 @@ export function OfferForm({
       {/* ===== Live preview ===== */}
       <div className="h-fit space-y-3 lg:sticky lg:top-8">
         <Eyebrow tone="muted">Diner preview</Eyebrow>
-        <div className="rounded-2xl bg-ink-deep p-5 text-cream-soft">
+        <div className="rounded-2xl bg-ink-deep p-5 text-bone">
           <div className="relative">
             <PlaceholderImg
               name={restaurantName}
               className="h-32 rounded-xl"
             />
-            <span className="absolute right-2.5 top-2.5 rounded-full bg-orange px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
+            <span className="absolute right-2.5 top-2.5 rounded-full bg-paprika px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
               {discount}% OFF
             </span>
           </div>
@@ -267,13 +267,13 @@ export function OfferForm({
             <Eyebrow>
               {dayRange ? `${dayRange} · ${start}–${end}` : "Pick days"}
             </Eyebrow>
-            <p className="font-serif text-2xl leading-tight">
+            <p className="font-display text-2xl leading-tight">
               {restaurantName}
             </p>
-            <p className="text-sm text-cream/60">
+            <p className="text-sm text-bone/60">
               {cuisine} · {neighborhood}
             </p>
-            <p className="mt-3 border-t border-white/10 pt-3 text-xs text-cream/60">
+            <p className="mt-3 border-t border-white/10 pt-3 text-xs text-bone/60">
               Minimum check ${minCheck}
             </p>
           </div>

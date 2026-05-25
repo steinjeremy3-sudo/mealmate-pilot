@@ -1,6 +1,6 @@
 "use client";
 
-// Merchant dashboard sidebar — the bundle's warm cream rail with the
+// Merchant dashboard sidebar — the bundle's warm bone rail with the
 // wordmark, route-aware nav, and a venue + sign-out footer. Client
 // component for usePathname active highlighting; the layout that
 // renders it stays a server component (requireRole + data).
@@ -34,7 +34,7 @@ export function DashboardSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-cream-warm px-4 py-7">
+    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-bone-deep px-4 py-7">
       <Wordmark href="/dashboard" className="px-3" />
 
       <nav className="mt-9 flex flex-1 flex-col gap-0.5">
@@ -50,7 +50,7 @@ export function DashboardSidebar({
               className={cn(
                 "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-ink text-cream"
+                  ? "bg-ink text-bone"
                   : "text-ink-soft hover:bg-ink/5",
               )}
             >
@@ -63,7 +63,7 @@ export function DashboardSidebar({
       <div className="mt-auto space-y-3 border-t border-border pt-4">
         <div className="px-1">
           {restaurantName ? (
-            <p className="truncate font-serif text-lg text-ink">
+            <p className="truncate font-display text-lg text-ink">
               {restaurantName}
             </p>
           ) : null}

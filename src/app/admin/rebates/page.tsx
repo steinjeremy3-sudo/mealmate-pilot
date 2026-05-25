@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 import { retryRebate } from "./actions";
 
 const STATUS_TONE: Record<RebateStatus, string> = {
-  initiated: "border-border bg-cream-warm text-muted-foreground",
-  sent: "border-orange/30 bg-orange-tint text-orange-deep",
-  settled: "border-ink/15 bg-cream-warm text-ink",
-  failed: "border-destructive/40 bg-rose/15 text-destructive",
+  initiated: "border-border bg-bone-deep text-muted-foreground",
+  sent: "border-paprika/30 bg-paprika-tint text-paprika-deep",
+  settled: "border-ink/15 bg-bone-deep text-ink",
+  failed: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 const FILTERS: { key: string; label: string }[] = [
@@ -67,12 +67,12 @@ export default async function AdminRebatesPage({
             Every <em>payout.</em>
           </>
         }
-        sub="Cash back moving from MealMate to diners via Dwolla ACH."
+        sub="Cash back moving from Mealmate to diners via Dwolla ACH."
         actions={
           failedCount > 0 ? (
             <Link
               href="/admin/rebates?status=failed"
-              className="inline-flex items-center gap-2 rounded-full bg-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-deep"
+              className="inline-flex items-center gap-2 rounded-full bg-paprika px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-paprika-deep"
             >
               <span className="size-2 rounded-full bg-white" />
               {failedCount} failed · review
@@ -91,8 +91,8 @@ export default async function AdminRebatesPage({
               className={cn(
                 "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                 active === f.key
-                  ? "border-ink bg-ink text-cream"
-                  : "border-border bg-transparent text-ink hover:bg-cream-warm",
+                  ? "border-ink bg-ink text-bone"
+                  : "border-border bg-transparent text-ink hover:bg-bone-deep",
               )}
             >
               {f.label}{" "}
@@ -122,7 +122,7 @@ export default async function AdminRebatesPage({
                 className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-base">
+                  <p className="truncate font-display text-base">
                     {r.diner?.displayName ?? "Unknown diner"}
                     {r.restaurant ? (
                       <span className="text-muted-foreground">
@@ -156,7 +156,7 @@ export default async function AdminRebatesPage({
                 <span className="flex w-36 items-center justify-end gap-3">
                   <Link
                     href={`/admin/matches/${r.matchedTransactionId}`}
-                    className="text-xs text-muted-foreground underline underline-offset-4 hover:text-orange"
+                    className="text-xs text-muted-foreground underline underline-offset-4 hover:text-paprika"
                   >
                     visit →
                   </Link>

@@ -39,9 +39,9 @@ import {
 type BadgeTone = "positive" | "warning" | "negative";
 
 const toneClasses: Record<BadgeTone, string> = {
-  positive: "border-ink/15 bg-cream-warm text-ink",
-  warning: "border-amber/50 bg-amber/15 text-ink/80",
-  negative: "border-destructive/40 bg-rose/15 text-destructive",
+  positive: "border-ink/15 bg-bone-deep text-ink",
+  warning: "border-paprika/50 bg-paprika/15 text-ink/80",
+  negative: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 function Badge({ tone, children }: { tone: BadgeTone; children: React.ReactNode }) {
@@ -141,7 +141,7 @@ export default async function MerchantHome() {
 
               {restaurant.status === "pending" ? (
                 <p className="border-t border-border pt-4 text-sm text-muted-foreground">
-                  The MealMate team typically approves new restaurants
+                  The Mealmate team typically approves new restaurants
                   within a business day. You&apos;ll be able to set up
                   payouts and create offers once approved.
                 </p>
@@ -152,7 +152,7 @@ export default async function MerchantHome() {
                   Your restaurant is currently suspended. Reach out to{" "}
                   <Link
                     href="mailto:ops@mealmate.co"
-                    className="text-orange underline underline-offset-4"
+                    className="text-paprika underline underline-offset-4"
                   >
                     ops@mealmate.co
                   </Link>{" "}
@@ -181,7 +181,7 @@ export default async function MerchantHome() {
                   <>
                     <p className="text-sm text-muted-foreground">
                       We collect bank details and KYC through Stripe so
-                      MealMate can settle the weekly discount invoice with
+                      Mealmate can settle the weekly discount invoice with
                       you. Takes about 5 minutes.
                     </p>
                     <form action={startStripeOnboarding}>
@@ -279,7 +279,7 @@ export default async function MerchantHome() {
           <div className="overflow-hidden rounded-xl border border-border bg-card lg:col-span-2">
             <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
-                <h2 className="font-serif text-xl tracking-tight">
+                <h2 className="font-display text-xl tracking-tight">
                   Recent visits
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -327,7 +327,7 @@ export default async function MerchantHome() {
                         {shortDate(m.transactionDate)}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex size-7 items-center justify-center rounded-full bg-cream-warm font-mono text-[11px]">
+                        <span className="inline-flex size-7 items-center justify-center rounded-full bg-bone-deep font-mono text-[11px]">
                           {m.dinerInitials ?? "·"}
                         </span>
                       </td>
@@ -337,7 +337,7 @@ export default async function MerchantHome() {
                       <td className="px-6 py-4 text-right font-mono text-[13px]">
                         {centsToUsd(m.amountCents)}
                       </td>
-                      <td className="px-6 py-4 text-right font-mono text-[13px] text-orange-deep">
+                      <td className="px-6 py-4 text-right font-mono text-[13px] text-paprika-deep">
                         {m.discountCents != null
                           ? `−${centsToUsd(m.discountCents)}`
                           : "—"}
@@ -353,7 +353,7 @@ export default async function MerchantHome() {
             <Eyebrow tone="muted">Next invoice</Eyebrow>
             {pendingSettlement ? (
               <>
-                <p className="pb-2 pt-3 font-serif text-4xl leading-none tracking-tight">
+                <p className="pb-2 pt-3 font-display text-4xl leading-none tracking-tight">
                   {centsToUsd(pendingSettlement.totalDiscountCents)}
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -392,13 +392,13 @@ export default async function MerchantHome() {
             ] as const
           ).map(([label, sub, href]) => (
             <Link key={href} href={href}>
-              <Card className="h-full space-y-1.5 p-5 transition-colors hover:bg-cream-warm">
+              <Card className="h-full space-y-1.5 p-5 transition-colors hover:bg-bone-deep">
                 <Eyebrow>Quick action</Eyebrow>
-                <p className="pt-1 font-serif text-xl tracking-tight">
+                <p className="pt-1 font-display text-xl tracking-tight">
                   {label}
                 </p>
                 <p className="text-sm text-muted-foreground">{sub}</p>
-                <p className="pt-2 text-sm font-medium text-orange">Open →</p>
+                <p className="pt-2 text-sm font-medium text-paprika">Open →</p>
               </Card>
             </Link>
           ))}

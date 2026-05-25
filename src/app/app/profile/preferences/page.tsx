@@ -24,7 +24,7 @@ export default async function PreferencesPage() {
       <div className="w-full max-w-md space-y-6">
         <Link
           href="/app/profile"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← Profile
         </Link>

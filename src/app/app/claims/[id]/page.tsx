@@ -63,16 +63,16 @@ export default async function DinerClaimDetail({
   // ===== Just-placed success screen =====
   if (placed && isActive) {
     return (
-      <main className="flex flex-1 flex-col bg-ink-deep px-7 py-12 text-cream-soft">
+      <main className="flex flex-1 flex-col bg-ink-deep px-7 py-12 text-bone">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-ink text-cream-soft">
+          <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-ink text-bone">
             <Check className="size-10" strokeWidth={2.5} />
           </span>
           <Eyebrow className="mb-4">Offer activated</Eyebrow>
-          <Heading as="h1" size="display" className="text-cream-soft">
+          <Heading as="h1" size="display" className="text-bone">
             You&apos;re <em>all set.</em>
           </Heading>
-          <p className="max-w-xs text-[15px] leading-relaxed text-cream/70">
+          <p className="max-w-xs text-[15px] leading-relaxed text-bone/70">
             Head to {name} and pay normally with your linked card. We&apos;ll
             confirm your visit and send your cash back within 1–2 days.
           </p>
@@ -85,10 +85,10 @@ export default async function DinerClaimDetail({
               className="size-14 shrink-0 rounded-lg"
             />
             <div className="min-w-0">
-              <p className="truncate font-serif text-lg text-cream-soft">
+              <p className="truncate font-display text-lg text-bone">
                 {name}
               </p>
-              <p className="truncate text-xs text-cream/60">
+              <p className="truncate text-xs text-bone/60">
                 {claim.offer.discount_pct}% off
                 {r?.neighborhood ? ` · ${r.neighborhood}` : ""}
               </p>
@@ -99,13 +99,13 @@ export default async function DinerClaimDetail({
               href={mapsUrl(r?.address ?? name)}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 rounded-full bg-orange py-3.5 text-center text-[15px] font-semibold text-white transition-colors hover:bg-orange-deep"
+              className="flex-1 rounded-full bg-paprika py-3.5 text-center text-[15px] font-semibold text-white transition-colors hover:bg-paprika-deep"
             >
               Get directions
             </a>
             <Link
               href="/app/wallet"
-              className="flex-1 rounded-full border border-white/30 py-3.5 text-center text-[15px] font-semibold text-cream-soft transition-colors hover:bg-white/5"
+              className="flex-1 rounded-full border border-white/30 py-3.5 text-center text-[15px] font-semibold text-bone transition-colors hover:bg-white/5"
             >
               View in wallet
             </Link>
@@ -129,7 +129,7 @@ export default async function DinerClaimDetail({
         <Link
           href="/app/wallet"
           aria-label="Back to wallet"
-          className="absolute left-4 top-4 flex size-9 items-center justify-center rounded-full bg-cream-soft text-ink shadow-sm transition-colors hover:bg-cream-warm"
+          className="absolute left-4 top-4 flex size-9 items-center justify-center rounded-full bg-bone text-ink shadow-sm transition-colors hover:bg-bone-deep"
         >
           <ArrowLeft className="size-5" strokeWidth={1.75} />
         </Link>
@@ -148,7 +148,7 @@ export default async function DinerClaimDetail({
 
         {/* ===== State-specific panel ===== */}
         {isActive ? (
-          <Card className="space-y-3 border-orange/30 bg-orange-tint text-center">
+          <Card className="space-y-3 border-paprika/30 bg-paprika-tint text-center">
             <p className="font-medium text-ink">
               Offer active — expires in {expiresInMinutes(claim)} min
             </p>
@@ -160,7 +160,7 @@ export default async function DinerClaimDetail({
               <input type="hidden" name="claim_id" value={claim.id} />
               <button
                 type="submit"
-                className="cursor-pointer rounded-full border border-border bg-cream-soft px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-cream-warm"
+                className="cursor-pointer rounded-full border border-border bg-bone px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-bone-deep"
               >
                 Cancel this offer
               </button>
@@ -169,7 +169,7 @@ export default async function DinerClaimDetail({
         ) : null}
 
         {isRedeemed ? (
-          <Card className="space-y-2 border-orange/30 bg-orange-tint">
+          <Card className="space-y-2 border-paprika/30 bg-paprika-tint">
             <p className="font-medium text-ink">Cash back on its way</p>
             <p className="text-xs text-ink/70">
               We confirmed your visit. Your cash back posts to your linked
@@ -187,7 +187,7 @@ export default async function DinerClaimDetail({
             </p>
             <Link
               href={`/app/offers/${claim.offer.id}`}
-              className="inline-block pt-1 text-xs text-orange underline underline-offset-4"
+              className="inline-block pt-1 text-xs text-paprika underline underline-offset-4"
             >
               See offer
             </Link>
@@ -203,7 +203,7 @@ export default async function DinerClaimDetail({
             </p>
             <Link
               href={`/app/offers/${claim.offer.id}`}
-              className="inline-block pt-1 text-xs text-orange underline underline-offset-4"
+              className="inline-block pt-1 text-xs text-paprika underline underline-offset-4"
             >
               See offer
             </Link>
@@ -212,7 +212,7 @@ export default async function DinerClaimDetail({
 
         {/* ===== How this works (active only) ===== */}
         {isActive ? (
-          <Card className="space-y-3 bg-cream-warm">
+          <Card className="space-y-3 bg-bone-deep">
             <Eyebrow>How this works</Eyebrow>
             <ol className="list-decimal space-y-1.5 pl-4 text-sm leading-relaxed text-ink/80 marker:text-muted-foreground">
               <li>Eat at {name} before your offer expires.</li>

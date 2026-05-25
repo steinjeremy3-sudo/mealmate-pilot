@@ -38,7 +38,7 @@ export async function createLinkToken(): Promise<{ linkToken: string }> {
 
   const response = await plaid.linkTokenCreate({
     user: { client_user_id: profile.id },
-    client_name: "MealMate",
+    client_name: "Mealmate",
     // Transactions: read history so the matcher can attribute charges.
     // Auth: mint Dwolla processor tokens for ACH rebate destinations
     // (Phase 4d.2). Asking for both at link time means the diner

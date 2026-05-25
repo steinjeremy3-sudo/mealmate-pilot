@@ -91,7 +91,7 @@ export async function startStripeOnboarding(): Promise<void> {
       type: "express",
       country: "US",
       email: profile.email ?? undefined,
-      // We need transfers so MealMate can later debit / invoice the
+      // We need transfers so Mealmate can later debit / invoice the
       // restaurant via Stripe Connect (Phase 4e weekly settlement).
       capabilities: {
         transfers: { requested: true },

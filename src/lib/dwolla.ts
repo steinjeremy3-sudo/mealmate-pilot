@@ -32,7 +32,7 @@ export const dwolla = new Client({
 });
 
 // ====================================================================
-// MealMate's own balance funding source (source of money for transfers)
+// Mealmate's own balance funding source (source of money for transfers)
 // ====================================================================
 //
 // Every Dwolla account has a default 'balance' funding source. In
@@ -102,7 +102,7 @@ export function splitDisplayName(displayName: string): {
   lastName: string;
 } {
   const trimmed = displayName.trim();
-  if (!trimmed) return { firstName: "MealMate", lastName: "Diner" };
+  if (!trimmed) return { firstName: "Mealmate", lastName: "Diner" };
   const parts = trimmed.split(/\s+/);
   if (parts.length === 1) {
     return { firstName: parts[0], lastName: parts[0] };

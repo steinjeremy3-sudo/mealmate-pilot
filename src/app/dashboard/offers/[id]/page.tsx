@@ -23,10 +23,10 @@ type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
 
 const OFFER_BADGE: Record<OfferStatus, string> = {
-  draft: "border-border bg-cream-warm text-muted-foreground",
-  scheduled: "border-amber/50 bg-amber/15 text-ink/80",
-  live: "border-ink/15 bg-cream-warm text-ink",
-  ended: "border-border bg-cream-warm text-muted-foreground",
+  draft: "border-border bg-bone-deep text-muted-foreground",
+  scheduled: "border-paprika/50 bg-paprika/15 text-ink/80",
+  live: "border-ink/15 bg-bone-deep text-ink",
+  ended: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function Fact({ k, v }: { k: string; v: React.ReactNode }) {
@@ -70,7 +70,7 @@ export default async function MerchantOfferDetail({
         eyebrow={
           <Link
             href="/dashboard/offers"
-            className="transition-colors hover:text-orange"
+            className="transition-colors hover:text-paprika"
           >
             ← All offers
           </Link>
@@ -97,7 +97,7 @@ export default async function MerchantOfferDetail({
           <div className="grid gap-6 md:grid-cols-[1.5fr_1fr]">
             {/* Terms */}
             <Card className="p-6">
-              <h2 className="font-serif text-xl tracking-tight">Terms</h2>
+              <h2 className="font-display text-xl tracking-tight">Terms</h2>
               <p className="pt-1 text-sm text-muted-foreground">
                 {offer.description}
               </p>
@@ -139,7 +139,7 @@ export default async function MerchantOfferDetail({
             {/* Budget */}
             <Card className="flex flex-col p-6">
               <Eyebrow tone="muted">Monthly budget</Eyebrow>
-              <p className="pb-2 pt-3 font-serif text-4xl leading-none tracking-tight">
+              <p className="pb-2 pt-3 font-display text-4xl leading-none tracking-tight">
                 {centsToUsd(offer.monthly_spent_cents)}
               </p>
               <p className="text-sm text-muted-foreground">
@@ -147,7 +147,7 @@ export default async function MerchantOfferDetail({
               </p>
               <span className="mt-4 block h-2 overflow-hidden rounded-full bg-border">
                 <span
-                  className="block h-full rounded-full bg-orange"
+                  className="block h-full rounded-full bg-paprika"
                   style={{ width: `${budgetPct}%` }}
                 />
               </span>

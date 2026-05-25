@@ -26,9 +26,9 @@ import {
 type BadgeTone = "positive" | "warning" | "negative";
 
 const toneClasses: Record<BadgeTone, string> = {
-  positive: "border-ink/15 bg-cream-warm text-ink",
-  warning: "border-amber/50 bg-amber/15 text-ink/80",
-  negative: "border-destructive/40 bg-rose/15 text-destructive",
+  positive: "border-ink/15 bg-bone-deep text-ink",
+  warning: "border-paprika/50 bg-paprika/15 text-ink/80",
+  negative: "border-destructive/40 bg-burnt/15 text-destructive",
 };
 
 function Badge({ tone, children }: { tone: BadgeTone; children: React.ReactNode }) {
@@ -93,7 +93,7 @@ export default async function MerchantSettingsPage() {
             Your <em>account.</em>
           </>
         }
-        sub="Restaurant profile and how MealMate settles with you."
+        sub="Restaurant profile and how Mealmate settles with you."
       />
 
       <div className="px-10 py-8">
@@ -101,7 +101,7 @@ export default async function MerchantSettingsPage() {
           {/* Restaurant profile */}
           <Card className="p-6">
             <div className="flex items-start justify-between gap-4">
-              <h2 className="font-serif text-xl tracking-tight">
+              <h2 className="font-display text-xl tracking-tight">
                 Restaurant
               </h2>
               <Badge tone={RESTAURANT_BADGE[restaurant.status].tone}>
@@ -117,10 +117,10 @@ export default async function MerchantSettingsPage() {
             </dl>
             <p className="mt-4 text-xs text-muted-foreground">
               Restaurant details affect how visits are confirmed, so
-              changes go through the MealMate team. Email{" "}
+              changes go through the Mealmate team. Email{" "}
               <Link
                 href="mailto:ops@mealmate.co"
-                className="text-orange underline underline-offset-4"
+                className="text-paprika underline underline-offset-4"
               >
                 ops@mealmate.co
               </Link>{" "}
@@ -133,7 +133,7 @@ export default async function MerchantSettingsPage() {
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <Eyebrow>Payouts</Eyebrow>
-                <h2 className="font-serif text-xl tracking-tight">
+                <h2 className="font-display text-xl tracking-tight">
                   Stripe Connect
                 </h2>
               </div>
@@ -151,7 +151,7 @@ export default async function MerchantSettingsPage() {
             ) : !stripeAccount ? (
               <>
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Connect a Stripe account so MealMate can settle the
+                  Connect a Stripe account so Mealmate can settle the
                   weekly discount invoice with you.
                 </p>
                 <form action={startStripeOnboarding} className="mt-auto pt-5">

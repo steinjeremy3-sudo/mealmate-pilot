@@ -31,7 +31,7 @@ export default async function OfferMenuPage({
       <div className="w-full max-w-md space-y-6">
         <Link
           href={`/app/offers/${id}`}
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← {name}
         </Link>
@@ -44,8 +44,8 @@ export default async function OfferMenuPage({
         </div>
 
         {hasDiscountItems ? (
-          <Card className="flex items-center gap-2 bg-orange-tint text-sm text-orange-deep">
-            <span className="size-2 shrink-0 rounded-full bg-orange" />
+          <Card className="flex items-center gap-2 bg-paprika-tint text-sm text-paprika-deep">
+            <span className="size-2 shrink-0 rounded-full bg-paprika" />
             Highlighted items qualify for {offer.discount_pct}% off.
           </Card>
         ) : null}
@@ -58,7 +58,7 @@ export default async function OfferMenuPage({
           <div className="space-y-6">
             {sections.map((s) => (
               <section key={s.section} className="space-y-1">
-                <h2 className="border-b border-border pb-2 font-serif text-xl tracking-tight">
+                <h2 className="border-b border-border pb-2 font-display text-xl tracking-tight">
                   {s.section}
                 </h2>
                 <ul>
@@ -69,7 +69,7 @@ export default async function OfferMenuPage({
                     >
                       <span className="flex items-center gap-2">
                         {it.discountEligible ? (
-                          <span className="size-1.5 shrink-0 rounded-full bg-orange" />
+                          <span className="size-1.5 shrink-0 rounded-full bg-paprika" />
                         ) : null}
                         {it.name}
                       </span>

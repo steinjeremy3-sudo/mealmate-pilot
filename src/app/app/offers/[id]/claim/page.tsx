@@ -53,7 +53,7 @@ export default async function ClaimConfirm({
     return (
       <main className="flex flex-1 items-center justify-center px-6 py-12">
         <div className="w-full max-w-md space-y-5 text-center">
-          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-orange-tint font-serif text-3xl text-orange">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-paprika-tint font-display text-3xl text-paprika">
             !
           </span>
           <Eyebrow className="text-center">Already activated</Eyebrow>
@@ -67,7 +67,7 @@ export default async function ClaimConfirm({
           <div className="space-y-2 pt-2">
             <Link
               href={`/app/claims/${activeClaim.id}`}
-              className="block w-full rounded-full bg-ink py-3.5 text-center text-[15px] font-semibold text-cream transition-colors hover:bg-ink-soft"
+              className="block w-full rounded-full bg-ink py-3.5 text-center text-[15px] font-semibold text-bone transition-colors hover:bg-ink-soft"
             >
               View active offer
             </Link>
@@ -112,8 +112,8 @@ export default async function ClaimConfirm({
           ) : null}
         </Card>
 
-        <Card className="bg-cream-warm text-sm leading-relaxed text-ink/80">
-          MealMate keeps 6% of the total bill as a platform fee, capped at
+        <Card className="bg-bone-deep text-sm leading-relaxed text-ink/80">
+          Mealmate keeps 6% of the total bill as a platform fee, capped at
           $10. Your cash back is the discount minus this fee.
         </Card>
 

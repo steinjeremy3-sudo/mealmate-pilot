@@ -160,7 +160,7 @@ async function settleRestaurant(args: {
     customer: customerId,
     collection_method: "send_invoice",
     days_until_due: 7,
-    description: `MealMate weekly settlement — ${args.periodStart} to ${args.periodEnd} (${args.txnIds.length} transactions)`,
+    description: `Mealmate weekly settlement — ${args.periodStart} to ${args.periodEnd} (${args.txnIds.length} transactions)`,
     metadata: {
       settlement_id: settlement.id,
       restaurant_id: args.restaurantId,

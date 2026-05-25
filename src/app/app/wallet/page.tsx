@@ -23,15 +23,15 @@ type Tab = "active" | "pending" | "completed";
 const REBATE_STATE: Partial<Record<RebateStatus, { label: string; tone: string }>> = {
   initiated: {
     label: "processing",
-    tone: "border-border bg-cream-warm text-muted-foreground",
+    tone: "border-border bg-bone-deep text-muted-foreground",
   },
   sent: {
     label: "on the way",
-    tone: "border-orange/30 bg-orange-tint text-orange-deep",
+    tone: "border-paprika/30 bg-paprika-tint text-paprika-deep",
   },
   failed: {
     label: "couldn't send",
-    tone: "border-destructive/40 bg-rose/15 text-destructive",
+    tone: "border-destructive/40 bg-burnt/15 text-destructive",
   },
 };
 
@@ -100,13 +100,13 @@ export default async function WalletPage({
 
         {/* Monthly savings → dashboard */}
         <Link href="/app/savings" className="block">
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink-deep p-5 text-cream-soft transition-transform active:scale-[0.99]">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink-deep p-5 text-bone transition-transform active:scale-[0.99]">
             <div>
-              <Eyebrow tone="muted" className="text-cream/60">
+              <Eyebrow tone="muted" className="text-bone/60">
                 {monthLabel} so far
               </Eyebrow>
-              <p className="mt-1.5 font-serif text-3xl">
-                <span className="text-orange-soft">
+              <p className="mt-1.5 font-display text-3xl">
+                <span className="text-paprika">
                   {centsToUsd(monthSavedCents)}
                 </span>{" "}
                 saved
@@ -146,7 +146,7 @@ export default async function WalletPage({
               No active offers yet. Browse{" "}
               <Link
                 href="/app"
-                className="text-orange underline underline-offset-4"
+                className="text-paprika underline underline-offset-4"
               >
                 tonight&apos;s offers
               </Link>
@@ -161,19 +161,19 @@ export default async function WalletPage({
                     return (
                       <li key={c.id}>
                         <Link href={`/app/claims/${c.id}`} className="block">
-                          <div className="flex items-center gap-3.5 rounded-2xl border border-orange/30 bg-orange-tint p-3 transition-colors hover:bg-cream-warm">
+                          <div className="flex items-center gap-3.5 rounded-2xl border border-paprika/30 bg-paprika-tint p-3 transition-colors hover:bg-bone-deep">
                             <PlaceholderImg
                               name={name}
                               className="size-[70px] shrink-0 rounded-xl"
                             />
                             <div className="min-w-0 flex-1">
-                              <p className="truncate font-serif text-lg text-ink">
+                              <p className="truncate font-display text-lg text-ink">
                                 {name}
                               </p>
                               <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ink/60">
                                 Expires in {expiresInMinutes(c)} min
                               </p>
-                              <span className="mt-2 inline-flex items-center rounded-full bg-orange px-3 py-1 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
+                              <span className="mt-2 inline-flex items-center rounded-full bg-paprika px-3 py-1 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
                                 {c.offer?.discount_pct ?? 0}% off
                               </span>
                             </div>
@@ -192,7 +192,7 @@ export default async function WalletPage({
                     {pastClaims.map((c) => (
                       <li key={c.id}>
                         <Link href={`/app/claims/${c.id}`} className="block">
-                          <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-cream-warm">
+                          <Card className="flex items-center justify-between gap-3 transition-colors hover:bg-bone-deep">
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">
                                 {c.offer?.restaurant?.name ?? "Restaurant"}
@@ -234,9 +234,9 @@ export default async function WalletPage({
                 return (
                   <li key={r.id}>
                     <Link href={`/app/rebates/${r.id}`} className="block">
-                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-cream-soft p-4 transition-colors hover:bg-cream-warm">
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-bone p-4 transition-colors hover:bg-bone-deep">
                         <div className="min-w-0">
-                          <p className="truncate font-serif text-base">
+                          <p className="truncate font-display text-base">
                             {r.restaurantName ?? "Restaurant"}
                           </p>
                           {s ? (
@@ -280,7 +280,7 @@ export default async function WalletPage({
                         className="size-11 shrink-0 rounded-lg"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-serif text-base">
+                        <p className="truncate font-display text-base">
                           {r.restaurantName ?? "Restaurant"}
                         </p>
                         <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
@@ -288,7 +288,7 @@ export default async function WalletPage({
                           landed
                         </p>
                       </div>
-                      <p className="shrink-0 font-serif text-lg text-orange">
+                      <p className="shrink-0 font-display text-lg text-paprika">
                         +{centsToUsd(r.amountCents)}
                       </p>
                     </div>

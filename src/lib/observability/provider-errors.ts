@@ -135,7 +135,7 @@ export function classifyDwollaError(err: unknown): ClassifiedError {
   let disposition: ErrorDisposition;
   switch (code) {
     case "InsufficientFunds":
-      // The MealMate Dwolla balance is dry — ops must top it up.
+      // The Mealmate Dwolla balance is dry — ops must top it up.
       disposition = "unexpected";
       break;
     case "ValidationError":

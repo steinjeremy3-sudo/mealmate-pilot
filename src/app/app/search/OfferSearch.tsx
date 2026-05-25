@@ -33,7 +33,7 @@ export function OfferSearch({ offers }: { offers: OfferCardData[] }) {
         onChange={(e) => setQ(e.target.value)}
         placeholder="Restaurant, cuisine, neighborhood…"
         autoFocus
-        className="w-full rounded-full border border-border bg-cream-soft px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+        className="w-full rounded-full border border-border bg-bone px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika"
       />
 
       {shown.length === 0 ? (

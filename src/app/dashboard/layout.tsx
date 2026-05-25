@@ -3,7 +3,7 @@
 // Phase 1: enforces role=merchant. Unauthenticated → /sign-in.
 // Wrong role → bounced to their own home (see requireRole).
 //
-// Desktop dashboard with the bundle's warm cream sidebar; each page
+// Desktop dashboard with the bundle's warm bone sidebar; each page
 // renders its own MerchantPageHeader.
 
 import { requireRole } from "@/lib/auth/require-role";

@@ -52,7 +52,7 @@ export function DinerBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-border bg-cream-soft/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
+    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-border bg-bone/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
       <ul className="flex items-stretch justify-around">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
@@ -63,7 +63,7 @@ export function DinerBottomNav() {
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-md px-3 py-1.5 transition-colors",
                   active
-                    ? "text-orange"
+                    ? "text-paprika"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >

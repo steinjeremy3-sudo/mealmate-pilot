@@ -115,18 +115,18 @@ function OptionCard({
   return (
     <Link
       href={href}
-      className="block rounded-2xl border border-border bg-white p-5 transition-colors hover:border-orange"
+      className="block rounded-2xl border border-border bg-white p-5 transition-colors hover:border-paprika"
     >
       <div className="flex items-center gap-4">
-        <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-cream-warm text-ink">
+        <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-bone-deep text-ink">
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-lg leading-tight">{title}</p>
+          <p className="font-display text-lg leading-tight">{title}</p>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
         {badge ? (
-          <span className="shrink-0 rounded-full bg-orange-tint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
+          <span className="shrink-0 rounded-full bg-paprika-tint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-paprika">
             {badge}
           </span>
         ) : (
@@ -159,7 +159,7 @@ function ActiveSummary({
         </div>
 
         <Card className="space-y-1.5 text-sm">
-          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-orange">
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-paprika">
             {isAstra ? "Debit card" : "Bank account"}
           </p>
           <p className="text-foreground/80">

@@ -17,7 +17,7 @@ function dollars(cents: number): string {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <Card className="flex flex-col gap-1 p-4">
-      <span className="font-serif text-2xl tracking-tight">{value}</span>
+      <span className="font-display text-2xl tracking-tight">{value}</span>
       <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
         {label}
       </span>
@@ -75,14 +75,14 @@ export default async function SavingsPage() {
       <div className="w-full max-w-md space-y-7">
         <Link
           href="/app/wallet"
-          className="text-sm text-muted-foreground transition-colors hover:text-orange"
+          className="text-sm text-muted-foreground transition-colors hover:text-paprika"
         >
           ← Back to wallet
         </Link>
 
         <div className="space-y-1">
           <Eyebrow>{year} so far</Eyebrow>
-          <p className="pb-2 font-serif text-[72px] leading-none text-orange">
+          <p className="pb-2 font-display text-[72px] leading-none text-paprika">
             {dollars(ytdCents)}
           </p>
           <p className="text-base text-foreground/80">
@@ -122,7 +122,7 @@ export default async function SavingsPage() {
                         <div
                           className={cn(
                             "w-full rounded-t",
-                            m.current ? "bg-orange" : "bg-border",
+                            m.current ? "bg-paprika" : "bg-border",
                           )}
                           style={{
                             height: `${Math.max(2, (m.cents / maxMonth) * 100)}%`,
@@ -153,14 +153,14 @@ export default async function SavingsPage() {
                           className="size-11 shrink-0 rounded-lg"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-serif text-base">
+                          <p className="truncate font-display text-base">
                             {spot.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {spot.visits} visit{spot.visits === 1 ? "" : "s"}
                           </p>
                         </div>
-                        <span className="shrink-0 font-serif text-lg text-orange">
+                        <span className="shrink-0 font-display text-lg text-paprika">
                           {centsToUsd(spot.cents)}
                         </span>
                       </Card>
