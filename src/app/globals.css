@@ -7,30 +7,25 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Brand font mapping. CSS variables come from layout.tsx (next/font/google). */
+  /* Brand font mapping. CSS variables come from layout.tsx (next/font/google).
+     `font-display` is the new Archivo Black headline face. `font-sans` is
+     Inter. `font-mono` is JetBrains Mono. No serif in v2.0. */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
-  --font-serif: var(--font-fraunces);
-  --font-heading: var(--font-fraunces);
+  --font-display: var(--font-archivo-black);
 
-  /* Brand palette — exposed as Tailwind utilities (bg-orange, text-ink,
-     bg-cream, …). Sourced from design-reference/{consumer,merchant}.html.
-     See feedback-mealmate-design-source. */
-  --color-cream: var(--cream);
-  --color-cream-warm: var(--cream-warm);
-  --color-cream-soft: var(--cream-soft);
+  /* Brand palette — v2.0 Design Kit. Four colors only:
+     ink (canvas + type), bone (background + on-ink type),
+     paprika (the one accent), burnt (warn / never decor).
+     Exposed as Tailwind utilities (bg-paprika, text-ink, bg-bone, …). */
+  --color-bone: var(--bone);
+  --color-bone-deep: var(--bone-deep);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
-  --color-ink-deep: var(--ink-deep);
-  --color-orange: var(--orange);
-  --color-orange-soft: var(--orange-soft);
-  --color-orange-tint: var(--orange-tint);
-  --color-orange-deep: var(--orange-deep);
-  --color-sage: var(--sage);
-  --color-sage-soft: var(--sage-soft);
-  --color-sage-tint: var(--sage-tint);
-  --color-amber: var(--amber);
-  --color-rose: var(--rose);
+  --color-paprika: var(--paprika);
+  --color-paprika-deep: var(--paprika-deep);
+  --color-paprika-tint: var(--paprika-tint);
+  --color-burnt: var(--burnt);
   --color-muted-soft: var(--muted-soft);
 
   --color-sidebar-ring: var(--sidebar-ring);
@@ -72,107 +67,99 @@
 }
 
 /* ====================================================================
-   Phase D1 — design tokens.
-   The brand palette is the canonical warm/editorial system from the
-   consumer + merchant prototypes. The shadcn semantic tokens
-   (--background, --primary, --card, …) are RE-VALUED onto that palette
-   so every existing screen + shadcn component picks up the brand look
-   without a rewrite. The named brand tokens (--orange, --cream, …) are
-   for precise work in D2/D3.
+   v2.0 Design Kit — tokens.
+   Four-color brand system (ink/bone/paprika/burnt) re-valued onto the
+   shadcn semantic tokens so every existing component picks up the new
+   look. Named brand tokens (--ink, --bone, --paprika, --burnt) are
+   for precise work in brand components.
    ==================================================================== */
 
 :root {
-  /* --- Brand palette — exact values per the B2 design-token spec --- */
-  --cream: #f5f1ea;
-  --cream-warm: #efe9de;
-  --cream-soft: #faf7f1;
-  --ink: #1a1a1f;
-  --ink-soft: #2a2a30;
-  --ink-deep: #0f0f12;
-  --orange: #e8754a;
-  --orange-soft: #f5a585;
-  --orange-tint: #fcebe0;
-  --orange-deep: #c85a34;
-  --sage: #7a9670;
-  --sage-soft: #dde5d7;
-  --sage-tint: #e8efe3;
-  --amber: #d4a147;
-  --rose: #c96a66;
-  /* Two muted grays from the spec: -fg is the primary muted text,
-     -soft is the lighter secondary tone. */
-  --muted-soft: #8e8b85;
+  /* --- Brand palette — v2.0 Design Kit values --- */
+  --ink: #0a0a0a;
+  --ink-soft: #1c1c1f;
+  --bone: #f4efe3;
+  --bone-deep: #ece6d6;
+  --paprika: #da5126;
+  --paprika-deep: #b8401e;
+  /* Light paprika wash used for tinted-accent backgrounds (claim hero
+     check circle, "active offer" cards, etc.). Derived: paprika at
+     ~12% over bone. */
+  --paprika-tint: #fbe2d6;
+  --burnt: #7a1e0f;
+  --muted-soft: #6e6e72;
 
   /* --- shadcn semantic tokens, re-valued onto the brand palette --- */
-  --background: var(--cream);
+  --background: var(--bone);
   --foreground: var(--ink);
-  --card: var(--cream-soft);
+  --card: var(--bone);
   --card-foreground: var(--ink);
-  --popover: var(--cream-soft);
+  --popover: var(--bone);
   --popover-foreground: var(--ink);
-  --primary: var(--orange);
-  --primary-foreground: #ffffff;
-  --secondary: var(--cream-warm);
+  --primary: var(--ink);
+  --primary-foreground: var(--bone);
+  --secondary: var(--bone-deep);
   --secondary-foreground: var(--ink);
-  --muted: var(--cream-warm);
-  --muted-foreground: #6b6b72;
-  --accent: var(--sage-tint);
-  --accent-foreground: var(--ink);
-  --destructive: var(--rose);
-  --border: #e5dfd3;
-  --input: #e5dfd3;
-  --ring: var(--orange);
-  --chart-1: var(--orange);
-  --chart-2: var(--sage);
-  --chart-3: var(--amber);
-  --chart-4: var(--rose);
-  --chart-5: var(--ink-soft);
-  --radius: 0.625rem;
-  --sidebar: var(--cream-soft);
+  --muted: var(--bone-deep);
+  --muted-foreground: var(--muted-soft);
+  --accent: var(--paprika);
+  --accent-foreground: var(--bone);
+  --destructive: var(--burnt);
+  --border: rgba(10, 10, 10, 0.12);
+  --input: rgba(10, 10, 10, 0.12);
+  --ring: var(--paprika);
+  --chart-1: var(--paprika);
+  --chart-2: var(--ink);
+  --chart-3: var(--paprika-deep);
+  --chart-4: var(--burnt);
+  --chart-5: var(--muted-soft);
+  --radius: 0.5rem;
+  --sidebar: var(--bone-deep);
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--orange);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--cream-warm);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--bone);
+  --sidebar-accent: var(--bone);
   --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: #e5dfd3;
-  --sidebar-ring: var(--orange);
+  --sidebar-border: rgba(10, 10, 10, 0.12);
+  --sidebar-ring: var(--paprika);
 }
 
-/* Warm-dark variant — the prototypes use dark INK screens (e.g. the
-   consumer welcome screen) rather than a neutral-grey dark mode. The
-   app doesn't toggle .dark today; this keeps it on-palette if it ever
-   does. Brand tokens stay inherited from :root. */
+/* Dark variant — the kit uses ink canvases (sidebar footers, night
+   cards, success heroes) rather than a neutral-grey dark mode. Brand
+   tokens stay inherited from :root. The app doesn't toggle .dark
+   today; this keeps it on-palette if it ever does. */
 .dark {
   --background: var(--ink);
-  --foreground: var(--cream);
+  --foreground: var(--bone);
   --card: var(--ink-soft);
-  --card-foreground: var(--cream);
+  --card-foreground: var(--bone);
   --popover: var(--ink-soft);
-  --popover-foreground: var(--cream);
-  --primary: var(--orange);
-  --primary-foreground: #ffffff;
+  --popover-foreground: var(--bone);
+  --primary: var(--paprika);
+  --primary-foreground: var(--bone);
   --secondary: var(--ink-soft);
-  --secondary-foreground: var(--cream);
+  --secondary-foreground: var(--bone);
   --muted: var(--ink-soft);
-  --muted-foreground: #8e8b85;
-  --accent: var(--ink-soft);
-  --accent-foreground: var(--cream);
-  --destructive: var(--rose);
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: var(--orange);
-  --chart-1: var(--orange);
-  --chart-2: var(--sage);
-  --chart-3: var(--amber);
-  --chart-4: var(--rose);
-  --chart-5: var(--cream-warm);
+  --muted-foreground: var(--muted-soft);
+  --accent: var(--paprika);
+  --accent-foreground: var(--bone);
+  --destructive: var(--burnt);
+  --border: rgba(244, 239, 227, 0.16);
+  --input: rgba(244, 239, 227, 0.16);
+  --ring: var(--paprika);
+  --chart-1: var(--paprika);
+  --chart-2: var(--bone);
+  --chart-3: var(--paprika-deep);
+  --chart-4: var(--burnt);
+  --chart-5: var(--bone-deep);
   --sidebar: var(--ink-soft);
-  --sidebar-foreground: var(--cream);
-  --sidebar-primary: var(--orange);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--ink-deep);
-  --sidebar-accent-foreground: var(--cream);
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: var(--orange);
+  --sidebar-foreground: var(--bone);
+  --sidebar-primary: var(--paprika);
+  --sidebar-primary-foreground: var(--bone);
+  --sidebar-accent: var(--ink);
+  --sidebar-accent-foreground: var(--bone);
+  --sidebar-border: rgba(244, 239, 227, 0.12);
+  --sidebar-ring: var(--paprika);
 }
 
 @layer base {

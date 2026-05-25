@@ -1,20 +1,21 @@
-// Root layout. Wires the three brand fonts as CSS variables so any descendant
-// can reach them through Tailwind's `font-sans`, `font-serif`, `font-mono`
-// utilities (mapping defined in globals.css → @theme inline).
+// Root layout. Wires the brand fonts as CSS variables so any descendant
+// can reach them through Tailwind's `font-sans`, `font-display`,
+// `font-mono` utilities (mapping defined in globals.css → @theme inline).
 //
-// Brand fonts (per BRIEF.md "Stack" section):
-//   - Fraunces       → serif, headlines
+// Brand fonts (per the v2.0 Design Kit):
+//   - Archivo Black  → display, wordmark, headlines (single weight)
 //   - Inter          → sans, body
-//   - JetBrains Mono → mono, eyebrows / labels / code
+//   - JetBrains Mono → mono, labels, eyebrows, prices
 
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Archivo_Black, Inter, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
 
-const fraunces = Fraunces({
+const archivoBlack = Archivo_Black({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  weight: "400",
+  variable: "--font-archivo-black",
   display: "swap",
 });
 
@@ -31,7 +32,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MealMate",
+  title: "Mealmate",
   description: "Restaurant discounts in Dallas — diners pay, restaurants pay nothing.",
 };
 
@@ -41,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${archivoBlack.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
