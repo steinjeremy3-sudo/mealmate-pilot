@@ -1,4 +1,4 @@
-// Console KPI tile — a mono uppercase label over a large Fraunces
+// Console KPI tile — a mono uppercase label over a large Archivo Black
 // value, with an optional quiet hint line. Shared by merchant + admin.
 
 import { Card } from "@/components/brand";
@@ -17,7 +17,7 @@ export function KpiCard({
       <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
         {label}
       </span>
-      <span className="pt-1 font-serif text-[2.5rem] leading-none tracking-tight">
+      <span className="pt-1 font-display text-[2.5rem] leading-none tracking-[-0.02em]">
         {value}
       </span>
       {hint ? (

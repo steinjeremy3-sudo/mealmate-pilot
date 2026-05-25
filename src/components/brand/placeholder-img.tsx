@@ -1,26 +1,12 @@
-// Textured restaurant-photo placeholder — a tinted, striped panel that
-// reads clearly as a stand-in, not a real photo. The production schema
-// has no restaurant imagery yet; the design bundle uses this pattern
-// everywhere a hero image would go. Tone is derived deterministically
-// from the restaurant name, so a given restaurant always renders the
-// same panel.
+// Restaurant-photo placeholder per the v2.0 kit — a bone-deep panel
+// with 45° hatched ink stripes. Reads clearly as a stand-in, not a
+// real photo. The production schema has no restaurant imagery yet;
+// drop this anywhere a hero would go.
 
 import { cn } from "@/lib/utils";
 
-type Tone = "warm" | "cream";
-
-const TONES: Tone[] = ["warm", "cream"];
-
-function toneFor(seed: string): Tone {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  return TONES[h % TONES.length];
-}
-
 export type PlaceholderImgProps = {
-  /** Restaurant name — seeds the tone, and shows as a caption if showName. */
+  /** Restaurant name — shown if showName. */
   name: string;
   /** Small line under the name when showName is set (e.g. "Italian · Bishop Arts"). */
   caption?: string;
@@ -34,6 +20,9 @@ export type PlaceholderImgProps = {
   className?: string;
 };
 
+const STRIPES =
+  "repeating-linear-gradient(45deg, transparent 0 12px, rgba(10,10,10,0.06) 12px 13px)";
+
 export function PlaceholderImg({
   name,
   caption,
@@ -42,23 +31,20 @@ export function PlaceholderImg({
   dark = false,
   className,
 }: PlaceholderImgProps) {
-  const tone = toneFor(name);
-  const bg = tone === "cream" ? "var(--cream-soft)" : "var(--cream-warm)";
-  const accent = "rgba(232,117,74,0.35)";
-  const stripes = `repeating-linear-gradient(135deg, transparent 0 22px, ${accent} 22px 23px)`;
-
   return (
     <div
-      className={cn("relative isolate overflow-hidden", className)}
-      style={{ background: bg }}
+      className={cn(
+        "relative isolate overflow-hidden bg-bone-deep",
+        className,
+      )}
     >
       <div
-        className="absolute inset-0 opacity-50"
-        style={{ background: stripes }}
+        className="absolute inset-0"
+        style={{ background: STRIPES }}
         aria-hidden
       />
       {label ? (
-        <span className="absolute left-3 top-3 rounded bg-cream/70 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/55 backdrop-blur-sm">
+        <span className="absolute left-3 top-3 rounded bg-bone/70 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/55 backdrop-blur-sm">
           {label}
         </span>
       ) : null}
@@ -66,8 +52,8 @@ export function PlaceholderImg({
         <div className="absolute inset-x-3.5 bottom-3.5">
           <p
             className={cn(
-              "font-serif text-lg leading-tight",
-              dark ? "text-cream-soft" : "text-ink",
+              "font-display text-lg leading-tight tracking-[-0.02em]",
+              dark ? "text-bone" : "text-ink",
             )}
           >
             {name}
@@ -76,7 +62,7 @@ export function PlaceholderImg({
             <p
               className={cn(
                 "mt-1 font-mono text-[10px] uppercase tracking-[0.1em]",
-                dark ? "text-cream/55" : "text-ink/55",
+                dark ? "text-bone/60" : "text-ink/55",
               )}
             >
               {caption}

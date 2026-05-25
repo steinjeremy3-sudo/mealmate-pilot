@@ -1,7 +1,7 @@
-// Brand heading — Fraunces serif display type. Nested <em> renders as
-// solid orange emphasis automatically (no italic — Jeremy preferred a
-// non-disjointed monolithic feel), e.g.
-// <Heading><em>25%</em> off dinner</Heading>.
+// Brand heading — Archivo Black display type per the v2.0 kit. A
+// nested <em> renders as solid paprika emphasis (suppress the browser
+// default italic) so callers can highlight a single word inline:
+//   <Heading><em>25%</em> off dinner</Heading>
 
 import { cn } from "@/lib/utils";
 
@@ -13,9 +13,9 @@ export type HeadingProps = React.ComponentProps<"h2"> & {
 };
 
 const sizeClasses: Record<NonNullable<HeadingProps["size"]>, string> = {
-  display: "text-[2.5rem] leading-[1.1] pb-3",
-  page: "text-2xl leading-tight pb-2",
-  section: "text-lg leading-snug pb-1",
+  display: "text-[2.75rem] leading-[1.05] pb-2",
+  page: "text-[1.75rem] leading-[1.1] pb-1.5",
+  section: "text-[1.5rem] leading-[1.15] pb-1",
 };
 
 export function Heading({
@@ -27,8 +27,8 @@ export function Heading({
   return (
     <Tag
       className={cn(
-        "font-serif font-medium tracking-tight text-foreground",
-        "[&_em]:not-italic [&_em]:font-medium [&_em]:text-orange",
+        "font-display tracking-[-0.02em] text-foreground",
+        "[&_em]:not-italic [&_em]:text-paprika",
         sizeClasses[size],
         className,
       )}

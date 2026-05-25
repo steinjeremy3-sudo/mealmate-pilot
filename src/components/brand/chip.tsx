@@ -1,5 +1,5 @@
-// Brand chip — a pill toggle/filter. Inactive is a quiet outline;
-// active fills with ink, matching the prototypes' filter chips.
+// Brand chip — a pill toggle/filter per the v2.0 kit. Inactive is a
+// quiet outline on bone; active fills with ink.
 
 import { cn } from "@/lib/utils";
 
@@ -22,11 +22,11 @@ export function Chip({
           "text-[13px] font-medium whitespace-nowrap cursor-pointer " +
           "transition-colors active:scale-[0.97] " +
           "focus-visible:outline-none focus-visible:ring-2 " +
-          "focus-visible:ring-orange focus-visible:ring-offset-2 " +
+          "focus-visible:ring-paprika focus-visible:ring-offset-2 " +
           "focus-visible:ring-offset-background",
         active
-          ? "border-ink bg-ink text-cream"
-          : "border-border bg-transparent text-ink hover:bg-cream-warm",
+          ? "border-ink bg-ink text-bone"
+          : "border-border bg-transparent text-ink hover:bg-bone-deep",
         className,
       )}
       {...props}

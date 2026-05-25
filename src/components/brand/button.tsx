@@ -1,5 +1,10 @@
-// Brand button. Pill-shaped — the signature shape from the consumer
-// prototype, unified across all three sections (D2 design pass).
+// Brand button. v2.0 kit shape — `rounded-lg` (~8px), not pill — and
+// the kit's three colour treatments mapped onto the existing variant
+// names so callers don't churn:
+//   primary → paprika fill (the kit's accent fill)
+//   dark    → ink fill (the kit's primary)
+//   outline → paprika outline
+//   ghost   → quiet bone-on-transparent
 //
 // A plain <button> so it composes with server-action <form action={…}>
 // forms throughout the app.
@@ -9,30 +14,30 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full " +
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg " +
     "font-semibold whitespace-nowrap cursor-pointer " +
     "transition-[transform,background-color,color,border-color] " +
     "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika " +
     "focus-visible:ring-offset-2 focus-visible:ring-offset-background " +
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        // Orange fill — primary calls to action.
-        primary: "bg-orange text-white hover:bg-orange-deep",
-        // Ink fill — high-emphasis alternative / dark surfaces.
-        dark: "bg-ink text-cream hover:bg-ink-soft",
-        // Quiet — transparent with a warm border.
-        ghost: "border border-border bg-transparent text-ink hover:bg-cream-warm",
-        // Orange outline — secondary actions that still want brand color.
+        // Paprika fill — appetite-forward CTAs.
+        primary: "bg-paprika text-bone hover:bg-paprika-deep",
+        // Ink fill — the kit's default canvas-typesetting button.
+        dark: "bg-ink text-bone hover:bg-ink-soft",
+        // Paprika outline — secondary, still brand-tinted.
         outline:
-          "border border-orange bg-transparent text-orange hover:bg-orange-tint",
+          "border-[1.5px] border-paprika bg-transparent text-paprika hover:bg-paprika-tint",
+        // Quiet — transparent with a soft border.
+        ghost: "border border-border bg-transparent text-ink hover:bg-bone-deep",
       },
       size: {
         sm: "h-9 px-4 text-xs",
-        md: "h-11 px-6 text-sm",
-        lg: "h-14 px-8 text-[15px]",
+        md: "h-11 px-5 text-sm",
+        lg: "h-14 px-7 text-[15px]",
       },
     },
     defaultVariants: {
