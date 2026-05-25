@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" rx="40" ry="40" fill="#0A0A0A"/>
+  <text
+    x="90"
+    y="118"
+    text-anchor="middle"
+    fill="#F4EFE3"
+    font-family="'Archivo Black','Arial Black','Helvetica Neue',Helvetica,sans-serif"
+    font-weight="900"
+    font-size="55"
+    letter-spacing="-1.5"
+  >mate</text>
+</svg>
