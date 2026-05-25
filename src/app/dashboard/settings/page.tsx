@@ -90,10 +90,10 @@ export default async function MerchantSettingsPage() {
         eyebrow="Settings"
         title={
           <>
-            Your <em>account.</em>
+            Your account
           </>
         }
-        sub="Restaurant profile and how Mealmate settles with you."
+        sub="Restaurant profile and how Mealmate settles with you"
       />
 
       <div className="px-10 py-8">

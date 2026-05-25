@@ -14,7 +14,7 @@ import { HeroOffer, OfferCard, OfferTile, type OfferCardData } from "./OfferCard
 
 function SectionHead({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-display text-[22px] font-medium leading-tight tracking-tight [&_em]:not-italic [&_em]:text-paprika">
+    <h2 className="font-display text-[22px] leading-tight tracking-tight">
       {children}
     </h2>
   );
@@ -90,7 +90,7 @@ export function OfferBrowse({
           {forYou.length > 0 ? (
             <section className="space-y-3">
               <SectionHead>
-                For <em>you</em>
+                For you
               </SectionHead>
               <ul className="space-y-3">
                 {forYou.map((o) => (
@@ -105,7 +105,7 @@ export function OfferBrowse({
           {hero ? (
             <section className="space-y-3">
               <SectionHead>
-                Tonight&apos;s <em>pick</em>
+                Tonight&apos;s pick
               </SectionHead>
               <HeroOffer offer={hero} />
             </section>
@@ -125,7 +125,7 @@ export function OfferBrowse({
           {bigDiscount.length > 0 ? (
             <section className="space-y-3">
               <SectionHead>
-                20%+ off <em>tonight</em>
+                20%+ off tonight
               </SectionHead>
               <ul className="space-y-3">
                 {bigDiscount.map((o) => (

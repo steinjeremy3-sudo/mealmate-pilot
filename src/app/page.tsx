@@ -22,7 +22,7 @@ export default function Home() {
         <Eyebrow className="flex justify-center">Mealmate · Dallas</Eyebrow>
 
         <Heading as="h1" size="display" className="text-bone">
-          Eat well. Get a <em>little back</em>.
+          Eat well, get a little back
         </Heading>
 
         <p className="text-base text-bone/70">

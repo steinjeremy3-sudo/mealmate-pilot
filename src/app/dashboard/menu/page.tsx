@@ -32,7 +32,7 @@ export default async function MerchantMenuPage() {
         eyebrow={restaurant.name}
         title={
           <>
-            Your <em>menu.</em>
+            Your menu
           </>
         }
         sub="The dishes diners see on your offer. Flag the ones your discount applies to."

@@ -64,10 +64,10 @@ export default async function AdminRebatesPage({
         eyebrow="Cash back"
         title={
           <>
-            Every <em>payout.</em>
+            Every payout
           </>
         }
-        sub="Cash back moving from Mealmate to diners via Dwolla ACH."
+        sub="Cash back moving from Mealmate to diners via Dwolla ACH"
         actions={
           failedCount > 0 ? (
             <Link

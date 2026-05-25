@@ -1,7 +1,7 @@
 // Console page header — the editorial topbar every desktop dashboard
 // screen (merchant + admin) opens with: eyebrow, a large Archivo Black
-// title (nested <em> renders solid paprika — no italic), an optional
-// subhead, and right-aligned actions.
+// title, an optional subhead, and right-aligned actions. Solid ink
+// throughout — no inline word emphasis.
 
 import { Eyebrow } from "@/components/brand";
 
@@ -20,7 +20,7 @@ export function PageHeader({
     <div className="flex flex-wrap items-end justify-between gap-6 border-b border-border px-10 pb-7 pt-9">
       <div className="min-w-0 space-y-2">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="pb-1 font-display text-[2.75rem] leading-[1.05] tracking-[-0.02em] [&_em]:not-italic [&_em]:text-paprika">
+        <h1 className="pb-1 font-display text-[2.75rem] leading-[1.05] tracking-[-0.02em]">
           {title}
         </h1>
         {sub ? (

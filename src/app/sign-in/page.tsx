@@ -33,7 +33,7 @@ export default async function SignInPage({
             <Wordmark />
           </div>
           <Heading as="h1" size="page" className="pb-0">
-            Your favorite food, for less.
+            Your favorite food, for less
           </Heading>
         </div>
 

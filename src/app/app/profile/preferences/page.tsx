@@ -32,7 +32,7 @@ export default async function PreferencesPage() {
         <div className="space-y-1.5">
           <Eyebrow>Preferences</Eyebrow>
           <Heading as="h1" size="display">
-            Your <em>tastes.</em>
+            Your tastes
           </Heading>
           <p className="text-sm text-muted-foreground">
             Pick the cuisines you love. We&apos;ll surface them in a

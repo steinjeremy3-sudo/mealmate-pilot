@@ -85,10 +85,10 @@ export default async function MerchantPerformancePage({
         eyebrow={restaurant.name}
         title={
           <>
-            How you&apos;re <em>doing.</em>
+            How you&apos;re doing
           </>
         }
-        sub="Visits Mealmate confirmed at your restaurant over the chosen window."
+        sub="Visits Mealmate confirmed at your restaurant over the chosen window"
       />
 
       <div className="space-y-8 px-10 py-8">

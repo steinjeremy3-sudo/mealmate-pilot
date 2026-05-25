@@ -58,7 +58,7 @@ export default async function ClaimConfirm({
           </span>
           <Eyebrow className="text-center">Already activated</Eyebrow>
           <Heading as="h1" size="page" className="pb-0">
-            You already have an active offer at <em>{name}.</em>
+            You already have an active offer at {name}.
           </Heading>
           <p className="text-sm text-muted-foreground">
             One activation per offer. Your active offer is still good —
@@ -90,7 +90,7 @@ export default async function ClaimConfirm({
         <div className="space-y-1.5">
           <Eyebrow>Activate offer</Eyebrow>
           <Heading as="h1" size="page">
-            {offer.discount_pct}% off at <em>{name}.</em>
+            {offer.discount_pct}% off at {name}
           </Heading>
         </div>
 

@@ -113,10 +113,10 @@ export default async function MerchantHome() {
           eyebrow="Your restaurant"
           title={
             <>
-              Welcome, <em>{firstName}.</em>
+              Welcome, {firstName}
             </>
           }
-          sub="A couple of steps before your offers can go live."
+          sub="A couple of steps before your offers can go live"
         />
         <div className="px-10 py-8">
           <div className="w-full max-w-2xl space-y-5">
@@ -242,10 +242,10 @@ export default async function MerchantHome() {
         eyebrow="This week"
         title={
           <>
-            Evening, <em>{firstName}.</em>
+            Evening, {firstName}
           </>
         }
-        sub={`Here's how ${restaurant.name} is tracking against this week's offers.`}
+        sub={`How ${restaurant.name} is tracking against this week's offers`}
         actions={
           <Link
             href="/dashboard/offers/new"

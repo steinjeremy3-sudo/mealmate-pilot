@@ -70,7 +70,7 @@ export default async function AdminHome() {
         eyebrow="Operations"
         title={
           <>
-            Control <em>room.</em>
+            Control room
           </>
         }
         sub={`Morning, ${firstName}. Here's what needs a human today.`}

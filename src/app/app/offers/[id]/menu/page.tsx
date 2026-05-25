@@ -39,7 +39,7 @@ export default async function OfferMenuPage({
         <div className="space-y-1.5">
           <Eyebrow>{name}</Eyebrow>
           <Heading as="h1" size="display">
-            The <em>menu.</em>
+            The menu
           </Heading>
         </div>
 

@@ -56,7 +56,7 @@ export default async function AdminRestaurantsPage({
         eyebrow="Restaurants"
         title={
           <>
-            Every partner, <em>at a glance.</em>
+            Every partner, at a glance
           </>
         }
         sub="Filter by status. Open a row for the restaurant's full detail and approval."

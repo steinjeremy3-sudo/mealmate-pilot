@@ -63,7 +63,7 @@ export default async function MerchantTonightPage() {
               "No activity yet"
             ) : (
               <>
-                <em>{active.length}</em> holding · {paid.length} paid
+                {active.length} holding · {paid.length} paid
               </>
             )}
           </Heading>

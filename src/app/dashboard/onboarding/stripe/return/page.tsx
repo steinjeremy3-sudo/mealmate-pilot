@@ -29,7 +29,7 @@ export default async function StripeOnboardingReturn() {
         <Heading as="h1" size="page">
           {isActive ? (
             <>
-              You&apos;re <em>connected</em>
+              You&apos;re connected
             </>
           ) : (
             "Almost there"

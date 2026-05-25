@@ -39,7 +39,7 @@ export default async function OnboardingPage({
         <div className="space-y-2">
           <Eyebrow>Welcome, {profile.displayName}</Eyebrow>
           <Heading as="h1" size="page">
-            Tell us about your <em>restaurant</em>
+            Tell us about your restaurant
           </Heading>
           <p className="text-sm text-muted-foreground">
             Once submitted, our team reviews and approves new restaurants

@@ -70,7 +70,7 @@ export default async function DinerClaimDetail({
           </span>
           <Eyebrow className="mb-4">Offer activated</Eyebrow>
           <Heading as="h1" size="display" className="text-bone">
-            You&apos;re <em>all set.</em>
+            You&apos;re all set.
           </Heading>
           <p className="max-w-xs text-[15px] leading-relaxed text-bone/70">
             Head to {name} and pay normally with your linked card. We&apos;ll

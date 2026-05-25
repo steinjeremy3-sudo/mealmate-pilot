@@ -31,10 +31,10 @@ export default async function AdminDinersPage() {
         title={
           <>
             {diners.length}{" "}
-            <em>member{diners.length === 1 ? "" : "s"}.</em>
+            member{diners.length === 1 ? "" : "s"}
           </>
         }
-        sub="Everyone who's signed up to dine with Mealmate."
+        sub="Everyone who's signed up to dine with Mealmate"
       />
 
       <div className="px-10 py-8">

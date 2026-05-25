@@ -44,7 +44,7 @@ export default async function MerchantSettlementsPage() {
           <Heading as="h1" size="page">
             {due > 0 ? (
               <>
-                <em>{centsToUsd(due)}</em> due
+                {centsToUsd(due)} due
               </>
             ) : (
               "Settlements"

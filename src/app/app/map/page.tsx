@@ -33,7 +33,7 @@ export default async function DinerMapPage() {
         <div className="space-y-1.5">
           <Eyebrow>Map · Dallas</Eyebrow>
           <Heading as="h1" size="page">
-            Offers <em>nearby</em>
+            Offers nearby
           </Heading>
         </div>
 

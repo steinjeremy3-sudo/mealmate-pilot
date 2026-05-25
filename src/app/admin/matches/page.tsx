@@ -63,14 +63,14 @@ export default async function AdminMatchesPage() {
         eyebrow="Visits"
         title={
           rows.length === 0 ? (
-            "All caught up."
+            "All caught up"
           ) : (
             <>
-              {rows.length} waiting for <em>a human.</em>
+              {rows.length} waiting for a human
             </>
           )
         }
-        sub="Visits auto-confirm at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first."
+        sub="Visits auto-confirm at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first"
       />
 
       <div className="px-10 py-8">

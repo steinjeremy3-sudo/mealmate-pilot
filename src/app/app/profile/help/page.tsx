@@ -49,7 +49,7 @@ export default async function DinerHelpPage() {
         <div className="space-y-1.5">
           <Eyebrow>Help</Eyebrow>
           <Heading as="h1" size="display">
-            Common <em>questions.</em>
+            Common questions
           </Heading>
         </div>
 

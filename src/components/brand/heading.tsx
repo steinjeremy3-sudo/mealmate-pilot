@@ -1,7 +1,5 @@
-// Brand heading — Archivo Black display type per the v2.0 kit. A
-// nested <em> renders as solid paprika emphasis (suppress the browser
-// default italic) so callers can highlight a single word inline:
-//   <Heading><em>25%</em> off dinner</Heading>
+// Brand heading — Archivo Black display type per the v2.0 kit.
+// Solid ink throughout — no inline word emphasis.
 
 import { cn } from "@/lib/utils";
 
@@ -28,7 +26,6 @@ export function Heading({
     <Tag
       className={cn(
         "font-display tracking-[-0.02em] text-foreground",
-        "[&_em]:not-italic [&_em]:text-paprika",
         sizeClasses[size],
         className,
       )}

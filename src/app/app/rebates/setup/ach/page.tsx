@@ -58,11 +58,11 @@ export default async function CashBackAchPage() {
           <Heading as="h1" size="display">
             {hasDestination ? (
               <>
-                Your <em>bank.</em>
+                Your bank
               </>
             ) : (
               <>
-                Where your <em>cash back</em> lands.
+                Where your cash back lands
               </>
             )}
           </Heading>

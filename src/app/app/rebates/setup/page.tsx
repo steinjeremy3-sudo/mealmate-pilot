@@ -70,7 +70,7 @@ export default async function CashBackSetupPage() {
         <div className="space-y-1.5">
           <Eyebrow>Cash back</Eyebrow>
           <Heading as="h1" size="display">
-            Where should your <em>cash back</em> land?
+            Where should your cash back land?
           </Heading>
           <p className="text-sm text-muted-foreground">
             Pick how you&apos;d like cash back paid out. You can switch
@@ -83,7 +83,7 @@ export default async function CashBackSetupPage() {
           href="/app/rebates/setup/debit"
           icon={<Wallet className="size-5" strokeWidth={1.75} />}
           title="On your debit card"
-          subtitle="Lands in minutes."
+          subtitle="Lands in minutes"
           badge="Recommended"
         />
 
@@ -92,7 +92,7 @@ export default async function CashBackSetupPage() {
           href="/app/rebates/setup/ach"
           icon={<Building2 className="size-5" strokeWidth={1.75} />}
           title="In your bank account"
-          subtitle="Deposits in 1–2 business days."
+          subtitle="Deposits in 1–2 business days"
         />
       </div>
     </main>
@@ -154,7 +154,7 @@ function ActiveSummary({
         <div className="space-y-1.5">
           <Eyebrow>Cash back</Eyebrow>
           <Heading as="h1" size="display">
-            Your <em>payout</em> is set.
+            Your payout is set.
           </Heading>
         </div>
 

@@ -42,10 +42,10 @@ export default async function NewOfferPage({
         eyebrow="Offers · new"
         title={
           <>
-            A new <em>window.</em>
+            A new window
           </>
         }
-        sub="The form on the left; a live diner preview on the right."
+        sub="The form on the left; a live diner preview on the right"
       />
       <div className="px-10 py-8">
         <OfferForm

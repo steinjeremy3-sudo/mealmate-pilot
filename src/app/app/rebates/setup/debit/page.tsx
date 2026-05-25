@@ -36,11 +36,11 @@ export default async function CashBackDebitPage() {
           <Heading as="h1" size="display">
             {hasCard ? (
               <>
-                Your <em>card.</em>
+                Your card
               </>
             ) : (
               <>
-                Where your <em>cash back</em> lands.
+                Where your cash back lands
               </>
             )}
           </Heading>

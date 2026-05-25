@@ -94,7 +94,7 @@ export default async function WalletPage({
         <div className="space-y-1.5">
           <Eyebrow>Wallet</Eyebrow>
           <Heading as="h1" size="display">
-            Your <em>wallet.</em>
+            Your wallet
           </Heading>
         </div>
 

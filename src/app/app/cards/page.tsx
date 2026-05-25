@@ -43,11 +43,11 @@ export default async function CardsPage() {
           <Heading as="h1" size="display">
             {cards.length === 0 ? (
               <>
-                Link your <em>card.</em>
+                Link your card
               </>
             ) : (
               <>
-                <em>{cards.length}</em> on file
+                {cards.length} on file
               </>
             )}
           </Heading>

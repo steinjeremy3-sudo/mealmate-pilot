@@ -48,7 +48,7 @@ export default async function AdminSettlementsPage() {
         eyebrow="Settlements"
         title={
           <>
-            Weekly <em>settlements.</em>
+            Weekly settlements
           </>
         }
         sub={`Restaurants are invoiced weekly for the discount portion of their confirmed visits — ${centsToUsd(owed)} outstanding right now.`}

@@ -46,7 +46,7 @@ export default async function MerchantOffersPage() {
         eyebrow={restaurant.name}
         title={
           <>
-            Offers you&apos;re <em>running.</em>
+            Offers you&apos;re running
           </>
         }
         sub="Each offer is a daypart window with a discount diners can activate."

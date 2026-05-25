@@ -39,10 +39,10 @@ export default async function AdminAuditPage({
         eyebrow="Audit log"
         title={
           <>
-            Every action, <em>recorded.</em>
+            Every action, recorded
           </>
         }
-        sub="Append-only. Diner activity, merchant edits, admin decisions, system jobs — filter by a subject and its id."
+        sub="Append-only — diner activity, merchant edits, admin decisions, system jobs, filterable by subject and id"
       />
 
       <div className="space-y-5 px-10 py-8">
