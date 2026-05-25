@@ -23,7 +23,6 @@ export default async function OfferMenuPage({
 
   const menu = await getMenuForRestaurant(offer.restaurant_id);
   const sections = groupBySection(menu);
-  const hasDiscountItems = menu.some((m) => m.discountEligible);
   const name = offer.restaurant?.name ?? "Restaurant";
 
   return (
@@ -43,12 +42,10 @@ export default async function OfferMenuPage({
           </Heading>
         </div>
 
-        {hasDiscountItems ? (
-          <Card className="flex items-center gap-2 bg-paprika-tint text-sm text-paprika-deep">
-            <span className="size-2 shrink-0 rounded-full bg-paprika" />
-            Highlighted items qualify for {offer.discount_pct}% off.
-          </Card>
-        ) : null}
+        <Card className="bg-paprika-tint text-sm text-paprika-deep">
+          {offer.discount_pct}% off your whole check when you activate
+          this offer
+        </Card>
 
         {sections.length === 0 ? (
           <Card className="border-dashed text-center text-sm text-muted-foreground">
@@ -67,12 +64,7 @@ export default async function OfferMenuPage({
                       key={it.id}
                       className="flex items-baseline justify-between gap-4 border-b border-border py-2.5 text-sm last:border-b-0"
                     >
-                      <span className="flex items-center gap-2">
-                        {it.discountEligible ? (
-                          <span className="size-1.5 shrink-0 rounded-full bg-paprika" />
-                        ) : null}
-                        {it.name}
-                      </span>
+                      <span>{it.name}</span>
                       <span className="shrink-0 font-mono text-muted-foreground">
                         {centsToUsd(it.priceCents)}
                       </span>

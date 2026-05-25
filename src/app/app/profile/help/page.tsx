@@ -20,6 +20,10 @@ const FAQS: { q: string; a: string }[] = [
     a: "Mealmate keeps 6% of the total bill as a platform fee, capped at $10. Your cash back is the discount minus that fee — the full breakdown shows on every cash-back detail page.",
   },
   {
+    q: "Does the discount apply to specific menu items?",
+    a: "No — the discount is applied to your whole check. Order whatever you want; the percentage off comes back as cash to your linked card.",
+  },
+  {
     q: "Can I pay with a different card?",
     a: "It needs to be a card you've linked to Mealmate — otherwise we have no way to confirm the visit. You can link more than one under Profile → Linked cards.",
   },

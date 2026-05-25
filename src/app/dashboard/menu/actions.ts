@@ -19,7 +19,6 @@ export async function createMenuItem(formData: FormData): Promise<void> {
   const section = String(formData.get("section") ?? "").trim() || "Menu";
   const name = String(formData.get("name") ?? "").trim();
   const priceUsd = parseFloat(String(formData.get("price") ?? ""));
-  const discountEligible = formData.get("discount_eligible") === "on";
 
   if (!name || !Number.isFinite(priceUsd) || priceUsd < 0) return;
 
@@ -28,7 +27,6 @@ export async function createMenuItem(formData: FormData): Promise<void> {
     section,
     name,
     priceCents: usdToCents(priceUsd),
-    discountEligible,
   });
   revalidatePath("/dashboard/menu");
 }

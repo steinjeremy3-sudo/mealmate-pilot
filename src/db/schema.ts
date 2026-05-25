@@ -366,7 +366,11 @@ export const dinerAstraAccounts = pgTable("diner_astra_accounts", {
 // === menu_items ====================================================
 // A restaurant's menu — sections of named, priced items. Merchants
 // manage these; diners view them on the offer screen.
-// discount_eligible flags items the offer's discount applies to.
+//
+// `discount_eligible` is a vestige from an earlier draft. Mealmate
+// discounts are blanket — they apply to the whole check, never to
+// specific items — so this column is no longer read or written by
+// the app. Left in the schema to avoid a destructive migration.
 export const menuItems = pgTable("menu_items", {
   id: uuid("id").primaryKey().defaultRandom(),
   restaurantId: uuid("restaurant_id")

@@ -1,6 +1,10 @@
 // Menu reads/writes. Service-role client — the diner menu screen and
 // the merchant menu manager. Writes are scoped to a restaurant id the
 // caller already resolved from the authenticated merchant.
+//
+// Discounts are applied to the WHOLE check, never to specific items —
+// the menu_items.discount_eligible column on the table is a vestige
+// from an earlier draft and is no longer read or written.
 
 import "server-only";
 
@@ -12,7 +16,6 @@ export type MenuItem = {
   section: string;
   name: string;
   priceCents: number;
-  discountEligible: boolean;
 };
 
 /** A restaurant's menu items, ordered by section then creation. */
@@ -22,9 +25,7 @@ export async function getMenuForRestaurant(
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("menu_items")
-    .select(
-      "id, restaurant_id, section, name, price_cents, discount_eligible, created_at",
-    )
+    .select("id, restaurant_id, section, name, price_cents, created_at")
     .eq("restaurant_id", restaurantId)
     .order("section", { ascending: true })
     .order("created_at", { ascending: true });
@@ -38,7 +39,6 @@ export async function getMenuForRestaurant(
     section: m.section,
     name: m.name,
     priceCents: m.price_cents,
-    discountEligible: m.discount_eligible,
   }));
 }
 
@@ -60,7 +60,6 @@ export async function addMenuItem(args: {
   section: string;
   name: string;
   priceCents: number;
-  discountEligible: boolean;
 }): Promise<void> {
   const admin = createSupabaseAdminClient();
   const { error } = await admin.from("menu_items").insert({
@@ -68,7 +67,6 @@ export async function addMenuItem(args: {
     section: args.section,
     name: args.name,
     price_cents: args.priceCents,
-    discount_eligible: args.discountEligible,
   });
   if (error) throw new Error(`addMenuItem: ${error.message}`);
 }

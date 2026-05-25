@@ -35,7 +35,7 @@ export default async function MerchantMenuPage() {
             Your menu
           </>
         }
-        sub="The dishes diners see on your offer. Flag the ones your discount applies to."
+        sub="The dishes diners see on your offer screen. Your discount applies to the whole check, not specific items"
       />
 
       <div className="px-10 py-8">
@@ -82,14 +82,6 @@ export default async function MerchantMenuPage() {
                   className={inputClass}
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  name="discount_eligible"
-                  className="accent-paprika"
-                />
-                The discount applies to this item
-              </label>
               <Button type="submit" className="w-full">
                 Add to menu
               </Button>
@@ -116,11 +108,6 @@ export default async function MerchantMenuPage() {
                           <p className="truncate text-sm font-medium">
                             {it.name}
                           </p>
-                          {it.discountEligible ? (
-                            <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-paprika-deep">
-                              Discount applies
-                            </p>
-                          ) : null}
                         </div>
                         <span className="shrink-0 font-mono text-sm">
                           {centsToUsd(it.priceCents)}
