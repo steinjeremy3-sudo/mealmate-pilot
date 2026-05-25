@@ -2,12 +2,13 @@
   <rect width="180" height="180" rx="40" ry="40" fill="#0A0A0A"/>
   <text
     x="90"
-    y="118"
+    y="128"
     text-anchor="middle"
     fill="#F4EFE3"
     font-family="'Archivo Black','Arial Black','Helvetica Neue',Helvetica,sans-serif"
     font-weight="900"
-    font-size="55"
-    letter-spacing="-1.5"
-  >mate</text>
+    font-size="104"
+    letter-spacing="-8"
+    style="font-feature-settings: 'kern' 0;"
+  >:)</text>
 </svg>
