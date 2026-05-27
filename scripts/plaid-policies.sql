@@ -12,6 +12,8 @@
 --
 -- Idempotent. Applied via `npm run setup:plaid-policies`.
 
+ALTER TABLE public.plaid_items         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plaid_card_accounts ENABLE ROW LEVEL SECURITY;
 
 -- ====================================================================
 -- plaid_items

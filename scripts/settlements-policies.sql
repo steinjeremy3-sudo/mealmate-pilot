@@ -9,6 +9,9 @@
 --
 -- Idempotent. Applied via `npm run setup:settlements-policies`.
 
+ALTER TABLE public.settlements                  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.restaurant_billing_customers ENABLE ROW LEVEL SECURITY;
+
 -- ====================================================================
 -- settlements
 -- ====================================================================

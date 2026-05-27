@@ -17,6 +17,8 @@
 --
 -- Idempotent. Applied via `npm run setup:matched-transactions-policies`.
 
+ALTER TABLE public.matched_transactions ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS matched_transactions_select_owner_or_admin ON public.matched_transactions;
 CREATE POLICY matched_transactions_select_owner_or_admin ON public.matched_transactions
   FOR SELECT

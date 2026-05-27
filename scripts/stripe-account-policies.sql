@@ -7,6 +7,8 @@
 --
 -- Idempotent. Applied via `npm run setup:stripe-account-policies`.
 
+ALTER TABLE public.restaurant_stripe_accounts ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS restaurant_stripe_accounts_select_owner_or_admin
   ON public.restaurant_stripe_accounts;
 CREATE POLICY restaurant_stripe_accounts_select_owner_or_admin

@@ -11,6 +11,8 @@
 --
 -- Idempotent. Applied via `npm run setup:dwolla-policies`.
 
+ALTER TABLE public.diner_dwolla_accounts ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS diner_dwolla_accounts_select_owner_or_admin ON public.diner_dwolla_accounts;
 CREATE POLICY diner_dwolla_accounts_select_owner_or_admin ON public.diner_dwolla_accounts
   FOR SELECT

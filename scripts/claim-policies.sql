@@ -3,6 +3,7 @@
 -- Idempotent — every CREATE has a matching DROP IF EXISTS.
 -- Applied via `npm run setup:claim-policies`.
 
+ALTER TABLE public.claims ENABLE ROW LEVEL SECURITY;
 
 -- ====================================================================
 -- SELECT layers (OR'd):

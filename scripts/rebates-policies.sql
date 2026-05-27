@@ -12,6 +12,8 @@
 --
 -- Idempotent. Applied via `npm run setup:rebates-policies`.
 
+ALTER TABLE public.rebates ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS rebates_select_owner_or_admin ON public.rebates;
 CREATE POLICY rebates_select_owner_or_admin ON public.rebates
   FOR SELECT
