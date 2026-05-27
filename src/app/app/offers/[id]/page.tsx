@@ -97,7 +97,7 @@ export default async function DinerOfferDetail({
         </div>
 
         {/* Active offer — dark card */}
-        <div className="space-y-3 rounded-2xl bg-ink-deep p-5 text-bone">
+        <div className="space-y-3 rounded-2xl bg-ink p-5 text-bone">
           <div className="flex items-start justify-between gap-3">
             <div>
               <Eyebrow tone="muted" className="text-bone/60">

@@ -86,7 +86,7 @@ export function HeroOffer({ offer }: { offer: OfferCardData }) {
   const dayRange = formatDayRange(offer.valid_days);
   return (
     <Link href={`/app/offers/${offer.id}`} className="block">
-      <div className="relative overflow-hidden rounded-2xl bg-ink-deep p-5 text-bone transition-transform active:scale-[0.99]">
+      <div className="relative overflow-hidden rounded-2xl bg-ink p-5 text-bone transition-transform active:scale-[0.99]">
         <PlaceholderImg name={r?.name ?? "Restaurant"} className="h-36 rounded-xl" />
         <span className="absolute right-7 top-7">
           <DiscountPill pct={offer.discount_pct} />

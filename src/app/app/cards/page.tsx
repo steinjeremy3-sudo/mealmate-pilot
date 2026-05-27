@@ -23,7 +23,7 @@ const ASSURANCES = [
   },
   {
     Icon: CreditCard,
-    text: "We never charge your card. Cash back is paid out to your bank account.",
+    text: "We never charge your card. Cash back is paid out to the debit card or bank account you choose.",
   },
 ];
 

@@ -44,8 +44,8 @@ export default async function DinerRebateDetail({
               {centsToUsd(r.amountCents)} is on the way.
             </p>
             <p className="mt-1 text-sm text-ink/70">
-              We confirmed your visit and started your cash back. Expect it
-              on your linked account within 1–2 business days.
+              We confirmed your visit and started your cash back — it&apos;ll
+              land on your chosen payout method shortly.
             </p>
           </Card>
         ) : null}

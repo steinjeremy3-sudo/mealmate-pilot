@@ -67,7 +67,7 @@ export default async function AdminRebatesPage({
             Every payout
           </>
         }
-        sub="Cash back moving from Mealmate to diners via Dwolla ACH"
+        sub="Cash back moving from Mealmate to diners — via Dwolla ACH or Astra push-to-debit, per the diner's choice"
         actions={
           failedCount > 0 ? (
             <Link

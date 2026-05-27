@@ -253,7 +253,7 @@ export function OfferForm({
       {/* ===== Live preview ===== */}
       <div className="h-fit space-y-3 lg:sticky lg:top-8">
         <Eyebrow tone="muted">Diner preview</Eyebrow>
-        <div className="rounded-2xl bg-ink-deep p-5 text-bone">
+        <div className="rounded-2xl bg-ink p-5 text-bone">
           <div className="relative">
             <PlaceholderImg
               name={restaurantName}

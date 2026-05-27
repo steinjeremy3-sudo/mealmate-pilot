@@ -14,7 +14,7 @@ export default function Home() {
         className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem]"
         style={{
           background:
-            "radial-gradient(circle, rgba(232,117,74,0.40) 0%, rgba(232,117,74,0) 70%)",
+            "radial-gradient(circle, rgba(218,81,38,0.40) 0%, rgba(218,81,38,0) 70%)",
         }}
       />
 
@@ -27,8 +27,8 @@ export default function Home() {
 
         <p className="text-base text-bone/70">
           Activate an offer at an independent Dallas restaurant, pay
-          however you normally would, and cash back lands on your linked
-          card a day or two later. No coupons, no apps at the table.
+          however you normally would, and cash back lands back to you
+          shortly after. No coupons, no apps at the table.
         </p>
 
         <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">

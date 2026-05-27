@@ -42,8 +42,8 @@ export default async function DinerMapPage() {
           className="relative h-64 overflow-hidden rounded-2xl border border-border bg-bone-deep"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(26,26,31,0.04) 1px, transparent 1px)," +
-              "linear-gradient(90deg, rgba(26,26,31,0.04) 1px, transparent 1px)",
+              "linear-gradient(rgba(10,10,10,0.04) 1px, transparent 1px)," +
+              "linear-gradient(90deg, rgba(10,10,10,0.04) 1px, transparent 1px)",
             backgroundSize: "32px 32px",
           }}
         >

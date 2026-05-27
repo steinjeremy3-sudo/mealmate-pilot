@@ -100,7 +100,7 @@ export default async function WalletPage({
 
         {/* Monthly savings → dashboard */}
         <Link href="/app/savings" className="block">
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink-deep p-5 text-bone transition-transform active:scale-[0.99]">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink p-5 text-bone transition-transform active:scale-[0.99]">
             <div>
               <Eyebrow tone="muted" className="text-bone/60">
                 {monthLabel} so far

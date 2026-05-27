@@ -63,7 +63,7 @@ export default async function DinerClaimDetail({
   // ===== Just-placed success screen =====
   if (placed && isActive) {
     return (
-      <main className="flex flex-1 flex-col bg-ink-deep px-7 py-12 text-bone">
+      <main className="flex flex-1 flex-col bg-ink px-7 py-12 text-bone">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span className="mb-8 flex size-20 items-center justify-center rounded-full bg-ink text-bone">
             <Check className="size-10" strokeWidth={2.5} />
@@ -74,7 +74,7 @@ export default async function DinerClaimDetail({
           </Heading>
           <p className="max-w-xs text-[15px] leading-relaxed text-bone/70">
             Head to {name} and pay normally with your linked card. We&apos;ll
-            confirm your visit and send your cash back within 1–2 days.
+            confirm your visit and send your cash back shortly after.
           </p>
         </div>
 
@@ -154,7 +154,7 @@ export default async function DinerClaimDetail({
             </p>
             <p className="text-xs text-ink/70">
               Eat at {name} and pay with your linked card. We&apos;ll confirm
-              your visit and send your cash back within 1–2 business days.
+              your visit and send your cash back shortly after.
             </p>
             <form action={cancelClaim} className="border-t border-border pt-3">
               <input type="hidden" name="claim_id" value={claim.id} />
@@ -172,8 +172,8 @@ export default async function DinerClaimDetail({
           <Card className="space-y-2 border-paprika/30 bg-paprika-tint">
             <p className="font-medium text-ink">Cash back on its way</p>
             <p className="text-xs text-ink/70">
-              We confirmed your visit. Your cash back posts to your linked
-              account within 1–2 business days.
+              We confirmed your visit. Your cash back is on its way to
+              the payout method you chose.
             </p>
           </Card>
         ) : null}
@@ -218,7 +218,7 @@ export default async function DinerClaimDetail({
               <li>Eat at {name} before your offer expires.</li>
               <li>Pay normally with your linked card.</li>
               <li>We confirm your visit within 1–2 days.</li>
-              <li>Your cash back lands in your bank account.</li>
+              <li>Your cash back lands on your chosen payout method.</li>
             </ol>
           </Card>
         ) : null}
