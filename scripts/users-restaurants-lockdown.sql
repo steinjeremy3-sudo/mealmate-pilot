@@ -1,0 +1,32 @@
+-- Privilege-escalation hardening for public.users + public.restaurants.
+--
+-- The existing FOR UPDATE RLS policies on these tables let the row's
+-- owner update "their own" row (`id = auth.uid()` for users,
+-- `owner_user_id = auth.uid()` for restaurants). RLS is row-level,
+-- not column-level — so without grants restricting WHICH columns
+-- the `authenticated` Postgres role can write, a logged-in user
+-- could call:
+--
+--   supabase.from("users").update({ role: "admin" }).eq("id", me)
+--   supabase.from("restaurants")
+--     .update({ status: "approved" })
+--     .eq("id", their_own_restaurant)
+--
+-- and self-promote. Both are clear privilege escalations.
+--
+-- The fix: revoke UPDATE entirely from `authenticated` (and `anon`)
+-- on both tables. Every legitimate write to these tables already
+-- runs through the service-role admin client — see
+-- src/lib/db/users-payout.ts, src/lib/db/diner-preferences.ts, and
+-- the (now service-role) restaurants approval action — so revoking
+-- UPDATE from `authenticated` doesn't break anything.
+--
+-- INSERT into restaurants is still allowed for merchants via the
+-- restaurants_insert_merchant_self policy (the WITH CHECK pins
+-- owner_user_id = auth.uid() and role = 'merchant', so they can
+-- only create restaurants they own).
+--
+-- Idempotent. Applied via `npm run setup:users-restaurants-lockdown`.
+
+REVOKE UPDATE ON public.users        FROM authenticated, anon;
+REVOKE UPDATE ON public.restaurants  FROM authenticated, anon;
