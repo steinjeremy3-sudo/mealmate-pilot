@@ -20,7 +20,10 @@ import {
   getActiveClaimCount,
   getActiveClaimForOffer,
 } from "@/lib/db/claims";
+import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { getOfferById } from "@/lib/db/offers";
+import { getMyPlaidCards } from "@/lib/db/plaid-cards";
+import { getPayoutMethod } from "@/lib/db/users-payout";
 
 /** How long a claim is valid before it auto-expires (read-side only). */
 const CLAIM_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -37,6 +40,30 @@ export async function claimOffer(formData: FormData): Promise<void> {
   const offer = await getOfferById(offerId);
   if (!offer || offer.status !== "live") {
     redirect(errParam(offerId, "This offer is no longer available."));
+  }
+
+  // Pre-flight: a diner can only earn cash back if a card is linked
+  // (so Plaid can confirm the visit) AND a payout destination is set
+  // (so we have somewhere to send the cash back). The /claim page
+  // already presents a friendly "finish setup" CTA before reaching
+  // this action — this check is defense-in-depth so the action can't
+  // be hit directly.
+  const [cards, payoutMethod, dwolla] = await Promise.all([
+    getMyPlaidCards(),
+    getPayoutMethod(profile.id),
+    getDinerDwollaAccount(profile.id),
+  ]);
+  if (cards.length === 0) {
+    redirect(errParam(offerId, "Link a card before activating an offer."));
+  }
+  const hasPayoutDestination =
+    payoutMethod === "astra" ||
+    payoutMethod === "dwolla" ||
+    !!dwolla?.defaultCardFundingSourceUrl;
+  if (!hasPayoutDestination) {
+    redirect(
+      errParam(offerId, "Choose where your cash back lands before activating."),
+    );
   }
 
   // Per-diner cap: diners default to max_claims_per_diner=1, meaning

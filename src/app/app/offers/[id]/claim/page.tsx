@@ -12,6 +12,9 @@ import { requireRole } from "@/lib/auth/require-role";
 import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getActiveClaimForOffer } from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
+import { getMyPlaidCards } from "@/lib/db/plaid-cards";
+import { getPayoutMethod } from "@/lib/db/users-payout";
+import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { centsToUsd } from "@/lib/money";
 import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
 
@@ -36,15 +39,29 @@ export default async function ClaimConfirm({
   params: Params;
   searchParams: SearchParams;
 }) {
-  await requireRole("diner");
+  const profile = await requireRole("diner");
   const { id } = await params;
   const { error } = await searchParams;
 
-  const [offer, activeClaim] = await Promise.all([
+  const [offer, activeClaim, cards, payoutMethod, dwolla] = await Promise.all([
     getOfferById(id),
     getActiveClaimForOffer(id),
+    getMyPlaidCards(),
+    getPayoutMethod(profile.id),
+    getDinerDwollaAccount(profile.id),
   ]);
   if (!offer) notFound();
+
+  // Pre-flight: a diner can only earn cash back if a card is linked
+  // (so Plaid can confirm the visit) AND a payout destination is set
+  // (so we have somewhere to send the cash back). Existing Dwolla
+  // users from before the chooser landed are implicitly 'dwolla'.
+  const hasLinkedCard = cards.length > 0;
+  const hasPayoutDestination =
+    payoutMethod === "astra" ||
+    payoutMethod === "dwolla" ||
+    !!dwolla?.defaultCardFundingSourceUrl;
+  const missingSetup = !hasLinkedCard || !hasPayoutDestination;
 
   const name = offer.restaurant?.name ?? "this restaurant";
 
@@ -123,18 +140,55 @@ export default async function ClaimConfirm({
           </p>
         ) : null}
 
-        <form action={claimOffer} className="space-y-2">
-          <input type="hidden" name="offer_id" value={offer.id} />
-          <Button type="submit" size="lg" className="w-full">
-            Activate offer
-          </Button>
-          <Link
-            href={`/app/offers/${offer.id}`}
-            className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
-          >
-            Cancel
-          </Link>
-        </form>
+        {missingSetup ? (
+          <Card className="space-y-3 border-paprika/40 bg-paprika-tint">
+            <p className="text-sm font-medium text-ink">
+              Finish setting up before you activate
+            </p>
+            <p className="text-sm text-ink/75">
+              {!hasLinkedCard
+                ? "We watch your linked card to confirm your visit, then send the cash back."
+                : "We need somewhere to send the cash back when your visit is confirmed."}
+            </p>
+            <div className="space-y-2 pt-1">
+              {!hasLinkedCard ? (
+                <Link
+                  href="/app/cards"
+                  className="block w-full rounded-full bg-ink py-3 text-center text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
+                >
+                  Link a card
+                </Link>
+              ) : null}
+              {!hasPayoutDestination ? (
+                <Link
+                  href="/app/rebates/setup"
+                  className="block w-full rounded-full bg-ink py-3 text-center text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
+                >
+                  Choose where cash back lands
+                </Link>
+              ) : null}
+              <Link
+                href={`/app/offers/${offer.id}`}
+                className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
+              >
+                Cancel
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <form action={claimOffer} className="space-y-2">
+            <input type="hidden" name="offer_id" value={offer.id} />
+            <Button type="submit" size="lg" className="w-full">
+              Activate offer
+            </Button>
+            <Link
+              href={`/app/offers/${offer.id}`}
+              className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
+            >
+              Cancel
+            </Link>
+          </form>
+        )}
       </div>
     </main>
   );
