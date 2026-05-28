@@ -85,6 +85,13 @@
       "when": 1779303600000,
       "tag": "0011_user_payout_method",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1779310800000,
+      "tag": "0012_matched_transactions_category",
+      "breakpoints": true
     }
   ]
 }

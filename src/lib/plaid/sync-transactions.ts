@@ -274,6 +274,10 @@ async function persistTransaction(
 
   const amountCents = Math.round(txn.amount * 100);
 
+  // Plaid PFC, captured for future category-aware scoring. Both
+  // nullable; the downstream matcher treats null as neutral.
+  const txnCategoryDetailed = txn.personal_finance_category?.detailed ?? null;
+
   const admin = createSupabaseAdminClient();
   const { error } = await admin.from("matched_transactions").upsert(
     {
@@ -283,6 +287,8 @@ async function persistTransaction(
       merchant_name_normalized: normalizeMerchantName(merchantNameRaw),
       amount_cents: amountCents,
       transaction_date: txn.date, // Plaid returns YYYY-MM-DD
+      transaction_category: primary ?? null,
+      transaction_category_detailed: txnCategoryDetailed,
       match_confidence: "none",
     },
     { onConflict: "plaid_transaction_id", ignoreDuplicates: false },

@@ -410,6 +410,19 @@ export const matchedTransactions = pgTable("matched_transactions", {
   amountCents: integer("amount_cents").notNull(),
   transactionDate: date("transaction_date").notNull(),
 
+  // Plaid PFC (personal-finance category), captured at sync time.
+  // Both nullable — Plaid doesn't always populate them, and rows
+  // synced before drizzle 0012 stay null. Downstream code should
+  // treat null as "unknown — neutral, don't penalise."
+  //   transaction_category          — PFC primary (e.g. "FOOD_AND_DRINK")
+  //   transaction_category_detailed — PFC detailed (e.g.
+  //                                   "FOOD_AND_DRINK_RESTAURANT" vs
+  //                                   "FOOD_AND_DRINK_FAST_FOOD_RESTAURANTS")
+  // (Classic 4-digit MCC isn't on standard /transactions/sync — it
+  // requires Plaid's Enrichment add-on — so we don't capture it.)
+  transactionCategory: text("transaction_category"),
+  transactionCategoryDetailed: text("transaction_category_detailed"),
+
   matchConfidence: matchConfidenceEnum("match_confidence").notNull().default("none"),
 
   // Snapshotted from the offer at match time so historical analysis
