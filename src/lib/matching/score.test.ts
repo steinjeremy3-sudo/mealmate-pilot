@@ -201,6 +201,19 @@ describe("scoreMatch (combined)", () => {
     expect(["medium", "low"]).toContain(r.confidence);
   });
 
+  it("returns 'none' when the merchant name is below the floor", () => {
+    // "Amazon" vs "Lucia" — totally unrelated. Even with a fresh
+    // claim + amount-pass + Dallas, this must not land in 'low'.
+    // Anchors the 0.55 NAME_FLOOR_FOR_ANY_MATCH; if anyone drops
+    // it back to 0.35 in the future, this test fails.
+    const r = scoreMatch({
+      ...base,
+      merchantNameNormalized: "amazon",
+      restaurantNameNormalized: NAME.lucia,
+    });
+    expect(r.confidence).toBe("none");
+  });
+
   it("reports per-dimension scores for the review queue", () => {
     const r = scoreMatch({
       ...base,

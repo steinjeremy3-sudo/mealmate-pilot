@@ -75,8 +75,14 @@ const CUTOFFS = { high: 0.85, medium: 0.65, low: 0.4 };
  * weakly like the restaurant we drop straight to 'none' — otherwise
  * a fresh claim + Dallas geo + amount-pass would give every Amazon
  * charge a 'low' against every restaurant, flooding the queue.
+ *
+ * 0.55 covers any reasonable Dice-coefficient overlap from a real
+ * abbreviation / branding variant ("Lucia Restaurant" vs "Lucia"
+ * lands well above; "Wendigo Cellar" vs "Wendigo" lands above).
+ * 0.35 was the original floor and let too much garbage into the
+ * 'low' tier — at any meaningful volume that floods the queue.
  */
-const NAME_FLOOR_FOR_ANY_MATCH = 0.35;
+const NAME_FLOOR_FOR_ANY_MATCH = 0.55;
 
 export function scoreMatch(input: ScoreInputs): ScoreResult {
   const name = nameSimilarity(
