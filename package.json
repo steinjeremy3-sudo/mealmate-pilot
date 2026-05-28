@@ -30,7 +30,8 @@
     "setup:rls-harden": "tsx scripts/setup-rls-harden.ts",
     "setup:users-restaurants-lockdown": "tsx scripts/setup-users-restaurants-lockdown.ts",
     "seed": "tsx scripts/seed.ts",
-    "seed:sandbox": "tsx scripts/seed-sandbox-merchants.ts"
+    "seed:sandbox": "tsx scripts/seed-sandbox-merchants.ts",
+    "seed:menus": "tsx scripts/seed-menus.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
