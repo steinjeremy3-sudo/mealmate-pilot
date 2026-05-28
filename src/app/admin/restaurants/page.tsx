@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 
-import { Card } from "@/components/brand";
+import { Card, PlaceholderImg } from "@/components/brand";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
 import {
@@ -106,6 +106,10 @@ export default async function AdminRestaurantsPage({
                 href={`/admin/restaurants/${r.id}`}
                 className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
               >
+                <PlaceholderImg
+                  name={r.name}
+                  className="size-11 shrink-0 rounded-lg"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-base">{r.name}</p>
                   <p className="truncate text-xs text-muted-foreground">

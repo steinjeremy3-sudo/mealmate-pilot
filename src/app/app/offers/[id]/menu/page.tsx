@@ -59,17 +59,27 @@ export default async function OfferMenuPage({
                   {s.section}
                 </h2>
                 <ul>
-                  {s.items.map((it) => (
-                    <li
-                      key={it.id}
-                      className="flex items-baseline justify-between gap-4 border-b border-border py-2.5 text-sm last:border-b-0"
-                    >
-                      <span>{it.name}</span>
-                      <span className="shrink-0 font-mono text-muted-foreground">
-                        {centsToUsd(it.priceCents)}
-                      </span>
-                    </li>
-                  ))}
+                  {s.items.map((it) => {
+                    const discountedCents = Math.round(
+                      it.priceCents * (1 - offer.discount_pct / 100),
+                    );
+                    return (
+                      <li
+                        key={it.id}
+                        className="flex items-baseline justify-between gap-4 border-b border-border py-2.5 text-sm last:border-b-0"
+                      >
+                        <span>{it.name}</span>
+                        <span className="flex shrink-0 items-baseline gap-2 font-mono">
+                          <s className="text-muted-foreground">
+                            {centsToUsd(it.priceCents)}
+                          </s>
+                          <span className="text-paprika">
+                            {centsToUsd(discountedCents)}
+                          </span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             ))}

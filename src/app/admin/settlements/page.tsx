@@ -7,7 +7,7 @@
 
 import Link from "next/link";
 
-import { Card } from "@/components/brand";
+import { Card, PlaceholderImg } from "@/components/brand";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
 import { getAllSettlements } from "@/lib/db/settlements";
@@ -74,6 +74,10 @@ export default async function AdminSettlementsPage() {
                 href={`/admin/settlements/${s.id}`}
                 className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
               >
+                <PlaceholderImg
+                  name={s.restaurant?.name ?? "Unknown"}
+                  className="size-10 shrink-0 rounded-lg"
+                />
                 <span className="min-w-0 flex-1 truncate font-display text-base">
                   {s.restaurant?.name ?? "Unknown restaurant"}
                 </span>

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Button, Card } from "@/components/brand";
+import { Button, Card, PlaceholderImg } from "@/components/brand";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
 import { getRestaurantById } from "@/lib/db/restaurants";
@@ -70,6 +70,12 @@ export default async function AdminRestaurantReview({
 
       <div className="px-10 py-8">
         <div className="w-full max-w-2xl space-y-6">
+          <PlaceholderImg
+            name={restaurant.name}
+            caption={`${restaurant.neighborhood} · ${restaurant.city}`}
+            showName
+            className="h-56 rounded-2xl"
+          />
           <Card className="p-6">
             <h2 className="font-display text-xl tracking-tight">
               Submitted info

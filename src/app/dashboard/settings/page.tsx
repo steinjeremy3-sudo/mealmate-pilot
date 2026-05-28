@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { Button, Card, Eyebrow } from "@/components/brand";
+import { Button, Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { requireRole } from "@/lib/auth/require-role";
 import {
   getRestaurantForOwner,
@@ -97,6 +97,12 @@ export default async function MerchantSettingsPage() {
       />
 
       <div className="px-10 py-8">
+        <PlaceholderImg
+          name={restaurant.name}
+          caption={`${restaurant.cuisine} · ${restaurant.neighborhood}`}
+          showName
+          className="mb-6 h-44 max-w-3xl rounded-2xl"
+        />
         <div className="grid w-full max-w-3xl gap-6 md:grid-cols-2">
           {/* Restaurant profile */}
           <Card className="p-6">

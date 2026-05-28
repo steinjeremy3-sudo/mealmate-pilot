@@ -18,6 +18,7 @@ export type OfferCardData = {
   min_check_cents: number;
   valid_days: string[];
   restaurant: {
+    id: string;
     name: string;
     neighborhood: string;
     cuisine: string;

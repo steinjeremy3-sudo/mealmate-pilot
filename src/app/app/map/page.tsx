@@ -1,10 +1,11 @@
-// Diner map screen.
+// Diner map screen — an embedded OpenStreetMap of Dallas with
+// offer pins overlaid in their real neighbourhood positions.
 //
-// The map itself is a STYLED MOCK — a decorative panel with pins, not
-// a geographic map. We don't store restaurant coordinates; pin
-// positions are a deterministic scatter from the offer id. A real
-// interactive map would need a maps provider + lat/lng (a future
-// task). The offer list below is the functional part.
+// The map tiles come from OSM's own embed iframe (no API key, no JS
+// dependency). Pins are absolute-positioned siblings of the iframe,
+// computed from each restaurant's hardcoded lat/lng. Restaurants
+// without a known position fall back to a deterministic scatter near
+// the map's centre, so sandbox seed (KFC etc.) still shows.
 
 import Link from "next/link";
 
@@ -14,13 +15,59 @@ import { getLiveOffers } from "@/lib/db/offers";
 
 import { OfferCard, type OfferCardData } from "../OfferCard";
 
-/** Deterministic, edge-avoiding scatter for a pin, from the offer id. */
-function pinPosition(id: string): { left: number; top: number } {
+// Bounding box for the embedded OSM map. Covers Bishop Arts (SW)
+// through Lower Greenville / Knox-Henderson (NE) — the whole canon
+// neighbourhood set with some breathing room.
+const BBOX = {
+  west: -96.84,
+  east: -96.75,
+  south: 32.73,
+  north: 32.83,
+};
+const OSM_EMBED = `https://www.openstreetmap.org/export/embed.html?bbox=${BBOX.west}%2C${BBOX.south}%2C${BBOX.east}%2C${BBOX.north}&layer=mapnik`;
+
+// Real lat/lng for each canon restaurant in seed.ts. New restaurants
+// fall through to scatterFor() below.
+const RESTAURANT_COORDS: Record<string, { lat: number; lng: number }> = {
+  "00000000-0000-0000-0000-000000000001": { lat: 32.7464, lng: -96.8276 }, // Lucia
+  "00000000-0000-0000-0000-000000000002": { lat: 32.748, lng: -96.8312 }, // Veracruz Cocina
+  "00000000-0000-0000-0000-000000000003": { lat: 32.7836, lng: -96.7793 }, // Smoke & Tinder
+  "00000000-0000-0000-0000-000000000004": { lat: 32.7836, lng: -96.778 }, // Trompo East
+  "00000000-0000-0000-0000-000000000005": { lat: 32.8198, lng: -96.7867 }, // Wendigo Cellar
+  "00000000-0000-0000-0000-000000000006": { lat: 32.8166, lng: -96.7843 }, // The Lemon Tree
+  "00000000-0000-0000-0000-000000000007": { lat: 32.8077, lng: -96.777 }, // Anchovy & Roe
+  "00000000-0000-0000-0000-000000000008": { lat: 32.8083, lng: -96.7771 }, // Tropico
+};
+
+/** Deterministic scatter for restaurants we don't have real coords for. */
+function scatterFor(id: string): { lat: number; lng: number } {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
     h = (h * 31 + id.charCodeAt(i)) >>> 0;
   }
-  return { left: 12 + (h % 76), top: 16 + ((h >> 8) % 62) };
+  // Stay inside the bbox with some margin.
+  const latSpan = (BBOX.north - BBOX.south) * 0.7;
+  const lngSpan = (BBOX.east - BBOX.west) * 0.7;
+  const lat =
+    BBOX.south + (BBOX.north - BBOX.south) * 0.15 + (h % 1000) / 1000 * latSpan;
+  const lng =
+    BBOX.west +
+    (BBOX.east - BBOX.west) * 0.15 +
+    ((h >> 10) % 1000) / 1000 * lngSpan;
+  return { lat, lng };
+}
+
+/** Convert lat/lng into a percentage position inside the bbox. */
+function pinPercent(id: string, restaurantId: string | null | undefined): {
+  left: number;
+  top: number;
+} {
+  const coords =
+    (restaurantId && RESTAURANT_COORDS[restaurantId]) || scatterFor(id);
+  const left = ((coords.lng - BBOX.west) / (BBOX.east - BBOX.west)) * 100;
+  // Y is inverted — north (high lat) is top of the image.
+  const top = ((BBOX.north - coords.lat) / (BBOX.north - BBOX.south)) * 100;
+  return { left, top };
 }
 
 export default async function DinerMapPage() {
@@ -37,18 +84,21 @@ export default async function DinerMapPage() {
           </Heading>
         </div>
 
-        {/* Decorative map panel — faint grid + offer pins. */}
-        <div
-          className="relative h-64 overflow-hidden rounded-2xl border border-border bg-bone-deep"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(10,10,10,0.04) 1px, transparent 1px)," +
-              "linear-gradient(90deg, rgba(10,10,10,0.04) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        >
+        {/* OpenStreetMap embed + pin overlay */}
+        <div className="relative h-72 overflow-hidden rounded-2xl border border-border">
+          <iframe
+            src={OSM_EMBED}
+            title="Map of Dallas"
+            loading="lazy"
+            className="absolute inset-0 size-full"
+          />
           {offers.map((o) => {
-            const p = pinPosition(o.id);
+            const p = pinPercent(o.id, o.restaurant?.id);
+            // Clip to the visible area so pins for stray sandbox rows
+            // don't hang off the side.
+            if (p.left < 0 || p.left > 100 || p.top < 0 || p.top > 100) {
+              return null;
+            }
             return (
               <Link
                 key={o.id}
@@ -57,17 +107,12 @@ export default async function DinerMapPage() {
                 className="absolute -translate-x-1/2 -translate-y-1/2"
                 title={o.restaurant?.name ?? "Offer"}
               >
-                <span className="flex size-9 items-center justify-center rounded-full border-2 border-bone bg-paprika text-[11px] font-semibold text-white shadow-sm">
+                <span className="flex size-9 items-center justify-center rounded-full border-2 border-bone bg-paprika text-[11px] font-semibold text-white shadow-md">
                   {o.discount_pct}%
                 </span>
               </Link>
             );
           })}
-          {offers.length === 0 ? (
-            <p className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-              No offers to map.
-            </p>
-          ) : null}
         </div>
 
         <div className="space-y-3">

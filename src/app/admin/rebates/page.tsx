@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 
-import { Button, Card } from "@/components/brand";
+import { Button, Card, PlaceholderImg } from "@/components/brand";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
 import { getAllRebates, type RebateStatus } from "@/lib/db/rebates";
@@ -121,6 +121,10 @@ export default async function AdminRebatesPage({
                 key={r.id}
                 className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-b-0"
               >
+                <PlaceholderImg
+                  name={r.restaurant?.name ?? r.diner?.displayName ?? "—"}
+                  className="size-10 shrink-0 rounded-lg"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-base">
                     {r.diner?.displayName ?? "Unknown diner"}

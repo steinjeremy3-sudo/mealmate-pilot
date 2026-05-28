@@ -143,17 +143,27 @@ export default async function DinerOfferDetail({
               </Link>
             </div>
             <Card flush>
-              {menu.slice(0, 4).map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-baseline justify-between gap-4 border-b border-border px-4 py-2.5 text-sm last:border-b-0"
-                >
-                  <span>{item.name}</span>
-                  <span className="font-mono text-muted-foreground">
-                    {centsToUsd(item.priceCents)}
-                  </span>
-                </div>
-              ))}
+              {menu.slice(0, 4).map((item) => {
+                const discountedCents = Math.round(
+                  item.priceCents * (1 - offer.discount_pct / 100),
+                );
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-baseline justify-between gap-4 border-b border-border px-4 py-2.5 text-sm last:border-b-0"
+                  >
+                    <span>{item.name}</span>
+                    <span className="flex items-baseline gap-2 font-mono">
+                      <s className="text-muted-foreground">
+                        {centsToUsd(item.priceCents)}
+                      </s>
+                      <span className="text-paprika">
+                        {centsToUsd(discountedCents)}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
             </Card>
           </div>
         ) : null}

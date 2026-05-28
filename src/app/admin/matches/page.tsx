@@ -10,7 +10,7 @@
 
 import Link from "next/link";
 
-import { Card } from "@/components/brand";
+import { Card, PlaceholderImg } from "@/components/brand";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
 import {
@@ -99,14 +99,16 @@ export default async function AdminMatchesPage() {
                   className="flex items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-bone-deep"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bone-deep font-mono text-[11px]">
-                      {initialsOf(row.claim?.diner?.displayName)}
-                    </span>
+                    <PlaceholderImg
+                      name={row.restaurant?.name ?? row.merchantNameRaw}
+                      className="size-10 shrink-0 rounded-lg"
+                    />
                     <div className="min-w-0">
                       <p className="truncate font-display text-base">
                         {row.restaurant?.name ?? row.merchantNameRaw}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
+                        {initialsOf(row.claim?.diner?.displayName)} ·{" "}
                         {row.claim?.diner?.displayName ?? "no linked offer"}
                         {row.autoApprovalStatus === "flagged" ? (
                           <span className="text-destructive"> · flagged</span>

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check, X } from "lucide-react";
 
-import { Button, Card, Eyebrow } from "@/components/brand";
+import { Button, Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { KpiCard } from "@/components/console/KpiCard";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
@@ -82,6 +82,10 @@ export default async function AdminMatchDetailPage({
 
       <div className="px-10 py-8">
         <div className="w-full max-w-3xl space-y-6">
+          <PlaceholderImg
+            name={row.restaurant?.name ?? row.merchantNameRaw}
+            className="h-40 rounded-2xl"
+          />
           {/* KPIs */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard label="Check amount" value={centsToUsd(row.amountCents)} />

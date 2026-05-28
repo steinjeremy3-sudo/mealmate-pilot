@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 
-import { Card, Eyebrow } from "@/components/brand";
+import { Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { KpiCard } from "@/components/console/KpiCard";
 import { PageHeader } from "@/components/console/PageHeader";
 import { requireRole } from "@/lib/auth/require-role";
@@ -132,9 +132,13 @@ export default async function AdminHome() {
                 <Link
                   key={r.id}
                   href={`/admin/restaurants/${r.id}`}
-                  className="flex items-center justify-between gap-4 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-bone-deep"
+                  className="flex items-center gap-4 border-b border-border p-4 transition-colors last:border-b-0 hover:bg-bone-deep"
                 >
-                  <div className="min-w-0">
+                  <PlaceholderImg
+                    name={r.name}
+                    className="size-11 shrink-0 rounded-lg"
+                  />
+                  <div className="min-w-0 flex-1">
                     <p className="font-display text-base">{r.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {r.cuisine} · {r.neighborhood} ·{" "}
