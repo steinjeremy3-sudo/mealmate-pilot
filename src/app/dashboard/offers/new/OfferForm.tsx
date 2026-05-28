@@ -1,8 +1,8 @@
 "use client";
 
-// Merchant offer creation form. Controlled inputs drive a live diner
-// preview on the right. Submits to the createOffer server action —
-// field names mirror what the action reads.
+// Merchant offer creation form — five fields. Controlled inputs drive a
+// live diner preview on the right. Submits to createOffer, which
+// publishes directly (no draft step).
 
 import { useState } from "react";
 
@@ -28,13 +28,6 @@ const inputClass =
 const labelClass =
   "mb-2 block font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
 
-/** "YYYY-MM-DDTHH:MM" for a datetime-local default, in local time. */
-function localNow(): string {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
-}
-
 export function OfferForm({
   restaurantName,
   cuisine,
@@ -51,7 +44,7 @@ export function OfferForm({
   const [start, setStart] = useState("17:00");
   const [end, setEnd] = useState("22:00");
   const [minCheck, setMinCheck] = useState(40);
-  const [budget, setBudget] = useState(2000);
+  const [maxRedemptions, setMaxRedemptions] = useState(100);
 
   const toggleDay = (d: string) =>
     setDays((prev) => {
@@ -68,33 +61,6 @@ export function OfferForm({
       {/* ===== Form ===== */}
       <form action={createOffer}>
         <Card className="space-y-5 p-6">
-          <div>
-            <label className={labelClass} htmlFor="title">
-              Offer name
-            </label>
-            <input
-              id="title"
-              name="title"
-              required
-              placeholder="Tuesday–Wednesday dinner"
-              className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="description">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              required
-              rows={2}
-              placeholder="25% off your dinner check, Tuesday and Wednesday."
-              className={cn(inputClass, "resize-y")}
-            />
-          </div>
-
           <div>
             <label className={labelClass} htmlFor="discount_pct">
               Discount · {discount}% off
@@ -190,44 +156,17 @@ export function OfferForm({
               />
             </div>
             <div>
-              <label className={labelClass} htmlFor="monthly_budget">
-                Monthly budget ($)
+              <label className={labelClass} htmlFor="max_redemptions">
+                Max redemptions
               </label>
               <input
-                id="monthly_budget"
-                name="monthly_budget"
+                id="max_redemptions"
+                name="max_redemptions"
                 type="number"
-                min={0}
-                value={budget}
-                onChange={(e) => setBudget(Number(e.target.value))}
+                min={1}
+                value={maxRedemptions}
+                onChange={(e) => setMaxRedemptions(Number(e.target.value))}
                 required
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass} htmlFor="starts_at">
-                Offer starts
-              </label>
-              <input
-                id="starts_at"
-                name="starts_at"
-                type="datetime-local"
-                defaultValue={localNow()}
-                required
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="ends_at">
-                Offer ends (optional)
-              </label>
-              <input
-                id="ends_at"
-                name="ends_at"
-                type="datetime-local"
                 className={inputClass}
               />
             </div>
@@ -241,10 +180,10 @@ export function OfferForm({
 
           <div className="border-t border-border pt-5">
             <Button type="submit" className="w-full">
-              Save as draft
+              Publish offer
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              New offers save as drafts. Publish from the offer page.
+              Goes live as soon as you publish.
             </p>
           </div>
         </Card>
@@ -274,7 +213,7 @@ export function OfferForm({
               {cuisine} · {neighborhood}
             </p>
             <p className="mt-3 border-t border-white/10 pt-3 text-xs text-bone/60">
-              Minimum check ${minCheck}
+              Minimum check ${minCheck} · {maxRedemptions} redemptions
             </p>
           </div>
         </div>

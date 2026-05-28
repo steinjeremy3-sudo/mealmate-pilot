@@ -1,8 +1,14 @@
 "use server";
 
-// Server action: a merchant creates an offer for their (approved)
-// restaurant. status starts as 'draft' — they publish from the offer
-// detail page.
+// Server action: a merchant publishes an offer for their (approved)
+// restaurant. Goes straight to status='live' — no draft step.
+//
+// The form only asks the five things that matter (days, time window,
+// discount, min check, max redemptions). Title and description are
+// auto-generated for downstream displays that still expect them
+// (admin queue rows, audit log). Date window: starts now, no end date.
+// Monthly budget: set to an effectively-unlimited default since the
+// merchant now caps via max_redemptions instead.
 
 import { redirect } from "next/navigation";
 
@@ -17,6 +23,10 @@ const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 // Bounds per BRIEF.md offer constraints (rebate model).
 const DISCOUNT_MIN_PCT = 15;
 const DISCOUNT_MAX_PCT = 50;
+
+// Practically-unlimited cap for the (now hidden) monthly_budget_cents
+// column — the merchant caps via max_claims_total instead.
+const UNLIMITED_BUDGET_CENTS = 1_000_000_000; // $10M
 
 function errParam(message: string): string {
   return `/dashboard/offers/new?error=${encodeURIComponent(message)}`;
@@ -39,12 +49,6 @@ export async function createOffer(formData: FormData): Promise<void> {
     redirect(errParam("Set up Stripe Connect before creating offers."));
   }
 
-  // Required strings
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  if (!title) redirect(errParam("Title is required."));
-  if (!description) redirect(errParam("Description is required."));
-
   // Discount % — 15–50 per BRIEF.md (DB also enforces CHECK).
   const discountPct = parseInt(String(formData.get("discount_pct") ?? ""), 10);
   if (
@@ -66,16 +70,17 @@ export async function createOffer(formData: FormData): Promise<void> {
   }
   const minCheckCents = usdToCents(minCheckUsd);
 
-  // Monthly budget cap (dollars → cents). Auto-pause when exhausted.
-  const monthlyBudgetUsd = parseFloat(
-    String(formData.get("monthly_budget") ?? "0"),
+  // Max redemptions — total activations across all diners. When this
+  // count is hit, the offer reads as "fully booked" in claimOffer.
+  const maxRedemptions = parseInt(
+    String(formData.get("max_redemptions") ?? ""),
+    10,
   );
-  if (!Number.isFinite(monthlyBudgetUsd) || monthlyBudgetUsd < 0) {
-    redirect(errParam("Monthly budget must be a non-negative number."));
+  if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1) {
+    redirect(errParam("Max redemptions must be at least 1."));
   }
-  const monthlyBudgetCents = usdToCents(monthlyBudgetUsd);
 
-  // Valid days (multi-checkbox: at least one)
+  // Valid days (at least one)
   const validDays = DAYS.filter((d) => formData.get(`day_${d}`) === "on");
   if (validDays.length === 0) {
     redirect(errParam("Pick at least one day of the week."));
@@ -88,19 +93,10 @@ export async function createOffer(formData: FormData): Promise<void> {
     redirect(errParam("Start and end time are required."));
   }
 
-  // Overall window (start required, end optional)
-  const startsAtRaw = String(formData.get("starts_at") ?? "");
-  if (!startsAtRaw) redirect(errParam("Start date is required."));
-  const startsAt = new Date(startsAtRaw);
-  if (Number.isNaN(startsAt.getTime())) redirect(errParam("Start date is invalid."));
-
-  const endsAtRaw = String(formData.get("ends_at") ?? "").trim();
-  let endsAt: Date | null = null;
-  if (endsAtRaw) {
-    endsAt = new Date(endsAtRaw);
-    if (Number.isNaN(endsAt.getTime())) redirect(errParam("End date is invalid."));
-    if (endsAt <= startsAt) redirect(errParam("End date must be after start date."));
-  }
+  // Auto-generated title + description for the downstream displays
+  // (admin queue rows, audit log, etc.) that still expect them.
+  const title = `${discountPct}% off`;
+  const description = `${discountPct}% off your check at ${restaurant.name}.`;
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("offers").insert({
@@ -109,15 +105,16 @@ export async function createOffer(formData: FormData): Promise<void> {
     description,
     discount_pct: discountPct,
     min_check_cents: minCheckCents,
-    monthly_budget_cents: monthlyBudgetCents,
+    monthly_budget_cents: UNLIMITED_BUDGET_CENTS,
     monthly_spent_cents: 0,
     valid_days: validDays,
     valid_start_time: validStartTime,
     valid_end_time: validEndTime,
     max_claims_per_diner: 1,
-    status: "draft",
-    starts_at: startsAt.toISOString(),
-    ends_at: endsAt ? endsAt.toISOString() : null,
+    max_claims_total: maxRedemptions,
+    status: "live",
+    starts_at: new Date().toISOString(),
+    ends_at: null,
   });
 
   if (error) {
