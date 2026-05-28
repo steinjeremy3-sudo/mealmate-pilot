@@ -44,6 +44,9 @@ type SeedRestaurant = {
   cuisine: string;
   ownerEmail: string;
   ownerName: string;
+  /** Defaults to "5812" (sit-down). Override for non-restaurant MCCs
+   *  in the eligible set — e.g. "5813" for wine bars / taverns. */
+  mcc?: string;
 };
 
 const RESTAURANTS: SeedRestaurant[] = [
@@ -91,6 +94,7 @@ const RESTAURANTS: SeedRestaurant[] = [
     cuisine: "Wine bar",
     ownerEmail: "hannah@mealmate.seed.local",
     ownerName: "Hannah Park",
+    mcc: "5813", // wine bar — drinking-places MCC, not 5812
   },
   {
     id: "00000000-0000-0000-0000-000000000006",
@@ -271,7 +275,7 @@ async function main() {
       neighborhood: r.neighborhood,
       city: "Dallas",
       cuisine: r.cuisine,
-      mcc: "5812",
+      mcc: r.mcc ?? "5812",
       status: "approved",
     });
     if (error) throw new Error(`restaurant ${r.name}: ${error.message}`);

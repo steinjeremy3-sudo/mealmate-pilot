@@ -63,6 +63,11 @@ describe("evaluateRubric", () => {
     expect(r.failedChecks).toContain("mcc");
   });
 
+  it("accepts 5813 (drinking places — wine bars / taverns)", () => {
+    const r = evaluateRubric(baseInput({ restaurantMcc: "5813" }));
+    expect(r.failedChecks).not.toContain("mcc");
+  });
+
   it("flags max_per_diner when the diner has exceeded their cap", () => {
     const r = evaluateRubric(
       baseInput({ offerMaxClaimsPerDiner: 1, totalDinerClaimsOnOffer: 2 }),

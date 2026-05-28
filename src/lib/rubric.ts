@@ -31,7 +31,7 @@ export type RubricInput = {
   /** Subtotal entered by the diner at pay time. */
   subtotalCents: number;
 
-  /** restaurants.mcc. Pilot only supports 5812 (sit-down restaurants). */
+  /** restaurants.mcc. See ALLOWED_RESTAURANT_MCCS for what's eligible. */
   restaurantMcc: string;
 
   /**
@@ -54,6 +54,22 @@ export type RubricResult = {
   failedChecks: RubricCheck[];
 };
 
+/**
+ * MCCs we accept as eligible Mealmate partners.
+ *
+ *   5812 — Eating places & restaurants (sit-down — the bulk of partners)
+ *   5813 — Drinking places (bars, taverns, wine bars that serve food —
+ *          e.g. Wendigo Cellar in the canon seed)
+ *
+ * Deliberately excluded for the pilot:
+ *   5814 — Fast-food restaurants. Excluding chains is core to the
+ *          brand pitch ("independent Dallas restaurants"). Add later
+ *          if/when product direction changes.
+ *   5811 — Caterers. Not a dine-in destination.
+ *   5462 — Bakeries. Pure retail; bakery-cafes typically register as 5812.
+ */
+export const ALLOWED_RESTAURANT_MCCS = new Set(["5812", "5813"]);
+
 export function evaluateRubric(input: RubricInput): RubricResult {
   const failed: RubricCheck[] = [];
 
@@ -69,9 +85,7 @@ export function evaluateRubric(input: RubricInput): RubricResult {
     failed.push("min_spend");
   }
 
-  // Pilot scope: only sit-down restaurants are eligible. Future:
-  // per-offer MCC field with a list of allowed codes.
-  if (input.restaurantMcc !== "5812") {
+  if (!ALLOWED_RESTAURANT_MCCS.has(input.restaurantMcc)) {
     failed.push("mcc");
   }
 
