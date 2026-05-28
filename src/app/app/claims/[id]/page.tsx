@@ -122,7 +122,6 @@ export default async function DinerClaimDetail({
         <PlaceholderImg
           name={name}
           caption={r?.neighborhood}
-          label="Photo"
           showName
           className="h-44"
         />
