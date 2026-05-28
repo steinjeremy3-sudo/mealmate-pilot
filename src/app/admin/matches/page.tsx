@@ -70,7 +70,7 @@ export default async function AdminMatchesPage() {
             </>
           )
         }
-        sub="Visits auto-confirm at 90%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first"
+        sub="Visits auto-confirm at 85%+ confidence. Everything below — and anything the 6-check rubric flagged — waits here. Riskiest first"
       />
 
       <div className="px-10 py-8">
