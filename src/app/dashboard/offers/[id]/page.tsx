@@ -4,10 +4,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Button, Card, Eyebrow } from "@/components/brand";
+import { Button, buttonVariants, Card, Eyebrow } from "@/components/brand";
 import { requireRole } from "@/lib/auth/require-role";
 import { getActiveClaimCount } from "@/lib/db/claims";
-import { getOfferById, type OfferStatus } from "@/lib/db/offers";
+import { getOfferById } from "@/lib/db/offers";
+import { offerDisplayStatus } from "@/lib/offers/availability";
 import { centsToUsd } from "@/lib/money";
 import {
   formatDayRange,
@@ -22,11 +23,12 @@ import { endOffer, publishOffer } from "./actions";
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
 
-const OFFER_BADGE: Record<OfferStatus, string> = {
+const OFFER_BADGE: Record<string, string> = {
   draft: "border-border bg-bone-deep text-muted-foreground",
   scheduled: "border-paprika/50 bg-paprika/15 text-ink/80",
   live: "border-ink/15 bg-bone-deep text-ink",
   ended: "border-border bg-bone-deep text-muted-foreground",
+  expired: "border-border bg-bone-deep text-muted-foreground",
 };
 
 function Fact({ k, v }: { k: string; v: React.ReactNode }) {
@@ -53,6 +55,8 @@ export default async function MerchantOfferDetail({
   if (!offer) notFound();
 
   const activeClaimCount = await getActiveClaimCount(offer.id);
+  const display = offerDisplayStatus(offer);
+  const editable = display !== "ended" && display !== "expired";
   const cap = offer.max_claims_total;
   const capPct =
     cap && cap > 0 ? Math.min(100, Math.round((activeClaimCount / cap) * 100)) : 0;
@@ -75,14 +79,24 @@ export default async function MerchantOfferDetail({
           offer.valid_end_time,
         )} · min ${centsToUsd(offer.min_check_cents)}`}
         actions={
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]",
-              OFFER_BADGE[offer.status],
-            )}
-          >
-            {offer.status}
-          </span>
+          <div className="flex items-center gap-3">
+            {editable ? (
+              <Link
+                href={`/dashboard/offers/${offer.id}/edit`}
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Edit
+              </Link>
+            ) : null}
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]",
+                OFFER_BADGE[display] ?? OFFER_BADGE.ended,
+              )}
+            >
+              {display}
+            </span>
+          </div>
         }
       />
 
@@ -183,6 +197,11 @@ export default async function MerchantOfferDetail({
                     Once published, this offer becomes visible to diners.
                   </p>
                 </form>
+              ) : display === "scheduled" ? (
+                <p className="text-sm text-muted-foreground">
+                  Published, but outside its window right now — it goes
+                  live to diners again during its scheduled days and hours.
+                </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Live and visible to diners.

@@ -16,20 +16,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
 import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { usdToCents } from "@/lib/money";
-
-const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-
-// Bounds per BRIEF.md offer constraints (rebate model).
-const DISCOUNT_MIN_PCT = 15;
-const DISCOUNT_MAX_PCT = 50;
-
-// $10 hard floor on min_check_cents. Below this the platform-fee
-// floor (50¢) starts eating the discount — at $9.80 / 15% off the
-// fee floor exactly meets the natural 6%, and below that the diner
-// gets a worse effective deal. Keep merchants from accidentally
-// shipping offers where small checks return $0 or near-zero rebate.
-const MIN_CHECK_FLOOR_CENTS = 1000; // $10
+import { parseOfferForm } from "@/lib/offers/parse-form";
 
 // Practically-unlimited cap for the (now hidden) monthly_budget_cents
 // column — the merchant caps via max_claims_total instead.
@@ -56,67 +43,20 @@ export async function createOffer(formData: FormData): Promise<void> {
     redirect(errParam("Set up Stripe Connect before creating offers."));
   }
 
-  // Discount % — 15–50 per BRIEF.md (DB also enforces CHECK).
-  const discountPct = parseInt(String(formData.get("discount_pct") ?? ""), 10);
-  if (
-    !Number.isFinite(discountPct) ||
-    discountPct < DISCOUNT_MIN_PCT ||
-    discountPct > DISCOUNT_MAX_PCT
-  ) {
-    redirect(
-      errParam(
-        `Discount must be between ${DISCOUNT_MIN_PCT} and ${DISCOUNT_MAX_PCT} percent.`,
-      ),
-    );
+  const parsed = parseOfferForm(formData);
+  if (!parsed.ok) {
+    redirect(errParam(parsed.error));
   }
-
-  // Min check size (dollars → cents). Floor the offer applies to.
-  const minCheckUsd = parseFloat(String(formData.get("min_check") ?? "0"));
-  if (!Number.isFinite(minCheckUsd) || minCheckUsd < 0) {
-    redirect(errParam("Minimum check size must be a non-negative number."));
-  }
-  const minCheckCents = usdToCents(minCheckUsd);
-  if (minCheckCents < MIN_CHECK_FLOOR_CENTS) {
-    redirect(
-      errParam(
-        `Minimum check size must be at least $${MIN_CHECK_FLOOR_CENTS / 100} so the platform-fee floor doesn't eat the discount on small visits.`,
-      ),
-    );
-  }
-
-  // Max redemptions — total activations across all diners. When this
-  // count is hit, the offer reads as "fully booked" in claimOffer.
-  const maxRedemptions = parseInt(
-    String(formData.get("max_redemptions") ?? ""),
-    10,
-  );
-  if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1) {
-    redirect(errParam("Max redemptions must be at least 1."));
-  }
-
-  // Valid days (at least one)
-  const validDays = DAYS.filter((d) => formData.get(`day_${d}`) === "on");
-  if (validDays.length === 0) {
-    redirect(errParam("Pick at least one day of the week."));
-  }
-
-  // Daily time window
-  const validStartTime = String(formData.get("valid_start_time") ?? "");
-  const validEndTime = String(formData.get("valid_end_time") ?? "");
-  if (!/^\d{2}:\d{2}$/.test(validStartTime) || !/^\d{2}:\d{2}$/.test(validEndTime)) {
-    redirect(errParam("Start and end time are required."));
-  }
+  const v = parsed.value;
 
   // Auto-generated title + description for the downstream displays
   // (admin queue rows, audit log, etc.) that still expect them.
-  const title = `${discountPct}% off`;
-  const description = `${discountPct}% off your check at ${restaurant.name}.`;
+  const title = `${v.discountPct}% off`;
+  const description = `${v.discountPct}% off your check at ${restaurant.name}.`;
 
-  // Recurring checkbox. Checked (default) → open-ended; unchecked →
-  // ends seven days from now, so the offer plays out its selected
-  // days within the coming week and then closes.
-  const recurring = formData.get("recurring") === "on";
-  const endsAt = recurring
+  // Recurring (default) → open-ended; otherwise ends seven days out so
+  // the offer plays its selected days within the coming week, then closes.
+  const endsAt = v.recurring
     ? null
     : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -125,15 +65,15 @@ export async function createOffer(formData: FormData): Promise<void> {
     restaurant_id: restaurant.id,
     title,
     description,
-    discount_pct: discountPct,
-    min_check_cents: minCheckCents,
+    discount_pct: v.discountPct,
+    min_check_cents: v.minCheckCents,
     monthly_budget_cents: UNLIMITED_BUDGET_CENTS,
     monthly_spent_cents: 0,
-    valid_days: validDays,
-    valid_start_time: validStartTime,
-    valid_end_time: validEndTime,
+    valid_days: v.validDays,
+    valid_start_time: v.validStartTime,
+    valid_end_time: v.validEndTime,
     max_claims_per_diner: 1,
-    max_claims_total: maxRedemptions,
+    max_claims_total: v.maxRedemptions,
     status: "live",
     starts_at: new Date().toISOString(),
     ends_at: endsAt ? endsAt.toISOString() : null,

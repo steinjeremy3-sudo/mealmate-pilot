@@ -1,16 +1,14 @@
 "use client";
 
-// Merchant offer creation form — five fields. Controlled inputs drive a
-// live diner preview on the right. Submits to createOffer, which
-// publishes directly (no draft step).
+// Merchant offer form — five fields. Controlled inputs drive a live diner
+// preview on the right. Used for both creating (action=createOffer) and
+// editing (action=updateOffer + offerId + initial values).
 
 import { useState } from "react";
 
 import { Button, Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
 import { cn } from "@/lib/utils";
-
-import { createOffer } from "./actions";
 
 const DAYS: [string, string][] = [
   ["mon", "Mon"],
@@ -28,24 +26,51 @@ const inputClass =
 const labelClass =
   "mb-2 block font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
 
+export type OfferFormValues = {
+  discount: number;
+  days: string[];
+  start: string; // "HH:MM"
+  end: string;
+  minCheck: number;
+  maxRedemptions: number;
+  recurring: boolean;
+};
+
 export function OfferForm({
   restaurantName,
   cuisine,
   neighborhood,
   error,
+  action,
+  offerId,
+  initial,
+  submitLabel = "Publish offer",
+  submitHint = "Goes live as soon as you publish.",
 }: {
   restaurantName: string;
   cuisine: string;
   neighborhood: string;
   error?: string;
+  /** Server action the form submits to (createOffer or updateOffer). */
+  action: (formData: FormData) => void | Promise<void>;
+  /** Present when editing — emitted as a hidden offer_id input. */
+  offerId?: string;
+  /** Prefill values when editing; create uses sensible defaults. */
+  initial?: OfferFormValues;
+  submitLabel?: string;
+  submitHint?: string;
 }) {
-  const [discount, setDiscount] = useState(25);
-  const [days, setDays] = useState<Set<string>>(new Set(["tue", "wed"]));
-  const [start, setStart] = useState("17:00");
-  const [end, setEnd] = useState("22:00");
-  const [minCheck, setMinCheck] = useState(40);
-  const [maxRedemptions, setMaxRedemptions] = useState(100);
-  const [recurring, setRecurring] = useState(true);
+  const [discount, setDiscount] = useState(initial?.discount ?? 25);
+  const [days, setDays] = useState<Set<string>>(
+    new Set(initial?.days ?? ["tue", "wed"]),
+  );
+  const [start, setStart] = useState(initial?.start ?? "17:00");
+  const [end, setEnd] = useState(initial?.end ?? "22:00");
+  const [minCheck, setMinCheck] = useState(initial?.minCheck ?? 40);
+  const [maxRedemptions, setMaxRedemptions] = useState(
+    initial?.maxRedemptions ?? 100,
+  );
+  const [recurring, setRecurring] = useState(initial?.recurring ?? true);
 
   const toggleDay = (d: string) =>
     setDays((prev) => {
@@ -60,7 +85,10 @@ export function OfferForm({
   return (
     <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
       {/* ===== Form ===== */}
-      <form action={createOffer}>
+      <form action={action}>
+        {offerId ? (
+          <input type="hidden" name="offer_id" value={offerId} />
+        ) : null}
         <Card className="space-y-5 p-6">
           <div>
             <label className={labelClass} htmlFor="discount_pct">
@@ -204,10 +232,10 @@ export function OfferForm({
 
           <div className="border-t border-border pt-5">
             <Button type="submit" className="w-full">
-              Publish offer
+              {submitLabel}
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              Goes live as soon as you publish.
+              {submitHint}
             </p>
           </div>
         </Card>

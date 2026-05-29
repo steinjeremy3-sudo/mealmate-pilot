@@ -42,3 +42,30 @@ export function isOfferAvailableNow(
   // (end is exclusive — 11:00 PM means closed at exactly 11:00 PM).
   return claimedAtInValidWindow(now, offer.valid_start_time, offer.valid_end_time);
 }
+
+export type OfferDisplayStatus =
+  | "draft"
+  | "scheduled"
+  | "live"
+  | "ended"
+  | "expired";
+
+/**
+ * The status to SHOW (vs the raw DB status). A published ('live') offer
+ * only reads as "live" while it's actually inside its current window —
+ * outside that window it's "scheduled" (it goes live again next window),
+ * which mirrors what diners see (off-window offers are hidden). Ended
+ * offers read "ended"; a non-recurring offer past its end date reads
+ * "expired".
+ */
+export function offerDisplayStatus(
+  offer: OfferAvailabilityInput & { status: string },
+  now: Date = new Date(),
+): OfferDisplayStatus {
+  if (offer.status === "ended") return "ended";
+  if (offer.ends_at && new Date(offer.ends_at) <= now) return "expired";
+  if (offer.status === "live" && !isOfferAvailableNow(offer, now)) {
+    return "scheduled";
+  }
+  return offer.status as OfferDisplayStatus;
+}

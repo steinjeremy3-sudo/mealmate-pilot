@@ -11,6 +11,7 @@ import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 
 import { PageHeader } from "@/components/console/PageHeader";
 import { OfferForm } from "./OfferForm";
+import { createOffer } from "./actions";
 
 type SearchParams = Promise<{ error?: string }>;
 
@@ -49,6 +50,7 @@ export default async function NewOfferPage({
       />
       <div className="px-10 py-8">
         <OfferForm
+          action={createOffer}
           restaurantName={restaurant.name}
           cuisine={restaurant.cuisine}
           neighborhood={restaurant.neighborhood}
