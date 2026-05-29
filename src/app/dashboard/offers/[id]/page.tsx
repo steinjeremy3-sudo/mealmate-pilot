@@ -27,6 +27,7 @@ const OFFER_BADGE: Record<string, string> = {
   draft: "border-border bg-bone-deep text-muted-foreground",
   scheduled: "border-paprika/50 bg-paprika/15 text-ink/80",
   live: "border-ink/15 bg-bone-deep text-ink",
+  paused: "border-paprika/50 bg-paprika/15 text-ink/80",
   ended: "border-border bg-bone-deep text-muted-foreground",
   expired: "border-border bg-bone-deep text-muted-foreground",
 };

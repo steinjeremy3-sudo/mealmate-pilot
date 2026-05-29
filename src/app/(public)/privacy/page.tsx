@@ -57,7 +57,7 @@ export default function PrivacyPage() {
       <section>
         <h2>How we use it</h2>
         <ul>
-          <li>To operate the platform — match visits, calculate and send cash back, and settle with restaurants.</li>
+          <li>To operate the platform — recognize qualifying visits, calculate and send cash back, and settle with restaurants.</li>
           <li>To verify identity and prevent fraud and abuse.</li>
           <li>To communicate with you about your account, visits, and payouts.</li>
           <li>To comply with legal and payment-network obligations.</li>
@@ -136,7 +136,8 @@ export default function PrivacyPage() {
           <a href="mailto:support@mealmatedining.com">
             support@mealmatedining.com
           </a>{" "}
-          or via the <Link href="/#contact">contact form</Link>.
+          or via the{" "}
+          <Link href="/for-restaurants#contact">contact form</Link>.
         </p>
       </section>
     </LegalDoc>

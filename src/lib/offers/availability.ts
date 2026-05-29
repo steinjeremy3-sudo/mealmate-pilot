@@ -47,6 +47,7 @@ export type OfferDisplayStatus =
   | "draft"
   | "scheduled"
   | "live"
+  | "paused"
   | "ended"
   | "expired";
 

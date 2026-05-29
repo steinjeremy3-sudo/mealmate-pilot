@@ -205,6 +205,23 @@ export default async function DinerOfferDetail({
               </button>
             </form>
           </Card>
+        ) : remaining === 0 ? (
+          <div className="space-y-2">
+            <div
+              aria-disabled
+              className={buttonVariants({
+                size: "lg",
+                variant: "outline",
+                className: "pointer-events-none w-full opacity-60",
+              })}
+            >
+              Fully booked
+            </div>
+            <p className="text-center text-xs text-muted-foreground">
+              Every spot is taken right now. Check back — slots free up
+              when activations expire.
+            </p>
+          </div>
         ) : (
           <div className="space-y-2">
             <Link

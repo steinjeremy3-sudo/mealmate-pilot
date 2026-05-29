@@ -149,7 +149,23 @@ export default async function ClaimConfirm({
           </p>
         ) : null}
 
-        {missingSetup ? (
+        {remaining === 0 ? (
+          <Card className="space-y-2 border-paprika/40 bg-paprika-tint">
+            <p className="text-sm font-medium text-ink">
+              This offer is fully booked
+            </p>
+            <p className="text-sm text-ink/75">
+              Every spot is taken right now. Slots free up when
+              activations expire — check back soon.
+            </p>
+            <Link
+              href={`/app/offers/${offer.id}`}
+              className="block w-full py-2 text-center text-sm text-muted-foreground hover:text-ink"
+            >
+              Back to offer
+            </Link>
+          </Card>
+        ) : missingSetup ? (
           <Card className="space-y-3 border-paprika/40 bg-paprika-tint">
             <p className="text-sm font-medium text-ink">
               Finish setting up before you activate

@@ -20,7 +20,8 @@ export const MIN_CHECK_FLOOR_CENTS = 1000; // $10
 export type ParsedOfferForm = {
   discountPct: number;
   minCheckCents: number;
-  maxRedemptions: number;
+  /** null = no cap (unlimited redemptions). */
+  maxRedemptions: number | null;
   validDays: string[];
   validStartTime: string;
   validEndTime: string;
@@ -57,13 +58,18 @@ export function parseOfferForm(
     };
   }
 
-  // Max redemptions — total activations across all diners.
-  const maxRedemptions = parseInt(
-    String(formData.get("max_redemptions") ?? ""),
-    10,
-  );
-  if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1) {
-    return { ok: false, error: "Max redemptions must be at least 1." };
+  // Max redemptions — total activations across all diners. The "no
+  // limit" checkbox submits no value (or "unlimited"); an empty value
+  // means uncapped. Otherwise it must be a positive integer.
+  const maxRaw = String(formData.get("max_redemptions") ?? "").trim();
+  let maxRedemptions: number | null;
+  if (maxRaw === "" || maxRaw === "unlimited") {
+    maxRedemptions = null;
+  } else {
+    maxRedemptions = parseInt(maxRaw, 10);
+    if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1) {
+      return { ok: false, error: "Max redemptions must be at least 1, or leave it unlimited." };
+    }
   }
 
   // Valid days (at least one).

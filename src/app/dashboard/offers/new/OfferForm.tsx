@@ -32,7 +32,8 @@ export type OfferFormValues = {
   start: string; // "HH:MM"
   end: string;
   minCheck: number;
-  maxRedemptions: number;
+  /** null = no cap (unlimited redemptions). */
+  maxRedemptions: number | null;
   recurring: boolean;
 };
 
@@ -67,6 +68,9 @@ export function OfferForm({
   const [start, setStart] = useState(initial?.start ?? "17:00");
   const [end, setEnd] = useState(initial?.end ?? "22:00");
   const [minCheck, setMinCheck] = useState(initial?.minCheck ?? 40);
+  const [unlimited, setUnlimited] = useState(
+    initial ? initial.maxRedemptions == null : false,
+  );
   const [maxRedemptions, setMaxRedemptions] = useState(
     initial?.maxRedemptions ?? 100,
   );
@@ -191,16 +195,39 @@ export function OfferForm({
               <label className={labelClass} htmlFor="max_redemptions">
                 Max redemptions
               </label>
-              <input
-                id="max_redemptions"
-                name="max_redemptions"
-                type="number"
-                min={1}
-                value={maxRedemptions}
-                onChange={(e) => setMaxRedemptions(Number(e.target.value))}
-                required
-                className={inputClass}
-              />
+              {unlimited ? (
+                <>
+                  <input type="hidden" name="max_redemptions" value="unlimited" />
+                  <div
+                    className={cn(
+                      inputClass,
+                      "flex items-center text-muted-foreground",
+                    )}
+                  >
+                    Unlimited
+                  </div>
+                </>
+              ) : (
+                <input
+                  id="max_redemptions"
+                  name="max_redemptions"
+                  type="number"
+                  min={1}
+                  value={maxRedemptions}
+                  onChange={(e) => setMaxRedemptions(Number(e.target.value))}
+                  required
+                  className={inputClass}
+                />
+              )}
+              <label className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={unlimited}
+                  onChange={(e) => setUnlimited(e.target.checked)}
+                  className="accent-paprika"
+                />
+                No limit
+              </label>
             </div>
           </div>
 
@@ -265,7 +292,8 @@ export function OfferForm({
               {cuisine} · {neighborhood}
             </p>
             <p className="mt-3 border-t border-white/10 pt-3 text-xs text-bone/60">
-              Minimum check ${minCheck} · {maxRedemptions} redemptions
+              Minimum check ${minCheck} ·{" "}
+              {unlimited ? "Unlimited redemptions" : `${maxRedemptions} redemptions`}
             </p>
           </div>
         </div>

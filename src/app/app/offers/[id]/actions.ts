@@ -24,6 +24,7 @@ import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { getOfferById } from "@/lib/db/offers";
 import { getMyPlaidCards } from "@/lib/db/plaid-cards";
 import { getPayoutMethod } from "@/lib/db/users-payout";
+import { isOfferAvailableNow } from "@/lib/offers/availability";
 
 /** How long a claim is valid before it auto-expires (read-side only). */
 const CLAIM_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -40,6 +41,15 @@ export async function claimOffer(formData: FormData): Promise<void> {
   const offer = await getOfferById(offerId);
   if (!offer || offer.status !== "live") {
     redirect(errParam(offerId, "This offer is no longer available."));
+  }
+  // Defense-in-depth: an offer is only claimable while it's actually in
+  // its current window (same check the diner browse + matcher use). A
+  // direct/stale-tab POST outside the window — or after the end date,
+  // before the expire cron flips status — must not create a dead claim.
+  if (!isOfferAvailableNow(offer)) {
+    redirect(
+      errParam(offerId, "This offer isn't available right now — check its days and hours."),
+    );
   }
 
   // Pre-flight: a diner can only earn cash back if a card is linked

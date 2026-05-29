@@ -10,7 +10,12 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isOfferAvailableNow } from "@/lib/offers/availability";
 
-export type OfferStatus = "draft" | "scheduled" | "live" | "ended";
+export type OfferStatus =
+  | "draft"
+  | "scheduled"
+  | "live"
+  | "paused"
+  | "ended";
 
 export type Offer = {
   id: string;

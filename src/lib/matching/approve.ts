@@ -107,7 +107,7 @@ export async function applyApprovedSnapshot(
   // Offer budget bookkeeping.
   const nextSpent = o.monthly_spent_cents + snapshot.discountCents;
   const shouldPause =
-    o.status === "active" && nextSpent >= o.monthly_budget_cents;
+    o.status === "live" && nextSpent >= o.monthly_budget_cents;
   await admin
     .from("offers")
     .update({

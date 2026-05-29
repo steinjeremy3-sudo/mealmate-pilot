@@ -176,7 +176,8 @@ export default function TermsPage() {
           <a href="mailto:support@mealmatedining.com">
             support@mealmatedining.com
           </a>{" "}
-          or through the <Link href="/#contact">contact form</Link>.
+          or through the{" "}
+          <Link href="/for-restaurants#contact">contact form</Link>.
         </p>
       </section>
     </LegalDoc>

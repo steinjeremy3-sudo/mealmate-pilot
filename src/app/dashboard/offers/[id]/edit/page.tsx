@@ -62,7 +62,7 @@ export default async function EditOfferPage({
             start: offer.valid_start_time.slice(0, 5),
             end: offer.valid_end_time.slice(0, 5),
             minCheck: Math.round(offer.min_check_cents / 100),
-            maxRedemptions: offer.max_claims_total ?? 100,
+            maxRedemptions: offer.max_claims_total, // null = unlimited
             recurring: offer.ends_at == null,
           }}
         />
