@@ -31,6 +31,20 @@ export function ContactForm() {
 
   return (
     <form action={formAction} className="space-y-5">
+      {/* Honeypot: hidden from people, tempting to bots. A real submission
+          leaves this empty; the server silently drops anything that fills
+          it. aria-hidden + tabIndex keep it away from humans + AT. */}
+      <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+        <label htmlFor="cf-company">Company</label>
+        <input
+          id="cf-company"
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="cf-name" className={labelClass}>

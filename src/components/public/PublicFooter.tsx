@@ -1,16 +1,14 @@
-// Shared footer across marketing + public-browse surfaces. Carries
-// the launch-list signup, a quiet wordmark, the contact email, and
-// the copyright line.
+// Shared footer across marketing + public-browse surfaces. Carries a
+// quiet wordmark, tagline, the legal links, and the copyright line.
 
 import Link from "next/link";
 
 import { Wordmark } from "@/components/brand";
-import { LaunchSignup } from "./LaunchSignup";
 
 export function PublicFooter() {
   return (
     <footer className="mt-20 border-t border-border bg-bone-deep">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-14 md:grid-cols-[1.2fr_1fr]">
+      <div className="mx-auto max-w-6xl px-6 py-14">
         {/* Brand + tagline */}
         <div className="space-y-3">
           <Wordmark />
@@ -21,15 +19,6 @@ export function PublicFooter() {
             A small team based in Dallas, building card-linked
             discounts for independent restaurants. Launching summer
             2026.
-          </p>
-        </div>
-
-        {/* Launch list */}
-        <div className="space-y-3">
-          <p className="font-display text-xl">Get launch updates</p>
-          <LaunchSignup />
-          <p className="text-xs text-muted-foreground">
-            Occasional updates from Dallas. No marketing email.
           </p>
         </div>
       </div>

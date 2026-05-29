@@ -1,7 +1,7 @@
 "use server";
 
-// Marketing-site form actions. Both send to jeremy@mealmatedining.com
-// via Resend (see src/lib/email/send.ts — degrades gracefully if
+// Marketing-site form actions. Sends to jeremy@mealmatedining.com via
+// Resend (see src/lib/email/send.ts — degrades gracefully if
 // RESEND_API_KEY isn't set).
 
 import { sendTransactionalEmail } from "@/lib/email/send";
@@ -20,6 +20,12 @@ export async function submitContact(
   _prev: FormState | null,
   formData: FormData,
 ): Promise<FormState> {
+  // Honeypot: bots fill the hidden "company" field; humans never see it.
+  // Pretend success so a bot gets no signal, but send nothing.
+  if (String(formData.get("company") ?? "").trim()) {
+    return { ok: true, message: "Thanks — we'll get back to you shortly." };
+  }
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const subject = String(formData.get("subject") ?? "").trim();
@@ -57,31 +63,4 @@ export async function submitContact(
   }
 
   return { ok: true, message: "Thanks — we'll get back to you shortly." };
-}
-
-/** Launch-list signup at the footer. */
-export async function joinLaunchList(
-  _prev: FormState | null,
-  formData: FormData,
-): Promise<FormState> {
-  const email = String(formData.get("email") ?? "").trim();
-  if (!EMAIL_RE.test(email)) {
-    return { ok: false, message: "Enter a valid email." };
-  }
-
-  const result = await sendTransactionalEmail({
-    to: FOUNDER_INBOX,
-    subject: "[mealmate] Launch list signup",
-    text: `New launch-list signup from mealmatedining.app\n\nEmail: ${email}\n`,
-    replyTo: email,
-  });
-
-  if (!result.ok) {
-    return {
-      ok: false,
-      message: "Couldn't sign you up just now — try again in a minute.",
-    };
-  }
-
-  return { ok: true, message: "You're on the list." };
 }
