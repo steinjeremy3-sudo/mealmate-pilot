@@ -67,13 +67,13 @@ export default async function MarketingLanding() {
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/sign-up?as=diner"
+                  href="/sign-up/diner"
                   className="rounded-lg bg-ink px-6 py-3 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
                 >
                   Sign up as a diner
                 </Link>
                 <Link
-                  href="/sign-up?as=merchant"
+                  href="/sign-up/merchant"
                   className="rounded-lg border border-ink px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-bone"
                 >
                   List your restaurant
@@ -118,7 +118,7 @@ export default async function MarketingLanding() {
                   Browse every offer →
                 </Link>
                 <Link
-                  href="/sign-up?as=diner"
+                  href="/sign-up/diner"
                   className="rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
                 >
                   Get started

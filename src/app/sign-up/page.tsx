@@ -1,151 +1,70 @@
-// Sign-up page. Single form with a role toggle — Diner or Restaurant
-// operator (merchant). Admin accounts are created by hand in the
-// Supabase dashboard, not via this form.
+// Sign-up landing — chooser for anyone arriving at the bare
+// /sign-up URL without picking a role yet. The actual forms live at
+// /sign-up/diner and /sign-up/merchant.
 //
-// Pre-select the role with `?as=diner` or `?as=merchant` (set by the
-// marketing landing's CTAs). Default = `diner`.
-//
-// Server Component. Errors and "check your email" confirmations come
-// back through searchParams.
+// Honors ?as=diner|merchant for backward compat with old CTAs that
+// still pass the query param — redirects straight through.
 
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
-import { Button, Card, Heading, Wordmark } from "@/components/brand";
-import { signUp } from "@/app/auth/actions";
+import { Card, Heading, Wordmark } from "@/components/brand";
 
-type SearchParams = Promise<{
-  error?: string;
-  sent?: string;
-  email?: string;
-  as?: string;
-}>;
+type SearchParams = Promise<{ as?: string }>;
 
-const inputClass =
-  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
-
-const roleClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg border border-border " +
-  "bg-bone px-3 py-2 text-sm has-checked:border-paprika " +
-  "has-checked:bg-paprika-tint";
-
-export default async function SignUpPage({
+export default async function SignUpChooserPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const error = params.error;
-  const sent = params.sent;
-  const sentEmail = params.email;
-  const preselected = params.as === "merchant" ? "merchant" : "diner";
+  const { as } = await searchParams;
+  if (as === "diner") redirect("/sign-up/diner");
+  if (as === "merchant") redirect("/sign-up/merchant");
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-md space-y-8">
         <div className="space-y-3 text-center">
           <div className="flex justify-center">
             <Wordmark />
           </div>
           <Heading as="h1" size="page" className="pb-0">
-            Create account
+            Sign up to Mealmate
           </Heading>
           <p className="text-sm text-muted-foreground">
-            Sign up as a diner to activate offers, or as a restaurant
-            operator to list yours.
+            Two different paths — pick the one that&apos;s you.
           </p>
         </div>
 
-        {sent ? (
-          <Card className="border-paprika/30 bg-paprika-tint text-sm text-ink/80">
-            We sent a confirmation link to{" "}
-            <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
-            Click it to finish creating your account.
-          </Card>
-        ) : (
-          <Card>
-            <form action={signUp} className="space-y-4">
-              <fieldset className="space-y-2">
-                <legend className="text-sm font-medium">
-                  I&apos;m signing up as a…
-                </legend>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className={roleClass}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="diner"
-                      defaultChecked={preselected === "diner"}
-                      className="accent-paprika"
-                    />
-                    Diner
-                  </label>
-                  <label className={roleClass}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="merchant"
-                      defaultChecked={preselected === "merchant"}
-                      className="accent-paprika"
-                    />
-                    Restaurant
-                  </label>
-                </div>
-              </fieldset>
+        <div className="grid gap-3">
+          <Link href="/sign-up/diner" className="block">
+            <Card className="space-y-1.5 transition-colors hover:bg-bone-deep">
+              <p className="font-display text-xl tracking-[-0.02em]">
+                I&apos;m a diner →
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Browse offers, link a card, and get cash back at
+                the restaurants you already love. Free.
+              </p>
+            </Card>
+          </Link>
 
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">Your name</span>
-                <input
-                  type="text"
-                  name="display_name"
-                  required
-                  autoComplete="name"
-                  className={inputClass}
-                />
-              </label>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">Email</span>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  className={inputClass}
-                />
-              </label>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">
-                  Password{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional — blank uses magic links)
-                  </span>
-                </span>
-                <input
-                  type="password"
-                  name="password"
-                  minLength={8}
-                  autoComplete="new-password"
-                  className={inputClass}
-                />
-              </label>
-
-              {error ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-
-              <Button type="submit" className="w-full">
-                Create account
-              </Button>
-            </form>
-          </Card>
-        )}
+          <Link href="/sign-up/merchant" className="block">
+            <Card className="space-y-1.5 transition-colors hover:bg-bone-deep">
+              <p className="font-display text-xl tracking-[-0.02em]">
+                I run a restaurant →
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Set discounts at slow hours, drive incremental
+                covers, no platform fees. We review and approve
+                within 24 hours.
+              </p>
+            </Card>
+          </Link>
+        </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Already have one?{" "}
+          Already have an account?{" "}
           <Link
             href="/sign-in"
             className="text-paprika underline underline-offset-4"

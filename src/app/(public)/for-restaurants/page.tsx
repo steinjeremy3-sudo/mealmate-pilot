@@ -88,7 +88,7 @@ export default function ForRestaurantsPage() {
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
               <Link
-                href="/sign-up?as=merchant"
+                href="/sign-up/merchant"
                 className="rounded-lg bg-ink px-6 py-3.5 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
               >
                 List your restaurant →

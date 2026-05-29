@@ -42,7 +42,7 @@ export default async function PublicRestaurantPage({
   const isAuthedDiner = Boolean(user); // role check is downstream
   const activateHref = isAuthedDiner
     ? `/app/offers/${offer.id}/claim`
-    : `/sign-up?as=diner`;
+    : `/sign-up/diner`;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-8">

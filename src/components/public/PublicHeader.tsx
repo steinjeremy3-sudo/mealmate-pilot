@@ -92,7 +92,7 @@ export async function PublicHeader({
                 Sign in
               </Link>
               <Link
-                href="/sign-up?as=diner"
+                href="/sign-up/diner"
                 className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
               >
                 Get started
