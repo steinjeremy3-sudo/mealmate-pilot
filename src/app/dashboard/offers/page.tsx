@@ -48,6 +48,7 @@ function StatusBadge({ label }: { label: string }) {
 }
 
 function OfferRow({ o }: { o: OfferWithRestaurant }) {
+  const display = offerDisplayStatus(o);
   return (
     <Link
       href={`/dashboard/offers/${o.id}`}
@@ -55,7 +56,18 @@ function OfferRow({ o }: { o: OfferWithRestaurant }) {
     >
       <div className="min-w-0 flex-1">
         <p className="truncate font-display text-base">{o.title}</p>
-        <p className="truncate text-xs text-muted-foreground">{o.description}</p>
+        {display === "scheduled" ? (
+          // A published offer that's simply outside its window right now.
+          // Without this, the bare "SCHEDULED" badge reads as "publishing
+          // failed" — spell out that it's live to diners during its window.
+          <p className="truncate text-xs text-paprika-deep">
+            Published · shows to diners during its window below
+          </p>
+        ) : (
+          <p className="truncate text-xs text-muted-foreground">
+            {o.description}
+          </p>
+        )}
       </div>
       <span className="w-20 text-right font-mono text-sm">{o.discount_pct}%</span>
       <span className="w-44 font-mono text-xs text-muted-foreground">
