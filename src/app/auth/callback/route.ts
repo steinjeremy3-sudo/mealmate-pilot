@@ -32,14 +32,24 @@ export async function GET(request: NextRequest) {
   }
 
   // Look up role to pick the destination. If the row isn't there yet
-  // (e.g. trigger hasn't fired) we send them home and let the layouts
-  // handle the awkward state.
-  const { data: profile } = await supabase
+  // (e.g. handle_new_user trigger hasn't fired) we surface a visible
+  // signal at /sign-in rather than dropping the user on the marketing
+  // page with no explanation.
+  const { data: profile, error: profileErr } = await supabase
     .from("users")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  const dest = profile ? homeForRole(profile.role) : "/";
-  return NextResponse.redirect(new URL(dest, url));
+  if (profileErr || !profile) {
+    console.error(
+      `[auth/callback] no public.users row for ${user.email} (${user.id}):`,
+      profileErr?.message ?? "(empty result)",
+    );
+    return NextResponse.redirect(
+      new URL("/sign-in?error=no-profile", url),
+    );
+  }
+
+  return NextResponse.redirect(new URL(homeForRole(profile.role), url));
 }
