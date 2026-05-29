@@ -13,10 +13,8 @@ import { homeForRole } from "@/lib/auth/post-signin";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/#for-restaurants", label: "For restaurants" },
-  { href: "/#for-diners", label: "For diners" },
   { href: "/browse", label: "Browse offers" },
-  { href: "/#about", label: "About" },
+  { href: "/for-restaurants", label: "For restaurants" },
 ];
 
 async function getCurrentRole(): Promise<"diner" | "merchant" | "admin" | null> {
@@ -86,10 +84,10 @@ export async function PublicHeader({
                 Sign in
               </Link>
               <Link
-                href="/sign-up"
+                href="/sign-up?as=diner"
                 className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
               >
-                Sign up
+                Get started
               </Link>
             </>
           )}
