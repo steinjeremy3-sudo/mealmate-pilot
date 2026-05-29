@@ -150,11 +150,14 @@ export function OfferForm({
                 id="min_check"
                 name="min_check"
                 type="number"
-                min={0}
+                min={10}
                 value={minCheck}
                 onChange={(e) => setMinCheck(Number(e.target.value))}
                 className={inputClass}
               />
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                $10 minimum (the platform fee floor)
+              </p>
             </div>
             <div>
               <label className={labelClass} htmlFor="max_redemptions">

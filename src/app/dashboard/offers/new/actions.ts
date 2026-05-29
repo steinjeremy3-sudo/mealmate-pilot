@@ -24,6 +24,13 @@ const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const DISCOUNT_MIN_PCT = 15;
 const DISCOUNT_MAX_PCT = 50;
 
+// $10 hard floor on min_check_cents. Below this the platform-fee
+// floor (50¢) starts eating the discount — at $9.80 / 15% off the
+// fee floor exactly meets the natural 6%, and below that the diner
+// gets a worse effective deal. Keep merchants from accidentally
+// shipping offers where small checks return $0 or near-zero rebate.
+const MIN_CHECK_FLOOR_CENTS = 1000; // $10
+
 // Practically-unlimited cap for the (now hidden) monthly_budget_cents
 // column — the merchant caps via max_claims_total instead.
 const UNLIMITED_BUDGET_CENTS = 1_000_000_000; // $10M
@@ -69,6 +76,13 @@ export async function createOffer(formData: FormData): Promise<void> {
     redirect(errParam("Minimum check size must be a non-negative number."));
   }
   const minCheckCents = usdToCents(minCheckUsd);
+  if (minCheckCents < MIN_CHECK_FLOOR_CENTS) {
+    redirect(
+      errParam(
+        `Minimum check size must be at least $${MIN_CHECK_FLOOR_CENTS / 100} so the platform-fee floor doesn't eat the discount on small visits.`,
+      ),
+    );
+  }
 
   // Max redemptions — total activations across all diners. When this
   // count is hit, the offer reads as "fully booked" in claimOffer.
