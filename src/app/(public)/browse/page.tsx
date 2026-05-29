@@ -48,8 +48,28 @@ export default async function PublicBrowsePage() {
       </div>
 
       {offers.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-bone-deep p-12 text-center text-sm text-muted-foreground">
-          Nothing live right now — check back soon.
+        <div className="space-y-5 rounded-2xl border border-dashed border-border bg-bone-deep p-12 text-center">
+          <p className="text-base text-ink/75">
+            Nothing live right now — first partners launching summer
+            2026.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Sign up free and we&apos;ll ping you when offers go live.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href="/sign-up?as=diner"
+              className="rounded-lg bg-ink px-6 py-3 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
+            >
+              Sign up as a diner
+            </Link>
+            <Link
+              href="/sign-up?as=merchant"
+              className="rounded-lg border border-ink px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-bone"
+            >
+              List your restaurant
+            </Link>
+          </div>
         </div>
       ) : (
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

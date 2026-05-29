@@ -56,9 +56,29 @@ export default async function MarketingLanding() {
           </div>
 
           {offers.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-bone-deep p-14 text-center text-sm text-muted-foreground">
-              No live offers yet — first partners launching summer
-              2026.
+            <div className="space-y-6 rounded-2xl border border-dashed border-border bg-bone-deep p-12 text-center">
+              <p className="text-base text-ink/75">
+                No live offers in Dallas yet — the first partners go
+                live summer 2026.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Sign up free and we&apos;ll let you know the moment
+                offers go live.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/sign-up?as=diner"
+                  className="rounded-lg bg-ink px-6 py-3 text-sm font-semibold text-bone transition-colors hover:bg-ink-soft"
+                >
+                  Sign up as a diner
+                </Link>
+                <Link
+                  href="/sign-up?as=merchant"
+                  className="rounded-lg border border-ink px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-bone"
+                >
+                  List your restaurant
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="space-y-8">
