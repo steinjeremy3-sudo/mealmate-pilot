@@ -12,6 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { autoApproveHighMatches } from "@/lib/matching/auto-approve";
 import { matchPendingTransactions } from "@/lib/matching/match";
+import { expireLapsedOffers } from "@/lib/offers/expire";
 import { syncAllActiveItems } from "@/lib/plaid/sync-transactions";
 import { sendInitiatedRebates } from "@/lib/rebates/send";
 
@@ -71,6 +72,10 @@ export async function GET(request: NextRequest) {
   // are counted as 'skippedNoDestination' and stay 'initiated'.)
   const issuance = await sendInitiatedRebates();
 
+  // Archive any non-recurring offers whose end date has passed, so the
+  // stored status matches what diners + merchants already see.
+  const expiry = await expireLapsedOffers();
+
   const durationMs = Date.now() - startedAt;
 
   console.log(
@@ -87,7 +92,8 @@ export async function GET(request: NextRequest) {
       `approval_errors=${autoApproval.errors} ` +
       `rebate_sent=${issuance.sent} rebate_deferred=${issuance.deferred} ` +
       `rebate_skipped_no_dest=${issuance.skippedNoDestination} ` +
-      `rebate_failed=${issuance.failed} duration_ms=${durationMs}`,
+      `rebate_failed=${issuance.failed} ` +
+      `offers_expired=${expiry.expired} duration_ms=${durationMs}`,
   );
 
   return NextResponse.json({
@@ -101,6 +107,7 @@ export async function GET(request: NextRequest) {
     matching,
     autoApproval,
     issuance,
+    expiry,
     durationMs,
   });
 }

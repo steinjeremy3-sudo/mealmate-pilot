@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isOfferAvailableNow } from "./availability";
+import { isOfferAvailableNow, offerDisplayStatus } from "./availability";
 
 // A daily 5:00 PM–11:00 PM offer, valid every day, open run window.
 function dinnerOffer(overrides = {}) {
@@ -50,5 +50,39 @@ describe("isOfferAvailableNow", () => {
   it("is NOT available before the run starts", () => {
     const future = dinnerOffer({ starts_at: "2026-06-01T00:00:00Z" });
     expect(isOfferAvailableNow(future, new Date("2026-05-19T23:30:00Z"))).toBe(false);
+  });
+});
+
+describe("offerDisplayStatus", () => {
+  const inWindow = new Date("2026-05-19T23:30:00Z"); // 6:30 PM CDT Tue
+  const outOfWindow = new Date("2026-05-20T04:30:00Z"); // 11:30 PM CDT Tue
+
+  it("is live while inside the current window", () => {
+    expect(offerDisplayStatus({ ...dinnerOffer(), status: "live" }, inWindow)).toBe(
+      "live",
+    );
+  });
+
+  it("reads as scheduled when a live offer is outside its window", () => {
+    expect(
+      offerDisplayStatus({ ...dinnerOffer(), status: "live" }, outOfWindow),
+    ).toBe("scheduled");
+  });
+
+  it("reads as expired once the end date has passed", () => {
+    const ended = { ...dinnerOffer({ ends_at: "2026-05-18T00:00:00Z" }), status: "live" };
+    expect(offerDisplayStatus(ended, inWindow)).toBe("expired");
+  });
+
+  it("keeps a manually-ended offer as ended", () => {
+    expect(offerDisplayStatus({ ...dinnerOffer(), status: "ended" }, inWindow)).toBe(
+      "ended",
+    );
+  });
+
+  it("passes through draft", () => {
+    expect(offerDisplayStatus({ ...dinnerOffer(), status: "draft" }, outOfWindow)).toBe(
+      "draft",
+    );
   });
 });
