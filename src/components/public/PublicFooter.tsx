@@ -37,7 +37,7 @@ export function PublicFooter() {
       <div className="border-t border-border bg-ink py-5 text-bone">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 font-mono text-[11px] uppercase tracking-[0.1em] text-bone/65">
           <span>© Mealmate Inc. 2026 · Built in Dallas</span>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap gap-5">
             <Link
               href="/browse"
               className="transition-colors hover:text-bone"
@@ -49,6 +49,18 @@ export function PublicFooter() {
               className="transition-colors hover:text-bone"
             >
               For restaurants
+            </Link>
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-bone"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-bone"
+            >
+              Privacy
             </Link>
           </div>
         </div>
