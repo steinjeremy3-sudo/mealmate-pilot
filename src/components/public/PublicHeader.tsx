@@ -13,8 +13,8 @@ import { homeForRole } from "@/lib/auth/post-signin";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/#how-it-works", label: "How it works" },
   { href: "/#for-restaurants", label: "For restaurants" },
+  { href: "/#for-diners", label: "For diners" },
   { href: "/browse", label: "Browse offers" },
   { href: "/#about", label: "About" },
 ];

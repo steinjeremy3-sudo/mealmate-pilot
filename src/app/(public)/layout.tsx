@@ -1,9 +1,8 @@
-// Layout for anon-browseable public routes — /browse, /r/[id]. The
-// route group "(public)" doesn't appear in the URL.
-//
-// Marketing pages and auth screens live at sibling roots and use
-// their own layouts; this one is just the public-app surface.
+// Layout for the public surface — marketing landing at /, the offer
+// browse at /browse, and restaurant detail at /r/[id]. The route
+// group "(public)" doesn't appear in the URL.
 
+import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicHeader } from "@/components/public/PublicHeader";
 
 export default function PublicLayout({
@@ -15,6 +14,7 @@ export default function PublicLayout({
     <>
       <PublicHeader />
       {children}
+      <PublicFooter />
     </>
   );
 }
