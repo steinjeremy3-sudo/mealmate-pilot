@@ -39,9 +39,13 @@ export async function PublicHeader({
   className?: string;
 }) {
   const role = await getCurrentRole();
-  const appHref = role ? homeForRole(role) : null;
-  const appLabel =
-    role === "admin" ? "Ops" : role === "merchant" ? "Dashboard" : "App";
+  // Diner + merchant see a one-tap entry to their app surface. Admin
+  // deliberately does NOT — the ops console is a privately-known
+  // direct URL (/admin) so anyone glancing at a signed-in admin's
+  // browser doesn't learn it exists.
+  const appHref =
+    role === "diner" || role === "merchant" ? homeForRole(role) : null;
+  const appLabel = role === "merchant" ? "Dashboard" : "App";
 
   return (
     <header
@@ -75,6 +79,10 @@ export async function PublicHeader({
             >
               {appLabel} →
             </Link>
+          ) : role === "admin" ? (
+            // Admin: render no auth-specific button. Ops console is a
+            // privately-known URL — don't surface it in chrome.
+            null
           ) : (
             <>
               <Link
