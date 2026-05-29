@@ -13,12 +13,28 @@ import { buttonVariants, Eyebrow, Heading } from "@/components/brand";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
 import { getStripeAccountForRestaurant } from "@/lib/db/stripe-accounts";
 
+import { refreshStripeAccountStatus } from "../actions";
+
 export default async function StripeOnboardingReturn() {
   const profile = await requireRole("merchant");
   const restaurant = await getRestaurantForOwner(profile.id);
-  const account = restaurant
+  let account = restaurant
     ? await getStripeAccountForRestaurant(restaurant.id)
     : null;
+
+  // The webhook is the source of truth, but it can lag. Rather than show
+  // "Almost there" until it lands, pull fresh state straight from Stripe
+  // right now so a merchant who finished onboarding usually sees the real
+  // "connected" status immediately on return.
+  if (account && account.status !== "active") {
+    await refreshStripeAccountStatus(
+      account.restaurant_id,
+      account.stripe_account_id,
+    );
+    account = restaurant
+      ? await getStripeAccountForRestaurant(restaurant.id)
+      : null;
+  }
 
   const isActive = account?.status === "active";
 

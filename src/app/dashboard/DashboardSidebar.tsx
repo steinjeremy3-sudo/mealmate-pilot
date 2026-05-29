@@ -19,6 +19,7 @@ const NAV = [
   { href: "/dashboard/performance", label: "Performance" },
   { href: "/dashboard/settlements", label: "Settlements" },
   { href: "/dashboard/settings", label: "Settings" },
+  { href: "/dashboard/help", label: "Help" },
 ];
 
 export function DashboardSidebar({

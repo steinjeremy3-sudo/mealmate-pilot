@@ -8,6 +8,7 @@ import { Card, Eyebrow } from "@/components/brand";
 import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
 import { getDinerCuisines } from "@/lib/db/diner-preferences";
+import { getMyPlaidCards } from "@/lib/db/plaid-cards";
 import { getRebatesForDiner } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
 
@@ -17,13 +18,17 @@ import { VisitBanner } from "./VisitBanner";
 
 export default async function DinerHome() {
   const profile = await requireRole("diner");
-  const [offers, rebateBanner, rebates, preferredCuisines] =
+  const [offers, rebateBanner, rebates, preferredCuisines, cards] =
     await Promise.all([
       getLiveOffers(),
       getDinerRebateBannerSummary(profile.id),
       getRebatesForDiner(profile.id),
       getDinerCuisines(profile.id),
+      getMyPlaidCards(),
     ]);
+  // A diner with no linked card can't earn anything yet — this is the
+  // most fundamental onboarding nudge, so it outranks the other banners.
+  const hasLinkedCard = cards.length > 0;
   const showRebateSetupBanner =
     !rebateBanner.hasDestination && rebateBanner.initiatedCents > 0;
 
@@ -59,7 +64,19 @@ export default async function DinerHome() {
           </Link>
         </div>
 
-        {showRebateSetupBanner ? (
+        {!hasLinkedCard ? (
+          <Link href="/app/cards" className="block">
+            <Card className="border-paprika/30 bg-paprika-tint transition-colors hover:bg-paprika/30">
+              <p className="font-medium text-ink">
+                Link a card to start earning cash back.
+              </p>
+              <p className="mt-1 text-sm text-paprika-deep">
+                We use read-only access to confirm your visits — we never
+                charge it →
+              </p>
+            </Card>
+          </Link>
+        ) : showRebateSetupBanner ? (
           <Link href="/app/rebates/setup" className="block">
             <Card className="border-paprika/30 bg-paprika-tint transition-colors hover:bg-paprika/30">
               <p className="font-medium text-ink">
