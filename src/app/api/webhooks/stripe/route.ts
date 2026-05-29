@@ -14,6 +14,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { deriveStripeAccountStatus } from "@/lib/db/stripe-accounts";
+import { notifyStripeAccountActive } from "@/lib/email/notifications";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -68,6 +69,14 @@ export async function POST(request: NextRequest) {
         chargesEnabled: account.charges_enabled ?? false,
         payoutsEnabled: account.payouts_enabled ?? false,
       });
+      // Capture the prior status so we can email the merchant exactly
+      // once, on the transition into 'active' (Stripe sends many
+      // account.updated events).
+      const { data: prior } = await supabase
+        .from("restaurant_stripe_accounts")
+        .select("status")
+        .eq("stripe_account_id", account.id)
+        .maybeSingle();
       // Mirror Stripe's three booleans + derived status onto our row,
       // keyed by stripe_account_id. If no matching restaurant row,
       // it's a stale account we created in a different env — log and skip.
@@ -91,6 +100,12 @@ export async function POST(request: NextRequest) {
         console.log(
           `[stripe-webhook] account.updated ${account.id} -> ${status}`,
         );
+        if (status === "active" && prior?.status !== "active") {
+          await notifyStripeActiveForRestaurant(
+            supabase,
+            updated[0].restaurant_id,
+          );
+        }
       }
       break;
     }
@@ -150,4 +165,32 @@ async function advanceSettlement(
   console.log(
     `[stripe-webhook] settlement ${data[0].id} -> ${next} (invoice ${invoiceId})`,
   );
+}
+
+/**
+ * Email the restaurant owner that their Stripe account is active and
+ * they can publish offers. Best-effort — never throws into the webhook
+ * (a 500 here would make Stripe retry the whole event).
+ */
+async function notifyStripeActiveForRestaurant(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  restaurantId: string,
+): Promise<void> {
+  try {
+    const { data: r } = await supabase
+      .from("restaurants")
+      .select("name, users:owner_user_id ( email, display_name )")
+      .eq("id", restaurantId)
+      .maybeSingle();
+    if (!r) return;
+    const owner = Array.isArray(r.users) ? r.users[0] : r.users;
+    if (!owner?.email) return;
+    await notifyStripeAccountActive({
+      to: owner.email,
+      displayName: owner.display_name ?? null,
+      restaurantName: r.name ?? "Your restaurant",
+    });
+  } catch (e) {
+    console.error("[stripe-webhook] notify active failed:", e);
+  }
 }

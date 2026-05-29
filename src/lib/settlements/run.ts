@@ -20,6 +20,7 @@
 import "server-only";
 
 import { logAuditEvent } from "@/lib/db/audit-log";
+import { notifySettlementInvoiced } from "@/lib/email/notifications";
 import { classifyStripeError } from "@/lib/observability/provider-errors";
 import { reportError } from "@/lib/observability/report";
 import { stripe } from "@/lib/stripe";
@@ -204,6 +205,35 @@ async function settleRestaurant(args: {
       stripe_invoice_id: invoice.id,
     },
   });
+
+  // Best-effort heads-up to the merchant (Stripe also emails the invoice
+  // itself). Fully guarded: a failed lookup or email must NEVER throw
+  // here — the invoice is already sent and the transactions claimed, so
+  // a throw would just strand a 'pending' settlement needing manual fix.
+  try {
+    const { data: r } = await admin
+      .from("restaurants")
+      .select("name, users!inner ( email, display_name )")
+      .eq("id", args.restaurantId)
+      .maybeSingle();
+    const owner = r
+      ? Array.isArray(r.users)
+        ? r.users[0]
+        : r.users
+      : null;
+    if (owner?.email) {
+      await notifySettlementInvoiced({
+        to: owner.email,
+        displayName: owner.display_name ?? null,
+        restaurantName: r?.name ?? "your restaurant",
+        amountCents: args.totalDiscountCents,
+        transactionCount: args.txnIds.length,
+        dueInDays: 7,
+      });
+    }
+  } catch (e) {
+    console.error("[settlement] invoiced-email lookup failed:", e);
+  }
 }
 
 /**

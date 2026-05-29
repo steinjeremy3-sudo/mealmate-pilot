@@ -7,6 +7,10 @@
 import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
+import {
+  notifyOpsNewRestaurant,
+  notifyRestaurantSubmitted,
+} from "@/lib/email/notifications";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Whitelisted neighborhoods (BRIEF.md canon: Bishop Arts hero plus a few
@@ -55,6 +59,18 @@ export async function createRestaurant(formData: FormData): Promise<void> {
   if (error) {
     redirect(errParam(error.message));
   }
+
+  // Best-effort notifications (never block the redirect): confirm receipt
+  // to the merchant, and alert ops that a restaurant needs approval.
+  await notifyRestaurantSubmitted({
+    to: profile.email ?? "",
+    displayName: profile.displayName,
+    restaurantName: name,
+  });
+  await notifyOpsNewRestaurant({
+    restaurantName: name,
+    ownerEmail: profile.email,
+  });
 
   redirect("/dashboard");
 }

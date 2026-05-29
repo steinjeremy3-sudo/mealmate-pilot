@@ -19,6 +19,13 @@ const APP_URL = (
   process.env.NEXT_PUBLIC_APP_URL ?? "https://mealmatedining.app"
 ).replace(/\/$/, "");
 
+/** Where internal/ops notifications land. */
+const OPS_INBOX = "jeremy@mealmatedining.com";
+
+function usd(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
 /** "Jeremy Stein" → "Jeremy"; null/empty → "there". */
 function firstName(displayName: string | null | undefined): string {
   const first = (displayName ?? "").trim().split(/\s+/)[0];
@@ -87,5 +94,115 @@ export async function notifyRestaurantApproved(args: {
     });
   } catch (e) {
     console.error("[notify] restaurant-approved failed:", e);
+  }
+}
+
+/**
+ * Merchant: confirmation that their restaurant application was received
+ * and is in review. Fired right after they submit at onboarding.
+ */
+export async function notifyRestaurantSubmitted(args: {
+  to: string;
+  displayName: string | null;
+  restaurantName: string;
+}): Promise<void> {
+  try {
+    if (!args.to) return;
+    await sendTransactionalEmail({
+      to: args.to,
+      subject: `We got your application for ${args.restaurantName}`,
+      text:
+        `Hi ${firstName(args.displayName)},\n\n` +
+        `Thanks for submitting ${args.restaurantName} to Mealmate. Our ` +
+        `team reviews new restaurants and typically approves within one ` +
+        `business day. We'll email you the moment you're approved, with ` +
+        `the next steps to set up payouts and publish your first offer.\n\n` +
+        `— Mealmate`,
+    });
+  } catch (e) {
+    console.error("[notify] restaurant-submitted failed:", e);
+  }
+}
+
+/**
+ * Ops: a new restaurant is waiting for approval. The actionable signal
+ * for the Mealmate team — this is the moment a human needs to act.
+ */
+export async function notifyOpsNewRestaurant(args: {
+  restaurantName: string;
+  ownerEmail: string | null;
+}): Promise<void> {
+  try {
+    await sendTransactionalEmail({
+      to: OPS_INBOX,
+      subject: `[mealmate] New restaurant pending: ${args.restaurantName}`,
+      text:
+        `A new restaurant just signed up and is waiting for approval.\n\n` +
+        `Restaurant: ${args.restaurantName}\n` +
+        `Owner:      ${args.ownerEmail ?? "(unknown)"}\n\n` +
+        `Review + approve: ${APP_URL}/admin\n`,
+      replyTo: args.ownerEmail ?? undefined,
+    });
+  } catch (e) {
+    console.error("[notify] ops-new-restaurant failed:", e);
+  }
+}
+
+/**
+ * Merchant: their Stripe account just went active — they can now
+ * publish offers. Fired from the account.updated webhook on the
+ * pending/restricted → active transition only.
+ */
+export async function notifyStripeAccountActive(args: {
+  to: string;
+  displayName: string | null;
+  restaurantName: string;
+}): Promise<void> {
+  try {
+    if (!args.to) return;
+    await sendTransactionalEmail({
+      to: args.to,
+      subject: `${args.restaurantName} is ready to publish offers`,
+      text:
+        `Hi ${firstName(args.displayName)},\n\n` +
+        `Stripe has verified your account, so ${args.restaurantName} is ` +
+        `fully set up. You can publish your first offer now:\n\n` +
+        `${APP_URL}/dashboard/offers/new\n\n` +
+        `— Mealmate`,
+    });
+  } catch (e) {
+    console.error("[notify] stripe-account-active failed:", e);
+  }
+}
+
+/**
+ * Merchant: this week's settlement invoice has been issued. Fired from
+ * the weekly settlement run once the Stripe invoice is sent.
+ */
+export async function notifySettlementInvoiced(args: {
+  to: string;
+  displayName: string | null;
+  restaurantName: string;
+  amountCents: number;
+  transactionCount: number;
+  dueInDays: number;
+}): Promise<void> {
+  try {
+    if (!args.to) return;
+    const visits = `${args.transactionCount} visit${args.transactionCount === 1 ? "" : "s"}`;
+    await sendTransactionalEmail({
+      to: args.to,
+      subject: `Your Mealmate invoice — ${usd(args.amountCents)}`,
+      text:
+        `Hi ${firstName(args.displayName)},\n\n` +
+        `This week's Mealmate settlement for ${args.restaurantName} is ` +
+        `ready: ${usd(args.amountCents)} across ${visits}. Stripe has ` +
+        `emailed you the invoice separately; it's due in ` +
+        `${args.dueInDays} days.\n\n` +
+        `See the breakdown: ${APP_URL}/dashboard/settlements\n\n` +
+        `— Mealmate`,
+    });
+  } catch (e) {
+    console.error("[notify] settlement-invoiced failed:", e);
   }
 }
