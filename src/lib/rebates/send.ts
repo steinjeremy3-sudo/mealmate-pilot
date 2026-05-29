@@ -27,6 +27,7 @@
 import "server-only";
 
 import { logAuditEvent } from "@/lib/db/audit-log";
+import { notifyCashBackSent } from "@/lib/email/notifications";
 import {
   dwolla,
   getMealMateBalanceFundingUrl,
@@ -113,8 +114,11 @@ export async function sendInitiatedRebates(args: {
     }
 
     const outcome = await sendOne(row.id, row.amount_cents, destinationUrl);
-    if (outcome === "sent") summary.sent += 1;
-    else if (outcome === "deferred") summary.deferred += 1;
+    if (outcome === "sent") {
+      summary.sent += 1;
+      // Best-effort heads-up to the diner. Never blocks the sweep.
+      await notifyCashBackSent(userId, row.amount_cents);
+    } else if (outcome === "deferred") summary.deferred += 1;
     else summary.failed += 1;
   }
 
