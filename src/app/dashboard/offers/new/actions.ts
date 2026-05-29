@@ -98,6 +98,14 @@ export async function createOffer(formData: FormData): Promise<void> {
   const title = `${discountPct}% off`;
   const description = `${discountPct}% off your check at ${restaurant.name}.`;
 
+  // Recurring checkbox. Checked (default) → open-ended; unchecked →
+  // ends seven days from now, so the offer plays out its selected
+  // days within the coming week and then closes.
+  const recurring = formData.get("recurring") === "on";
+  const endsAt = recurring
+    ? null
+    : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("offers").insert({
     restaurant_id: restaurant.id,
@@ -114,7 +122,7 @@ export async function createOffer(formData: FormData): Promise<void> {
     max_claims_total: maxRedemptions,
     status: "live",
     starts_at: new Date().toISOString(),
-    ends_at: null,
+    ends_at: endsAt ? endsAt.toISOString() : null,
   });
 
   if (error) {

@@ -45,6 +45,7 @@ export function OfferForm({
   const [end, setEnd] = useState("22:00");
   const [minCheck, setMinCheck] = useState(40);
   const [maxRedemptions, setMaxRedemptions] = useState(100);
+  const [recurring, setRecurring] = useState(true);
 
   const toggleDay = (d: string) =>
     setDays((prev) => {
@@ -171,6 +172,26 @@ export function OfferForm({
               />
             </div>
           </div>
+
+          {/* Recurring */}
+          <label className="flex items-start gap-3 rounded-lg border border-border bg-bone p-3.5 has-checked:border-paprika has-checked:bg-paprika-tint">
+            <input
+              type="checkbox"
+              name="recurring"
+              checked={recurring}
+              onChange={(e) => setRecurring(e.target.checked)}
+              className="mt-0.5 accent-paprika"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">
+                Recurring weekly
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                Runs every selected day at this window, indefinitely.
+                Uncheck for a single one-off run.
+              </span>
+            </span>
+          </label>
 
           {error ? (
             <p className="text-sm text-destructive" role="alert">
