@@ -18,6 +18,7 @@ import {
 import { expiresInMinutes, getActiveClaimForOffer } from "@/lib/db/claims";
 import { getMenuForRestaurant } from "@/lib/db/menu";
 import { getOfferById } from "@/lib/db/offers";
+import { getRemainingForOffer } from "@/lib/db/offer-remaining";
 import { centsToUsd } from "@/lib/money";
 import {
   formatDayRange,
@@ -52,7 +53,10 @@ export default async function DinerOfferDetail({
   ]);
   if (!offer) notFound();
 
-  const menu = await getMenuForRestaurant(offer.restaurant_id);
+  const [menu, remaining] = await Promise.all([
+    getMenuForRestaurant(offer.restaurant_id),
+    getRemainingForOffer(offer),
+  ]);
   const r = offer.restaurant;
   const name = r?.name ?? "Restaurant";
   const dayRange = formatDayRange(offer.valid_days);
@@ -119,6 +123,11 @@ export default async function DinerOfferDetail({
               : ""}{" "}
             · Dine-in
           </p>
+          {remaining != null ? (
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-paprika">
+              {remaining === 0 ? "Fully booked" : `${remaining} left`}
+            </p>
+          ) : null}
         </div>
 
         {/* Restaurant facts */}

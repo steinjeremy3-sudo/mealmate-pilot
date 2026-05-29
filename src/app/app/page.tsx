@@ -9,6 +9,7 @@ import { getDinerRebateBannerSummary } from "@/lib/db/diner-rebate-status";
 import { getLiveOffers } from "@/lib/db/offers";
 import { getDinerCuisines } from "@/lib/db/diner-preferences";
 import { getMyPlaidCards } from "@/lib/db/plaid-cards";
+import { getRemainingByOffer } from "@/lib/db/offer-remaining";
 import { getRebatesForDiner } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
 
@@ -26,6 +27,13 @@ export default async function DinerHome() {
       getDinerCuisines(profile.id),
       getMyPlaidCards(),
     ]);
+  // "X left" urgency per offer (uncapped offers come back null → no badge).
+  const remainingByOffer = await getRemainingByOffer(offers);
+  const offerCards = offers.map((o) => ({
+    ...o,
+    remaining: remainingByOffer.get(o.id) ?? null,
+  }));
+
   // A diner with no linked card can't earn anything yet — this is the
   // most fundamental onboarding nudge, so it outranks the other banners.
   const hasLinkedCard = cards.length > 0;
@@ -99,7 +107,7 @@ export default async function DinerHome() {
           </Card>
         ) : (
           <OfferBrowse
-            offers={offers as OfferCardData[]}
+            offers={offerCards as OfferCardData[]}
             preferredCuisines={preferredCuisines}
           />
         )}

@@ -10,6 +10,7 @@ import Link from "next/link";
 
 import { Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
+import { cn } from "@/lib/utils";
 
 export type OfferCardData = {
   id: string;
@@ -17,6 +18,8 @@ export type OfferCardData = {
   discount_pct: number;
   min_check_cents: number;
   valid_days: string[];
+  /** Redemption slots left (null = uncapped; omit the urgency badge). */
+  remaining?: number | null;
   restaurant: {
     id: string;
     name: string;
@@ -30,6 +33,27 @@ export function DiscountPill({ pct }: { pct: number }) {
   return (
     <span className="inline-flex shrink-0 items-center rounded-full bg-paprika px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
       {pct}% OFF
+    </span>
+  );
+}
+
+/** "12 LEFT" urgency note. Renders nothing for uncapped offers. */
+export function LeftNote({
+  remaining,
+  className,
+}: {
+  remaining?: number | null;
+  className?: string;
+}) {
+  if (remaining == null) return null;
+  return (
+    <span
+      className={cn(
+        "font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-paprika",
+        className,
+      )}
+    >
+      {remaining === 0 ? "Fully booked" : `${remaining} left`}
     </span>
   );
 }
@@ -60,6 +84,7 @@ export function OfferCard({
           <p className="mt-1.5 truncate text-sm text-foreground/75">
             {offer.title}
           </p>
+          <LeftNote remaining={offer.remaining} className="mt-1 block" />
         </div>
         <DiscountPill pct={offer.discount_pct} />
       </div>
@@ -86,8 +111,11 @@ export function OfferTile({
           <p className="truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
             {r?.cuisine ?? "—"}
           </p>
-          <span className="mt-auto inline-flex w-fit items-center rounded-full bg-paprika-tint px-2.5 py-1 text-[11px] font-semibold text-paprika-deep">
-            {offer.discount_pct}% off
+          <span className="mt-auto flex items-center gap-2">
+            <span className="inline-flex w-fit items-center rounded-full bg-paprika-tint px-2.5 py-1 text-[11px] font-semibold text-paprika-deep">
+              {offer.discount_pct}% off
+            </span>
+            <LeftNote remaining={offer.remaining} />
           </span>
         </div>
       </div>
@@ -117,6 +145,7 @@ export function HeroOffer({
           <p className="text-sm text-bone/60">
             {r?.cuisine ?? "—"} · {r?.neighborhood ?? "—"}
           </p>
+          <LeftNote remaining={offer.remaining} className="block pt-0.5" />
         </div>
       </div>
     </Link>

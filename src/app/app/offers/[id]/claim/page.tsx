@@ -12,6 +12,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { Button, Card, Eyebrow, Heading } from "@/components/brand";
 import { getActiveClaimForOffer } from "@/lib/db/claims";
 import { getOfferById } from "@/lib/db/offers";
+import { getRemainingForOffer } from "@/lib/db/offer-remaining";
 import { getMyPlaidCards } from "@/lib/db/plaid-cards";
 import { getPayoutMethod } from "@/lib/db/users-payout";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
@@ -51,6 +52,8 @@ export default async function ClaimConfirm({
     getDinerDwollaAccount(profile.id),
   ]);
   if (!offer) notFound();
+
+  const remaining = await getRemainingForOffer(offer);
 
   // Pre-flight: a diner can only earn cash back if a card is linked
   // (so Plaid can confirm the visit) AND a payout destination is set
@@ -125,6 +128,12 @@ export default async function ClaimConfirm({
             <TermsRow
               k="Minimum"
               v={`${centsToUsd(offer.min_check_cents)} before tax`}
+            />
+          ) : null}
+          {remaining != null ? (
+            <TermsRow
+              k="Spots left"
+              v={remaining === 0 ? "Fully booked" : `${remaining} left`}
             />
           ) : null}
         </Card>
