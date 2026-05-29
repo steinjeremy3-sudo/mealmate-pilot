@@ -389,6 +389,9 @@ export const menuItems = pgTable("menu_items", {
     .references(() => restaurants.id, { onDelete: "cascade" }),
   section: text("section").notNull(),
   name: text("name").notNull(),
+  // Optional one-line description ("Slow-roasted pork, salsa verde").
+  // Null/blank until the merchant adds one.
+  description: text("description"),
   priceCents: integer("price_cents").notNull(),
   discountEligible: boolean("discount_eligible").notNull().default(false),
   ...timestamps,

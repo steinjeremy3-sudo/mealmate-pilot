@@ -162,7 +162,14 @@ export default async function DinerOfferDetail({
                     key={item.id}
                     className="flex items-baseline justify-between gap-4 border-b border-border px-4 py-2.5 text-sm last:border-b-0"
                   >
-                    <span>{item.name}</span>
+                    <span className="min-w-0">
+                      {item.name}
+                      {item.description ? (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {item.description}
+                        </span>
+                      ) : null}
+                    </span>
                     <span className="flex items-baseline gap-2 font-mono">
                       <s className="text-muted-foreground">
                         {centsToUsd(item.priceCents)}

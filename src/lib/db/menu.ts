@@ -15,6 +15,8 @@ export type MenuItem = {
   restaurantId: string;
   section: string;
   name: string;
+  /** Optional one-line description. Null/empty when the merchant hasn't added one. */
+  description: string | null;
   priceCents: number;
 };
 
@@ -25,7 +27,7 @@ export async function getMenuForRestaurant(
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("menu_items")
-    .select("id, restaurant_id, section, name, price_cents, created_at")
+    .select("id, restaurant_id, section, name, description, price_cents, created_at")
     .eq("restaurant_id", restaurantId)
     .order("section", { ascending: true })
     .order("created_at", { ascending: true });
@@ -38,6 +40,7 @@ export async function getMenuForRestaurant(
     restaurantId: m.restaurant_id,
     section: m.section,
     name: m.name,
+    description: m.description ?? null,
     priceCents: m.price_cents,
   }));
 }
@@ -59,6 +62,7 @@ export async function addMenuItem(args: {
   restaurantId: string;
   section: string;
   name: string;
+  description?: string | null;
   priceCents: number;
 }): Promise<void> {
   const admin = createSupabaseAdminClient();
@@ -66,9 +70,26 @@ export async function addMenuItem(args: {
     restaurant_id: args.restaurantId,
     section: args.section,
     name: args.name,
+    // Normalise empty/whitespace to null so the UI can branch on presence.
+    description: args.description?.trim() || null,
     price_cents: args.priceCents,
   });
   if (error) throw new Error(`addMenuItem: ${error.message}`);
+}
+
+/** Update just the description of one menu item — scoped to its restaurant. */
+export async function updateMenuItemDescription(
+  itemId: string,
+  restaurantId: string,
+  description: string | null,
+): Promise<void> {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("menu_items")
+    .update({ description: description?.trim() || null })
+    .eq("id", itemId)
+    .eq("restaurant_id", restaurantId);
+  if (error) throw new Error(`updateMenuItemDescription: ${error.message}`);
 }
 
 /** Delete one menu item — scoped to its restaurant as a safety net. */

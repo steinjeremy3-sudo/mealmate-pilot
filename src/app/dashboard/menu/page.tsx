@@ -10,7 +10,11 @@ import { getMenuForRestaurant, groupBySection } from "@/lib/db/menu";
 import { getRestaurantForOwner } from "@/lib/db/restaurants";
 import { centsToUsd } from "@/lib/money";
 
-import { createMenuItem, removeMenuItem } from "./actions";
+import {
+  createMenuItem,
+  editMenuItemDescription,
+  removeMenuItem,
+} from "./actions";
 
 const inputClass =
   "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
@@ -69,6 +73,18 @@ export default async function MerchantMenuPage() {
                 />
               </div>
               <div>
+                <label className={labelClass} htmlFor="description">
+                  Description <span className="normal-case">(optional)</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows={2}
+                  placeholder="Pecorino, black pepper, fresh tonnarelli"
+                  className={inputClass}
+                />
+              </div>
+              <div>
                 <label className={labelClass} htmlFor="price">
                   Price ($)
                 </label>
@@ -102,29 +118,66 @@ export default async function MerchantMenuPage() {
                     {s.items.map((it) => (
                       <div
                         key={it.id}
-                        className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
+                        className="border-b border-border px-4 py-3 last:border-b-0"
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {it.name}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {it.name}
+                            </p>
+                            {it.description ? (
+                              <p className="text-xs text-muted-foreground">
+                                {it.description}
+                              </p>
+                            ) : null}
+                          </div>
+                          <span className="shrink-0 font-mono text-sm">
+                            {centsToUsd(it.priceCents)}
+                          </span>
+                          <form action={removeMenuItem}>
+                            <input
+                              type="hidden"
+                              name="item_id"
+                              value={it.id}
+                            />
+                            <button
+                              type="submit"
+                              className="cursor-pointer text-xs text-destructive underline underline-offset-4"
+                            >
+                              Remove
+                            </button>
+                          </form>
                         </div>
-                        <span className="shrink-0 font-mono text-sm">
-                          {centsToUsd(it.priceCents)}
-                        </span>
-                        <form action={removeMenuItem}>
-                          <input
-                            type="hidden"
-                            name="item_id"
-                            value={it.id}
-                          />
-                          <button
-                            type="submit"
-                            className="cursor-pointer text-xs text-destructive underline underline-offset-4"
+
+                        {/* Inline add/edit of the description. Native
+                            <details> keeps this a server component. */}
+                        <details className="mt-1.5">
+                          <summary className="cursor-pointer text-xs text-paprika underline underline-offset-4 marker:content-none">
+                            {it.description
+                              ? "Edit description"
+                              : "Add description"}
+                          </summary>
+                          <form
+                            action={editMenuItemDescription}
+                            className="mt-2 flex items-start gap-2"
                           >
-                            Remove
-                          </button>
-                        </form>
+                            <input
+                              type="hidden"
+                              name="item_id"
+                              value={it.id}
+                            />
+                            <textarea
+                              name="description"
+                              rows={2}
+                              defaultValue={it.description ?? ""}
+                              placeholder="Short description"
+                              className={inputClass + " flex-1"}
+                            />
+                            <Button type="submit" size="sm" variant="outline">
+                              Save
+                            </Button>
+                          </form>
+                        </details>
                       </div>
                     ))}
                   </Card>

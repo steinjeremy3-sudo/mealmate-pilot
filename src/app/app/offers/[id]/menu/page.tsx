@@ -68,7 +68,14 @@ export default async function OfferMenuPage({
                         key={it.id}
                         className="flex items-baseline justify-between gap-4 border-b border-border py-2.5 text-sm last:border-b-0"
                       >
-                        <span>{it.name}</span>
+                        <span className="min-w-0">
+                          {it.name}
+                          {it.description ? (
+                            <span className="block text-xs text-muted-foreground">
+                              {it.description}
+                            </span>
+                          ) : null}
+                        </span>
                         <span className="flex shrink-0 items-baseline gap-2 font-mono">
                           <s className="text-muted-foreground">
                             {centsToUsd(it.priceCents)}
