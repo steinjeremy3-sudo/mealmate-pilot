@@ -44,12 +44,12 @@ export function PublicFooter() {
             >
               Browse offers
             </Link>
-            <a
-              href="mailto:jeremy@mealmatedining.com"
+            <Link
+              href="/for-restaurants"
               className="transition-colors hover:text-bone"
             >
-              jeremy@mealmatedining.com
-            </a>
+              For restaurants
+            </Link>
           </div>
         </div>
       </div>
