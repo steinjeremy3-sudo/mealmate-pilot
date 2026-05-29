@@ -71,6 +71,7 @@ export default async function DinerOfferDetail({
       <div className="relative">
         <PlaceholderImg
           name={name}
+          src={r?.photo_url}
           caption={r ? `${r.cuisine} · ${r.neighborhood}` : undefined}
           showName
           className="h-64"

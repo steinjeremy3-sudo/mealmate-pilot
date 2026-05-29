@@ -168,6 +168,11 @@ export const restaurants = pgTable("restaurants", {
   // declared MCC.
   mcc: text("mcc").notNull(),
 
+  // Public URL of the merchant-uploaded hero photo (Supabase Storage,
+  // bucket "restaurant-photos"). Null until they upload one — the UI
+  // falls back to a generated placeholder.
+  photoUrl: text("photo_url"),
+
   status: restaurantStatusEnum("status").notNull().default("pending"),
   ...timestamps,
 });

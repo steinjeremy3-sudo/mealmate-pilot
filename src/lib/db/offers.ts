@@ -46,6 +46,7 @@ export type OfferWithRestaurant = Offer & {
     neighborhood: string;
     cuisine: string;
     address: string;
+    photo_url: string | null;
   } | null;
 };
 
@@ -54,7 +55,7 @@ export async function getOffersForMerchant(): Promise<OfferWithRestaurant[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("offers")
-    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address)")
+    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address, photo_url)")
     .order("created_at", { ascending: false });
   if (error) {
     console.error("getOffersForMerchant:", error);
@@ -68,7 +69,7 @@ export async function getOfferById(id: string): Promise<OfferWithRestaurant | nu
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("offers")
-    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address)")
+    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address, photo_url)")
     .eq("id", id)
     .maybeSingle();
   if (error) {
@@ -92,7 +93,7 @@ export async function getLiveOffers(): Promise<OfferWithRestaurant[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("offers")
-    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address)")
+    .select("*, restaurant:restaurants!restaurant_id(id, name, neighborhood, cuisine, address, photo_url)")
     .eq("status", "live")
     // RLS already filters to approved restaurants, but being explicit
     // here lets us order client-side without an extra join.

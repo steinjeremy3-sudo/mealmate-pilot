@@ -53,6 +53,7 @@ export default async function EditOfferPage({
           restaurantName={restaurant.name}
           cuisine={restaurant.cuisine}
           neighborhood={restaurant.neighborhood}
+          photoUrl={restaurant.photo_url}
           error={error}
           submitLabel="Save changes"
           submitHint="Changes apply to new activations right away."

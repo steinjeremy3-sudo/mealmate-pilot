@@ -54,6 +54,7 @@ export default async function NewOfferPage({
           restaurantName={restaurant.name}
           cuisine={restaurant.cuisine}
           neighborhood={restaurant.neighborhood}
+          photoUrl={restaurant.photo_url}
           error={error}
         />
       </div>

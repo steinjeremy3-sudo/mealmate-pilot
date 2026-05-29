@@ -99,6 +99,13 @@
       "when": 1779318000000,
       "tag": "0013_offers_max_claims_total",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1779325200000,
+      "tag": "0014_restaurants_photo_url",
+      "breakpoints": true
     }
   ]
 }

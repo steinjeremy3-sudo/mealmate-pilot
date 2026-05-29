@@ -41,6 +41,7 @@ export function OfferForm({
   restaurantName,
   cuisine,
   neighborhood,
+  photoUrl,
   error,
   action,
   offerId,
@@ -51,6 +52,7 @@ export function OfferForm({
   restaurantName: string;
   cuisine: string;
   neighborhood: string;
+  photoUrl?: string | null;
   error?: string;
   /** Server action the form submits to (createOffer or updateOffer). */
   action: (formData: FormData) => void | Promise<void>;
@@ -275,6 +277,7 @@ export function OfferForm({
           <div className="relative">
             <PlaceholderImg
               name={restaurantName}
+              src={photoUrl}
               className="h-32 rounded-xl"
             />
             <span className="absolute right-2.5 top-2.5 rounded-full bg-paprika px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">

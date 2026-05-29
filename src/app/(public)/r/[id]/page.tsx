@@ -57,6 +57,7 @@ export default async function PublicRestaurantPage({
         {/* Hero */}
         <PlaceholderImg
           name={r.name}
+          src={r.photo_url}
           caption={`${r.cuisine} · ${r.neighborhood}`}
           showName
           className="h-56 rounded-2xl"

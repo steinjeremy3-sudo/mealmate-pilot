@@ -14,8 +14,13 @@
 import { cn } from "@/lib/utils";
 
 export type PlaceholderImgProps = {
-  /** Restaurant name — seeds the photo selection, shown if showName. */
+  /** Restaurant name — seeds the placeholder photo, shown if showName. */
   name: string;
+  /**
+   * A real uploaded photo URL. When set it's shown instead of the
+   * generated placeholder; null/undefined falls back to the pool.
+   */
+  src?: string | null;
   /** Small line under the name when showName is set (e.g. "Italian · Bishop Arts"). */
   caption?: string;
   /** Corner tag. Empty string (the default) hides it. */
@@ -61,12 +66,13 @@ function pickPhoto(name: string): string {
 
 export function PlaceholderImg({
   name,
+  src,
   caption,
   label = "",
   showName = false,
   className,
 }: PlaceholderImgProps) {
-  const src = pickPhoto(name);
+  const imgSrc = src || pickPhoto(name);
   const needsOverlay = showName || !!label;
 
   return (
@@ -77,12 +83,12 @@ export function PlaceholderImg({
       )}
     >
       {/* eslint-disable-next-line @next/next/no-img-element --
-        plain <img> on purpose: this is a placeholder hot-link to
-        Unsplash. Switching to <Image> would mean whitelisting the
-        host in next.config and going through the optimizer, all
-        for a placeholder we plan to replace with real photos. */}
+        plain <img> on purpose: either an Unsplash placeholder hot-link
+        or a merchant photo from Supabase Storage's public CDN. Using
+        <Image> would mean whitelisting both hosts in next.config and
+        routing through the optimizer for little gain here. */}
       <img
-        src={src}
+        src={imgSrc}
         alt=""
         className="absolute inset-0 size-full object-cover"
         loading="lazy"

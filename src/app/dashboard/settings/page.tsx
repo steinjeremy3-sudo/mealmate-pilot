@@ -22,6 +22,9 @@ import {
   refreshStripeAccountStatus,
   startStripeOnboarding,
 } from "../onboarding/stripe/actions";
+import { removeRestaurantPhoto, uploadRestaurantPhoto } from "./actions";
+
+type SearchParams = Promise<{ error?: string; photo?: string }>;
 
 type BadgeTone = "positive" | "warning" | "negative";
 
@@ -65,10 +68,16 @@ function Fact({ k, v }: { k: string; v: React.ReactNode }) {
   );
 }
 
-export default async function MerchantSettingsPage() {
+export default async function MerchantSettingsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const profile = await requireRole("merchant");
   const restaurant = await getRestaurantForOwner(profile.id);
   if (!restaurant) redirect("/dashboard/onboarding");
+
+  const { error: photoError } = await searchParams;
 
   let stripeAccount =
     restaurant.status === "approved"
@@ -97,12 +106,48 @@ export default async function MerchantSettingsPage() {
       />
 
       <div className="px-10 py-8">
-        <PlaceholderImg
-          name={restaurant.name}
-          caption={`${restaurant.cuisine} · ${restaurant.neighborhood}`}
-          showName
-          className="mb-6 h-44 max-w-3xl rounded-2xl"
-        />
+        {/* Hero photo + upload */}
+        <div className="mb-6 max-w-3xl">
+          <PlaceholderImg
+            name={restaurant.name}
+            src={restaurant.photo_url}
+            caption={`${restaurant.cuisine} · ${restaurant.neighborhood}`}
+            showName
+            className="h-44 rounded-2xl"
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <form action={uploadRestaurantPhoto} className="flex items-center gap-2">
+              <input
+                type="file"
+                name="photo"
+                accept="image/jpeg,image/png,image/webp"
+                required
+                className="text-xs text-muted-foreground file:mr-3 file:rounded-lg file:border file:border-border file:bg-bone file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-ink hover:file:bg-bone-deep"
+              />
+              <Button type="submit" variant="ghost" size="sm">
+                {restaurant.photo_url ? "Replace photo" : "Upload photo"}
+              </Button>
+            </form>
+            {restaurant.photo_url ? (
+              <form action={removeRestaurantPhoto}>
+                <button
+                  type="submit"
+                  className="cursor-pointer text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"
+                >
+                  Remove
+                </button>
+              </form>
+            ) : null}
+          </div>
+          <p className="mt-1.5 text-[11px] text-muted-foreground">
+            JPG, PNG, or WebP · up to 5 MB. Shown to diners on your offers.
+          </p>
+          {photoError ? (
+            <p className="mt-2 text-sm text-destructive" role="alert">
+              {photoError}
+            </p>
+          ) : null}
+        </div>
         <div className="grid w-full max-w-3xl gap-6 md:grid-cols-2">
           {/* Restaurant profile */}
           <Card className="p-6">
