@@ -20,8 +20,9 @@ import { sendInitiatedRebates } from "@/lib/rebates/send";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Cron runs every 30 min on a small pilot; per-call wall time is short
-// (few Plaid API calls + DB writes). Cap at 60s to surface hangs early.
+// Cron cadence is set in vercel.json (currently daily — bump to */30
+// once on Vercel Pro). Per-call wall time is short (a few Plaid API
+// calls + DB writes). Cap at 60s to surface hangs early.
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {

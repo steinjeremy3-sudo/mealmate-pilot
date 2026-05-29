@@ -9,7 +9,7 @@ import { Card, Eyebrow, Heading } from "@/components/brand";
 const FAQS: { q: string; a: string }[] = [
   {
     q: "How do I get my cash back?",
-    a: "Activate an offer, then eat at the restaurant and pay normally with your linked card. We confirm the visit within 1–2 days and send your cash back automatically — there's nothing to do on your end.",
+    a: "Activate an offer, then eat at the restaurant and pay normally with your linked card. Once the charge clears we confirm the visit and send your cash back automatically — usually within a few days, with nothing to do on your end.",
   },
   {
     q: "Why do I need to link a card?",

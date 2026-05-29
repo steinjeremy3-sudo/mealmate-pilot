@@ -28,4 +28,9 @@ ALTER TABLE public.rebates                        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settlements                    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.restaurant_billing_customers   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_log                      ENABLE ROW LEVEL SECURITY;
+-- stripe_events has NO policies on purpose: it's webhook-only, written
+-- and read exclusively through the service-role client (which bypasses
+-- RLS). RLS-enabled + zero policies = deny-all for anon/authenticated,
+-- which is exactly what we want — no user should ever read raw webhook
+-- payloads. Don't add a policy unless a user-scoped read is introduced.
 ALTER TABLE public.stripe_events                  ENABLE ROW LEVEL SECURITY;
