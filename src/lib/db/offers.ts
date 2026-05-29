@@ -8,6 +8,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isOfferAvailableNow } from "@/lib/offers/availability";
 
 export type OfferStatus = "draft" | "scheduled" | "live" | "ended";
 
@@ -74,7 +75,14 @@ export async function getOfferById(id: string): Promise<OfferWithRestaurant | nu
   return data as OfferWithRestaurant | null;
 }
 
-/** Diner browse: every live offer from an approved restaurant. */
+/**
+ * Diner browse: every offer that's claimable *right now* — published
+ * (`status = 'live'`, from an approved restaurant via RLS) AND inside
+ * its current daily window. `status = 'live'` alone isn't enough: an
+ * offer that runs 5–11 PM is still `live` at 11:30 PM but can't be
+ * redeemed, so we drop anything out of window (see isOfferAvailableNow).
+ * Filtering in JS because the window check is Dallas-time, not SQL.
+ */
 export async function getLiveOffers(): Promise<OfferWithRestaurant[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
@@ -88,5 +96,8 @@ export async function getLiveOffers(): Promise<OfferWithRestaurant[]> {
     console.error("getLiveOffers:", error);
     return [];
   }
-  return (data ?? []) as OfferWithRestaurant[];
+  const now = new Date();
+  return ((data ?? []) as OfferWithRestaurant[]).filter((o) =>
+    isOfferAvailableNow(o, now),
+  );
 }
