@@ -118,15 +118,31 @@ export async function getActiveClaimForOffer(offerId: string): Promise<Claim | n
   return data as Claim | null;
 }
 
-/** Count of currently-active claims on an offer (used for max_claims_total cap). */
+/**
+ * Count of claims that have "consumed a redemption slot" against
+ * offers.max_claims_total. A slot is consumed by:
+ *   - a confirmed redemption (status='matched' — the diner visited
+ *     and Plaid confirmed it), permanently
+ *   - or a currently-in-flight activation (status='claimed' AND not
+ *     expired) — pending; could mature into a match or expire/cancel
+ *
+ * Cancelled claims and claims that expired without matching free
+ * their slot (they didn't become a real redemption).
+ */
 export async function getActiveClaimCount(offerId: string): Promise<number> {
   const supabase = await createSupabaseServerClient();
+  const nowIso = new Date().toISOString();
+
+  // PostgREST `or` with a nested `and` lets us count both slices in
+  // one round-trip: status='matched' OR (status='claimed' AND not
+  // yet expired).
   const { count, error } = await supabase
     .from("claims")
     .select("*", { count: "exact", head: true })
     .eq("offer_id", offerId)
-    .eq("status", "claimed")
-    .gt("expires_at", new Date().toISOString());
+    .or(
+      `status.eq.matched,and(status.eq.claimed,expires_at.gt.${nowIso})`,
+    );
   if (error) {
     console.error("getActiveClaimCount:", error);
     return 0;

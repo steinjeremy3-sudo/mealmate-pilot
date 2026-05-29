@@ -52,17 +52,11 @@ export default async function MerchantOfferDetail({
   const offer = await getOfferById(id);
   if (!offer) notFound();
 
-  const activeClaimCount =
-    offer.status === "live" ? await getActiveClaimCount(offer.id) : 0;
-  const budgetPct =
-    offer.monthly_budget_cents > 0
-      ? Math.min(
-          100,
-          Math.round(
-            (offer.monthly_spent_cents / offer.monthly_budget_cents) * 100,
-          ),
-        )
-      : 0;
+  const activeClaimCount = await getActiveClaimCount(offer.id);
+  const cap = offer.max_claims_total;
+  const capPct =
+    cap && cap > 0 ? Math.min(100, Math.round((activeClaimCount / cap) * 100)) : 0;
+  const remaining = cap != null ? Math.max(0, cap - activeClaimCount) : null;
 
   return (
     <>
@@ -127,34 +121,49 @@ export default async function MerchantOfferDetail({
                       : "—"
                   }
                 />
-                {offer.status === "live" ? (
-                  <Fact
-                    k="Active offers"
-                    v={`${activeClaimCount} diner${activeClaimCount === 1 ? "" : "s"}`}
-                  />
+                {cap != null ? (
+                  <Fact k="Cap" v={`${cap} redemptions`} />
                 ) : null}
               </dl>
             </Card>
 
-            {/* Budget */}
-            <Card className="flex flex-col p-6">
-              <Eyebrow tone="muted">Monthly budget</Eyebrow>
-              <p className="pb-2 pt-3 font-display text-4xl leading-none tracking-tight">
-                {centsToUsd(offer.monthly_spent_cents)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                of {centsToUsd(offer.monthly_budget_cents)} this month
-              </p>
-              <span className="mt-4 block h-2 overflow-hidden rounded-full bg-border">
-                <span
-                  className="block h-full rounded-full bg-paprika"
-                  style={{ width: `${budgetPct}%` }}
-                />
-              </span>
-              <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-                {budgetPct}% used · resets on the 1st
-              </p>
-            </Card>
+            {/* Redemptions */}
+            {cap != null ? (
+              <Card className="flex flex-col p-6">
+                <Eyebrow tone="muted">Redemptions</Eyebrow>
+                <p className="pb-2 pt-3 font-display text-4xl leading-none tracking-tight">
+                  {activeClaimCount}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  of {cap} used · {remaining} left
+                </p>
+                <span className="mt-4 block h-2 overflow-hidden rounded-full bg-border">
+                  <span
+                    className="block h-full rounded-full bg-paprika"
+                    style={{ width: `${capPct}%` }}
+                  />
+                </span>
+                <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+                  Each active claim + confirmed visit counts; cancellations
+                  and expirations free the slot.
+                </p>
+                {remaining === 0 ? (
+                  <p className="mt-3 rounded-lg border border-paprika/40 bg-paprika-tint px-3 py-2 text-xs font-medium text-paprika-deep">
+                    Cap reached — closed to new diners until a slot frees.
+                  </p>
+                ) : null}
+              </Card>
+            ) : (
+              <Card className="flex flex-col items-start gap-2 p-6 text-sm text-muted-foreground">
+                <Eyebrow tone="muted">Redemptions</Eyebrow>
+                <p className="text-sm text-foreground">
+                  No cap set — unlimited activations.
+                </p>
+                <p className="font-mono text-[11px]">
+                  {activeClaimCount} active or matched so far.
+                </p>
+              </Card>
+            )}
           </div>
 
           {error ? (

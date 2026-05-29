@@ -92,6 +92,13 @@
       "when": 1779310800000,
       "tag": "0012_matched_transactions_category",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1779318000000,
+      "tag": "0013_offers_max_claims_total",
+      "breakpoints": true
     }
   ]
 }

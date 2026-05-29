@@ -231,6 +231,12 @@ export const offers = pgTable("offers", {
   // once per period.
   maxClaimsPerDiner: integer("max_claims_per_diner").notNull().default(1),
 
+  // Total-activations cap across all diners. Nullable = uncapped. The
+  // simplified offer form (post db847ee) always sets a value; older
+  // offers can be null. claimOffer rejects with "fully booked" when
+  // the count of active claims reaches this number.
+  maxClaimsTotal: integer("max_claims_total"),
+
   status: offerStatusEnum("status").notNull().default("draft"),
 
   startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
