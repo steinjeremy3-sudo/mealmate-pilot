@@ -6,11 +6,13 @@
 
 import Link from "next/link";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { buttonVariants, Card, Eyebrow, Heading } from "@/components/brand";
 import { cardConnectUrl } from "@/lib/astra/client";
 import { getDinerAstraAccount } from "@/lib/db/diner-astra";
+import { DEBIT_PAYOUT_ENABLED } from "@/lib/rebates/config";
 
 import { CardMockup } from "../../../cards/CardMockup";
 
@@ -21,6 +23,14 @@ function returnUrlFrom(host: string): string {
 
 export default async function CashBackDebitPage() {
   const profile = await requireRole("diner");
+
+  // Debit (Astra push-to-card) isn't a payable rail yet — connecting a
+  // card here would strand the diner's cash back. Bounce any direct
+  // navigation back to the (ACH-only) chooser until it's enabled.
+  if (!DEBIT_PAYOUT_ENABLED) {
+    redirect("/app/rebates/setup");
+  }
+
   const account = await getDinerAstraAccount(profile.id);
   const hasCard = !!account?.cardId;
 

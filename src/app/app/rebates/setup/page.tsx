@@ -23,6 +23,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getDinerAstraAccount } from "@/lib/db/diner-astra";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { getPayoutMethod, type PayoutMethod } from "@/lib/db/users-payout";
+import { DEBIT_PAYOUT_ENABLED } from "@/lib/rebates/config";
 
 /**
  * Decide which rail this diner is on, even if users.payout_method was
@@ -70,22 +71,29 @@ export default async function CashBackSetupPage() {
         <div className="space-y-1.5">
           <Eyebrow>Cash back</Eyebrow>
           <Heading as="h1" size="display">
-            Where should your cash back land?
+            {DEBIT_PAYOUT_ENABLED
+              ? "Where should your cash back land?"
+              : "Set up your cash back"}
           </Heading>
           <p className="text-sm text-muted-foreground">
-            Pick how you&apos;d like cash back paid out. You can switch
-            later from Profile.
+            {DEBIT_PAYOUT_ENABLED
+              ? "Pick how you'd like cash back paid out. You can switch later from Profile."
+              : "Link the checking account where you'd like your cash back deposited."}
           </p>
         </div>
 
-        {/* Debit option */}
-        <OptionCard
-          href="/app/rebates/setup/debit"
-          icon={<Wallet className="size-5" strokeWidth={1.75} />}
-          title="On your debit card"
-          subtitle="Lands in minutes"
-          badge="Recommended"
-        />
+        {/* Debit option — gated off for the pilot (see DEBIT_PAYOUT_ENABLED).
+            The Astra push-to-card rail isn't payable yet, so offering it
+            here would strand a diner's cash back. */}
+        {DEBIT_PAYOUT_ENABLED ? (
+          <OptionCard
+            href="/app/rebates/setup/debit"
+            icon={<Wallet className="size-5" strokeWidth={1.75} />}
+            title="On your debit card"
+            subtitle="Lands in minutes"
+            badge="Recommended"
+          />
+        ) : null}
 
         {/* ACH option */}
         <OptionCard
@@ -194,12 +202,18 @@ function ActiveSummary({
           >
             Manage {isAstra ? "card" : "bank account"}
           </Link>
-          <Link
-            href={isAstra ? "/app/rebates/setup/ach" : "/app/rebates/setup/debit"}
-            className="block text-center text-xs text-muted-foreground underline underline-offset-4"
-          >
-            Switch to a {isAstra ? "bank account" : "debit card"} instead
-          </Link>
+          {/* Only offer "switch" toward a rail that actually works. With
+              debit gated off (DEBIT_PAYOUT_ENABLED), a Dwolla diner has
+              nowhere to switch to, so hide it; an Astra diner can still
+              move to ACH. */}
+          {isAstra || DEBIT_PAYOUT_ENABLED ? (
+            <Link
+              href={isAstra ? "/app/rebates/setup/ach" : "/app/rebates/setup/debit"}
+              className="block text-center text-xs text-muted-foreground underline underline-offset-4"
+            >
+              Switch to a {isAstra ? "bank account" : "debit card"} instead
+            </Link>
+          ) : null}
         </div>
       </div>
     </main>
