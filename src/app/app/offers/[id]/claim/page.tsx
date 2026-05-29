@@ -129,10 +129,10 @@ export default async function ClaimConfirm({
           ) : null}
         </Card>
 
-        <Card className="bg-bone-deep text-sm leading-relaxed text-ink/80">
-          Mealmate keeps 6% of the total bill as a platform fee, capped at
-          $10. Your cash back is the discount minus this fee.
-        </Card>
+        <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
+          A small platform fee of 6% of the discounted total (capped at
+          $10) is deducted from the discount before cash back is sent.
+        </p>
 
         {error ? (
           <p className="text-sm text-destructive" role="alert">

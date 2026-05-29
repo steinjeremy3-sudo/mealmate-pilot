@@ -32,19 +32,21 @@ describe("computeFeeCents (floor + cap)", () => {
 });
 
 describe("computeRebate", () => {
-  it("matches the BRIEF.md sample: $148 / 25%", () => {
+  it("$148 / 25% — fee on discounted total", () => {
+    // discount = $37, discounted total = $111, fee = 6% × $111 = $6.66
     const r = computeRebate(14800, 25);
     expect(r.totalCents).toBe(14800);
     expect(r.discountCents).toBe(3700);     // $37
-    expect(r.platformFeeCents).toBe(888);   // $8.88
-    expect(r.rebateCents).toBe(2812);       // $28.12
+    expect(r.platformFeeCents).toBe(666);   // $6.66
+    expect(r.rebateCents).toBe(3034);       // $30.34
   });
 
-  it("matches the BRIEF.md sample: $50 / 15%", () => {
+  it("$50 / 15% — fee on discounted total", () => {
+    // discount = $7.50, discounted total = $42.50, fee = 6% × $42.50 = $2.55
     const r = computeRebate(5000, 15);
     expect(r.discountCents).toBe(750);      // $7.50
-    expect(r.platformFeeCents).toBe(300);   // $3.00
-    expect(r.rebateCents).toBe(450);        // $4.50
+    expect(r.platformFeeCents).toBe(255);   // $2.55
+    expect(r.rebateCents).toBe(495);        // $4.95
   });
 
   it("handles the cap case: $500 / 20%", () => {

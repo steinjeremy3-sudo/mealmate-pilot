@@ -34,29 +34,37 @@ export type RebateBreakdown = {
 };
 
 /**
- * Compute fee given a total check, applying the floor/cap.
+ * Apply the percent + clamp to an arbitrary amount. Used by
+ * computeRebate against the diner's discounted total (not the
+ * regular check). Kept generic so the caller decides what amount
+ * to fee against.
  *
  * Formula:
- *   fee = clamp(total * PERCENT, MIN, MAX)
+ *   fee = clamp(amount * PERCENT, MIN, MAX)
  */
-export function computeFeeCents(totalCents: number): number {
-  const raw = Math.round(totalCents * PLATFORM_FEE_PERCENT_OF_TOTAL);
+export function computeFeeCents(amountCents: number): number {
+  const raw = Math.round(amountCents * PLATFORM_FEE_PERCENT_OF_TOTAL);
   return Math.max(PLATFORM_FEE_MIN_CENTS, Math.min(PLATFORM_FEE_MAX_CENTS, raw));
 }
 
 /**
  * Compute the full rebate breakdown for a matched transaction.
  *
- *   discount = total * discount_pct / 100
- *   fee      = clamp(total * 0.06, 50, 1000)
- *   rebate   = discount − fee
+ *   discount         = total * discount_pct / 100
+ *   discounted_total = total − discount
+ *   fee              = clamp(discounted_total * 0.06, 50, 1000)
+ *   rebate           = discount − fee
+ *
+ * The platform fee is taken on the DISCOUNTED total — what the diner
+ * effectively paid net of the discount — not the regular check.
  */
 export function computeRebate(
   totalCents: number,
   discountPct: number,
 ): RebateBreakdown {
   const discountCents = Math.round((totalCents * discountPct) / 100);
-  const platformFeeCents = computeFeeCents(totalCents);
+  const discountedTotalCents = totalCents - discountCents;
+  const platformFeeCents = computeFeeCents(discountedTotalCents);
   const rebateCents = discountCents - platformFeeCents;
   return {
     totalCents,
