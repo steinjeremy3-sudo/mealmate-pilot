@@ -34,10 +34,17 @@ export function DiscountPill({ pct }: { pct: number }) {
   );
 }
 
-export function OfferCard({ offer }: { offer: OfferCardData }) {
+export function OfferCard({
+  offer,
+  href,
+}: {
+  offer: OfferCardData;
+  /** Override the default link target (e.g. /r/[id] for public browse). */
+  href?: string;
+}) {
   const r = offer.restaurant;
   return (
-    <Link href={`/app/offers/${offer.id}`} className="block">
+    <Link href={href ?? `/app/offers/${offer.id}`} className="block">
       <div className="flex items-center gap-3.5 rounded-2xl border border-border bg-bone p-3 transition-colors hover:bg-bone-deep">
         <PlaceholderImg
           name={r?.name ?? "Restaurant"}
@@ -60,10 +67,16 @@ export function OfferCard({ offer }: { offer: OfferCardData }) {
   );
 }
 
-export function OfferTile({ offer }: { offer: OfferCardData }) {
+export function OfferTile({
+  offer,
+  href,
+}: {
+  offer: OfferCardData;
+  href?: string;
+}) {
   const r = offer.restaurant;
   return (
-    <Link href={`/app/offers/${offer.id}`} className="block h-full">
+    <Link href={href ?? `/app/offers/${offer.id}`} className="block h-full">
       <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-bone transition-colors hover:bg-bone-deep">
         <PlaceholderImg name={r?.name ?? "Restaurant"} className="h-28" />
         <div className="flex flex-1 flex-col gap-1.5 p-3.5">
@@ -82,11 +95,17 @@ export function OfferTile({ offer }: { offer: OfferCardData }) {
   );
 }
 
-export function HeroOffer({ offer }: { offer: OfferCardData }) {
+export function HeroOffer({
+  offer,
+  href,
+}: {
+  offer: OfferCardData;
+  href?: string;
+}) {
   const r = offer.restaurant;
   const dayRange = formatDayRange(offer.valid_days);
   return (
-    <Link href={`/app/offers/${offer.id}`} className="block">
+    <Link href={href ?? `/app/offers/${offer.id}`} className="block">
       <div className="relative overflow-hidden rounded-2xl bg-ink p-5 text-bone transition-transform active:scale-[0.99]">
         <PlaceholderImg name={r?.name ?? "Restaurant"} className="h-36 rounded-xl" />
         <span className="absolute right-7 top-7">
