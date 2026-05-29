@@ -125,10 +125,10 @@ export default async function MerchantSettingsPage() {
               Restaurant details affect how visits are confirmed, so
               changes go through the Mealmate team. Email{" "}
               <Link
-                href="mailto:ops@mealmate.co"
+                href="mailto:support@mealmatedining.com"
                 className="text-paprika underline underline-offset-4"
               >
-                ops@mealmate.co
+                support@mealmatedining.com
               </Link>{" "}
               to update them.
             </p>

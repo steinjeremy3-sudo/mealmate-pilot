@@ -79,10 +79,10 @@ export default async function DinerHelpPage() {
         <Card className="text-sm text-muted-foreground">
           Still stuck? Email{" "}
           <a
-            href="mailto:support@mealmate.co"
+            href="mailto:support@mealmatedining.com"
             className="text-paprika underline underline-offset-4"
           >
-            support@mealmate.co
+            support@mealmatedining.com
           </a>{" "}
           and we&apos;ll help.
         </Card>

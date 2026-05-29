@@ -151,10 +151,10 @@ export default async function MerchantHome() {
                 <p className="border-t border-border pt-4 text-sm text-muted-foreground">
                   Your restaurant is currently suspended. Reach out to{" "}
                   <Link
-                    href="mailto:ops@mealmate.co"
+                    href="mailto:support@mealmatedining.com"
                     className="text-paprika underline underline-offset-4"
                   >
-                    ops@mealmate.co
+                    support@mealmatedining.com
                   </Link>{" "}
                   for help.
                 </p>

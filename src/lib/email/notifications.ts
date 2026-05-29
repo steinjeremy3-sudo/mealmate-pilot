@@ -20,7 +20,7 @@ const APP_URL = (
 ).replace(/\/$/, "");
 
 /** Where internal/ops notifications land. */
-const OPS_INBOX = "jeremy@mealmatedining.com";
+const OPS_INBOX = "support@mealmatedining.com";
 
 function usd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;

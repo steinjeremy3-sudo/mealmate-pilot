@@ -1,12 +1,12 @@
 "use server";
 
-// Marketing-site form actions. Sends to jeremy@mealmatedining.com via
+// Marketing-site form actions. Sends to support@mealmatedining.com via
 // Resend (see src/lib/email/send.ts — degrades gracefully if
 // RESEND_API_KEY isn't set).
 
 import { sendTransactionalEmail } from "@/lib/email/send";
 
-const FOUNDER_INBOX = "jeremy@mealmatedining.com";
+const FOUNDER_INBOX = "support@mealmatedining.com";
 
 export type FormState = {
   ok: boolean;
