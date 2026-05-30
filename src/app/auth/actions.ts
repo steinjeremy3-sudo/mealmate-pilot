@@ -111,6 +111,12 @@ export async function signUp(formData: FormData): Promise<void> {
   if (!email) redirect(errParam("/sign-up", "Email is required."));
   if (!firstName) redirect(errParam("/sign-up", "First name is required."));
   if (!lastName) redirect(errParam("/sign-up", "Last name is required."));
+  // A blank password is allowed (→ magic link). But if one IS given it
+  // must meet the same length floor the reset form enforces — the browser
+  // checks minLength={8}, this is the server-side backstop.
+  if (password.length > 0 && password.length < 8) {
+    redirect(errParam("/sign-up", "Password must be at least 8 characters."));
+  }
 
   const supabase = await createSupabaseServerClient();
   const origin = await getOrigin();
