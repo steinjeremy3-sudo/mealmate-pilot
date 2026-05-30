@@ -12,13 +12,10 @@ const inputClass =
 export function SignUpForm({
   role,
   submitLabel,
-  nameLabel,
   error,
 }: {
   role: "diner" | "merchant";
   submitLabel: string;
-  /** What to call the name field — "Your name" / "Owner name" / etc. */
-  nameLabel: string;
   error?: string;
 }) {
   return (
@@ -26,16 +23,29 @@ export function SignUpForm({
       <form action={signUp} className="space-y-4">
         <input type="hidden" name="role" value={role} />
 
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">{nameLabel}</span>
-          <input
-            type="text"
-            name="display_name"
-            required
-            autoComplete="name"
-            className={inputClass}
-          />
-        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">First name</span>
+            <input
+              type="text"
+              name="first_name"
+              required
+              autoComplete="given-name"
+              className={inputClass}
+            />
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">Last name</span>
+            <input
+              type="text"
+              name="last_name"
+              required
+              autoComplete="family-name"
+              className={inputClass}
+            />
+          </label>
+        </div>
 
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Email</span>

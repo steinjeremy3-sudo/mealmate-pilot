@@ -45,7 +45,6 @@ export default async function DinerSignUpPage({
         ) : (
           <SignUpForm
             role="diner"
-            nameLabel="Your name"
             submitLabel="Sign up free"
             error={error}
           />

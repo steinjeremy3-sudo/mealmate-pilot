@@ -47,7 +47,6 @@ export default async function MerchantSignUpPage({
         ) : (
           <SignUpForm
             role="merchant"
-            nameLabel="Your name"
             submitLabel="Apply to list"
             error={error}
           />
