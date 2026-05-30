@@ -127,7 +127,9 @@ const timestamps = {
 // in scripts/auth-setup.sql — public.users.id matches auth.users.id.
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull().unique(),
+  // Nullable: phone-only diners (SMS OTP sign-up) have no email. UNIQUE
+  // still holds — Postgres permits multiple NULLs under a unique index.
+  email: text("email").unique(),
   role: userRoleEnum("role").notNull(),
   displayName: text("display_name").notNull(),
   phone: text("phone"),

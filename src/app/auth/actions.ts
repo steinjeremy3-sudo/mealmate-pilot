@@ -16,6 +16,7 @@ import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { homeForRole, redirectToRoleHome } from "@/lib/auth/post-signin";
+import { normalizeUsPhone } from "@/lib/auth/phone";
 
 /** Best-effort origin for building magic-link redirect URLs. */
 async function getOrigin(): Promise<string> {
@@ -120,6 +121,81 @@ export async function signUp(formData: FormData): Promise<void> {
   });
   if (error) redirect(errParam("/sign-up", error.message));
   redirect(`/sign-up?sent=1&email=${encodeURIComponent(email)}`);
+}
+
+// ----------------------------------------------------------------
+// Phone sign-in / sign-up (SMS OTP) — diners only
+// ----------------------------------------------------------------
+// Two steps, unlike the email magic-link flow (which bounces through
+// /auth/callback). Step 1 (startPhoneAuth) texts a 6-digit code; step 2
+// (verifyPhoneOtp, from /verify-phone) verifies it inline and creates the
+// session. Requires an SMS provider configured in Supabase Auth → Phone.
+
+export async function startPhoneAuth(formData: FormData): Promise<void> {
+  const mode = formData.get("mode") === "signup" ? "signup" : "signin";
+  // Phone auth is diner-only; the form never offers it to merchants.
+  const backPath = mode === "signup" ? "/sign-up/diner" : "/sign-in";
+  // Bounce errors back with method=phone so the form reopens the phone tab.
+  const phoneErr = (msg: string) =>
+    `${backPath}?error=${encodeURIComponent(msg)}&method=phone`;
+
+  const phone = normalizeUsPhone(String(formData.get("phone") ?? ""));
+  if (!phone) {
+    redirect(phoneErr("Enter a valid US mobile number."));
+  }
+
+  // Signup also carries the name so the handle_new_user trigger can
+  // populate the profile when the user is created on verify.
+  let data: Record<string, string> | undefined;
+  if (mode === "signup") {
+    const firstName = String(formData.get("first_name") ?? "").trim();
+    const lastName = String(formData.get("last_name") ?? "").trim();
+    if (!firstName) redirect(phoneErr("First name is required."));
+    if (!lastName) redirect(phoneErr("Last name is required."));
+    data = { role: "diner", display_name: `${firstName} ${lastName}` };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    phone,
+    options: {
+      channel: "sms",
+      // Signup creates the user; signin must NOT (so a typo'd number on
+      // sign-in doesn't silently create a new account).
+      shouldCreateUser: mode === "signup",
+      ...(data ? { data } : {}),
+    },
+  });
+  if (error) redirect(phoneErr(error.message));
+
+  // Carry the phone (and mode, for back-link copy) to the code-entry page.
+  redirect(
+    `/verify-phone?phone=${encodeURIComponent(phone)}&mode=${mode}`,
+  );
+}
+
+export async function verifyPhoneOtp(formData: FormData): Promise<void> {
+  const phone = String(formData.get("phone") ?? "").trim();
+  const mode = formData.get("mode") === "signup" ? "signup" : "signin";
+  const token = String(formData.get("token") ?? "").replace(/\D/g, "");
+
+  const back = (msg: string) =>
+    `/verify-phone?phone=${encodeURIComponent(phone)}&mode=${mode}&error=${encodeURIComponent(msg)}`;
+
+  if (!phone) redirect(errParam("/sign-in", "Something went wrong — start again."));
+  if (token.length !== 6) redirect(back("Enter the 6-digit code."));
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.verifyOtp({
+    phone,
+    token,
+    type: "sms",
+  });
+  if (error) redirect(back(error.message));
+
+  // Session is set; the trigger has created the profile (signup) or it
+  // already existed (signin). Send them to their role's home.
+  await redirectToRoleHome();
 }
 
 // ----------------------------------------------------------------

@@ -41,13 +41,19 @@ BEGIN
   );
 
   -- Display name from metadata; falls back to email local-part.
+  -- Falls back to the email local-part, then the phone number (phone-only
+  -- diners have no email), then a generic label so the NOT NULL
+  -- display_name column always gets a value.
   v_display_name := COALESCE(
     NULLIF(NEW.raw_user_meta_data ->> 'display_name', ''),
-    split_part(NEW.email, '@', 1)
+    NULLIF(split_part(COALESCE(NEW.email, ''), '@', 1), ''),
+    NEW.phone,
+    'Diner'
   );
 
-  INSERT INTO public.users (id, email, role, display_name)
-  VALUES (NEW.id, NEW.email, v_role, v_display_name)
+  -- email + phone are both nullable; copy whichever Supabase Auth set.
+  INSERT INTO public.users (id, email, phone, role, display_name)
+  VALUES (NEW.id, NEW.email, NEW.phone, v_role, v_display_name)
   ON CONFLICT (id) DO NOTHING;  -- defensive: re-running won't error
 
   RETURN NEW;

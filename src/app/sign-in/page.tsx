@@ -1,19 +1,20 @@
-// Sign-in page. Email-first. Password optional — if filled, we use
-// password auth; otherwise we send a magic link.
+// Sign-in page. Offers Email or Phone (SignInForm). Email is password-
+// optional (blank → magic link); phone texts a code (→ /verify-phone).
 //
 // Server Component. Errors and the "check your email" confirmation come
-// back via searchParams.
+// back via searchParams; the form's tab is in SignInForm (client).
 
 import Link from "next/link";
 
-import { Button, Card, Heading, Wordmark } from "@/components/brand";
-import { signIn } from "@/app/auth/actions";
+import { Card, Heading, Wordmark } from "@/components/brand";
+import { SignInForm } from "./SignInForm";
 
-type SearchParams = Promise<{ error?: string; sent?: string; email?: string }>;
-
-const inputClass =
-  "w-full rounded-lg border border-border bg-bone px-3 py-2 text-sm " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paprika";
+type SearchParams = Promise<{
+  error?: string;
+  sent?: string;
+  email?: string;
+  method?: string;
+}>;
 
 export default async function SignInPage({
   searchParams,
@@ -24,6 +25,7 @@ export default async function SignInPage({
   const error = params.error;
   const sent = params.sent;
   const sentEmail = params.email;
+  const method = params.method === "phone" ? "phone" : "email";
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
@@ -45,45 +47,7 @@ export default async function SignInPage({
             this tab.
           </Card>
         ) : (
-          <Card>
-            <form action={signIn} className="space-y-4">
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">Email</span>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  className={inputClass}
-                />
-              </label>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">
-                  Password{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional — blank sends a magic link)
-                  </span>
-                </span>
-                <input
-                  type="password"
-                  name="password"
-                  autoComplete="current-password"
-                  className={inputClass}
-                />
-              </label>
-
-              {error ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-
-              <Button type="submit" className="w-full">
-                Continue
-              </Button>
-            </form>
-          </Card>
+          <SignInForm error={error} initialMethod={method} />
         )}
 
         <p className="text-center text-sm text-muted-foreground">

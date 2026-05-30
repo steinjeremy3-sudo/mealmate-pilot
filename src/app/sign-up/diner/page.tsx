@@ -11,6 +11,7 @@ type SearchParams = Promise<{
   error?: string;
   sent?: string;
   email?: string;
+  method?: string;
 }>;
 
 export default async function DinerSignUpPage({
@@ -18,7 +19,7 @@ export default async function DinerSignUpPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { error, sent, email } = await searchParams;
+  const { error, sent, email, method } = await searchParams;
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
@@ -47,6 +48,8 @@ export default async function DinerSignUpPage({
             role="diner"
             submitLabel="Sign up free"
             error={error}
+            allowPhone
+            initialMethod={method === "phone" ? "phone" : "email"}
           />
         )}
 
