@@ -22,7 +22,7 @@ const COVER_BARS: { label: string; pct: number }[] = [
 const RESTAURANT_BULLETS = [
   {
     title: "You set the offer.",
-    body: "Daypart, discount %, days of week, budget cap. Pause anytime. Change anytime.",
+    body: "Daypart, discount %, days of week, and a cap on redemptions. End or edit it anytime.",
   },
   {
     title: "You keep your brand.",
@@ -148,8 +148,8 @@ export default function ForRestaurantsPage() {
           <div className="space-y-6">
             <Eyebrow>What you get</Eyebrow>
             <h2 className="max-w-3xl font-display text-[clamp(2rem,4.5vw,3rem)] leading-[1.05] tracking-[-0.025em]">
-              Built for operators, equipping them with a tool to
-              drive demand when they need it most.
+              Built for operators — a simple way to drive demand
+              exactly when you need it.
             </h2>
           </div>
 

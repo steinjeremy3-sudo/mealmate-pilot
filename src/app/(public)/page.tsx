@@ -28,7 +28,7 @@ const HOW_IT_WORKS = [
   {
     n: "03",
     t: "Cash back lands",
-    b: "We confirm your visit and send the discount back to your linked card or bank.",
+    b: "We confirm your visit and send your cash back straight to your linked bank account.",
   },
 ];
 

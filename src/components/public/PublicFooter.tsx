@@ -13,7 +13,7 @@ export function PublicFooter() {
         <div className="space-y-3">
           <Wordmark />
           <p className="font-display text-2xl leading-tight tracking-[-0.02em]">
-            Dine well. Pay less.
+            Your favorite food, for less.
           </p>
           <p className="max-w-sm text-sm text-muted-foreground">
             A small team based in Dallas, building card-linked
