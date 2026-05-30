@@ -51,7 +51,9 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary",
+    // Large card so the generated logo image (opengraph-image.tsx, which
+    // Next also feeds to twitter:image) fills the preview.
+    card: "summary_large_image",
     title: SHARE_TITLE,
     description: SHARE_DESCRIPTION,
   },
