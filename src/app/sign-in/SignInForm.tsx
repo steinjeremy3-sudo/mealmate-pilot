@@ -7,6 +7,7 @@
 // the toggle here even though /sign-in is shared across roles.
 
 import { useState } from "react";
+import Link from "next/link";
 
 import { Button, Card } from "@/components/brand";
 import { signIn, startPhoneAuth } from "@/app/auth/actions";
@@ -71,6 +72,15 @@ export function SignInForm({
               className={inputClass}
             />
           </label>
+
+          <p className="text-right text-xs">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground underline underline-offset-4 hover:text-ink"
+            >
+              Forgot password?
+            </Link>
+          </p>
 
           {error ? (
             <p className="text-sm text-destructive" role="alert">
