@@ -6,7 +6,8 @@
 
 import Link from "next/link";
 
-import { Card, Heading, Wordmark } from "@/components/brand";
+import { Button, Card, Heading, Wordmark } from "@/components/brand";
+import { resendConfirmation } from "@/app/auth/actions";
 import { SignInForm } from "./SignInForm";
 
 type SearchParams = Promise<{
@@ -14,6 +15,7 @@ type SearchParams = Promise<{
   sent?: string;
   email?: string;
   method?: string;
+  needsConfirm?: string;
 }>;
 
 export default async function SignInPage({
@@ -26,6 +28,7 @@ export default async function SignInPage({
   const sent = params.sent;
   const sentEmail = params.email;
   const method = params.method === "phone" ? "phone" : "email";
+  const needsConfirm = params.needsConfirm === "1";
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
@@ -45,6 +48,22 @@ export default async function SignInPage({
             <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>.
             Click the link in the email to finish signing in — you can close
             this tab.
+          </Card>
+        ) : needsConfirm ? (
+          <Card className="space-y-4 border-paprika/30 bg-paprika-tint text-sm text-ink/80">
+            <p>
+              Your password is correct, but you haven&apos;t confirmed your
+              email yet. Check{" "}
+              <strong className="text-ink">{sentEmail ?? "your inbox"}</strong>{" "}
+              for the confirmation link we sent when you signed up.
+            </p>
+            <p>Didn&apos;t get it? We can send a fresh one.</p>
+            <form action={resendConfirmation}>
+              <input type="hidden" name="email" value={sentEmail ?? ""} />
+              <Button type="submit" className="w-full">
+                Resend confirmation email
+              </Button>
+            </form>
           </Card>
         ) : (
           <SignInForm error={error} initialMethod={method} />

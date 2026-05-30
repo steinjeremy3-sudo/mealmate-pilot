@@ -30,6 +30,22 @@ function errParam(path: string, message: string): string {
   return `${path}?error=${encodeURIComponent(message)}`;
 }
 
+/**
+ * True when a sign-in error is specifically "the account exists and the
+ * password is right, but the email hasn't been confirmed yet." Supabase
+ * exposes this as an `email_not_confirmed` error code (older versions only
+ * set the message), so we check both.
+ */
+function isEmailNotConfirmed(error: {
+  code?: string;
+  message?: string;
+}): boolean {
+  return (
+    error.code === "email_not_confirmed" ||
+    /email not confirmed/i.test(error.message ?? "")
+  );
+}
+
 // ----------------------------------------------------------------
 // Sign in (magic link OR password)
 // ----------------------------------------------------------------
@@ -46,6 +62,16 @@ export async function signIn(formData: FormData): Promise<void> {
   if (password.length > 0) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      // Special-case the most confusing failure: the password is correct
+      // but the account's email was never confirmed. Supabase's raw
+      // message ("Email not confirmed") reads like a wrong password to a
+      // normal person. Route to a dedicated state that explains it and
+      // offers a resend, carrying the email so the resend works.
+      if (isEmailNotConfirmed(error)) {
+        redirect(
+          `/sign-in?needsConfirm=1&email=${encodeURIComponent(email)}`,
+        );
+      }
       redirect(errParam("/sign-in", error.message));
     }
     await redirectToRoleHome();
@@ -196,6 +222,33 @@ export async function verifyPhoneOtp(formData: FormData): Promise<void> {
   // Session is set; the trigger has created the profile (signup) or it
   // already existed (signin). Send them to their role's home.
   await redirectToRoleHome();
+}
+
+// ----------------------------------------------------------------
+// Resend the signup confirmation email
+// ----------------------------------------------------------------
+// Used when a password sign-in is blocked because the account's email was
+// never confirmed (see isEmailNotConfirmed above). Re-sends the original
+// confirmation link.
+
+export async function resendConfirmation(formData: FormData): Promise<void> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) {
+    redirect(errParam("/sign-in", "Email is required."));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const origin = await getOrigin();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${origin}/auth/callback` },
+  });
+  // Log but don't leak account existence — always report "sent".
+  if (error) {
+    console.error(`[auth] resendConfirmation(${email}):`, error.message);
+  }
+  redirect(`/sign-in?sent=1&email=${encodeURIComponent(email)}`);
 }
 
 // ----------------------------------------------------------------
