@@ -31,9 +31,30 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+// `title` is the page header / browser tab; `description` + the
+// openGraph/twitter blocks drive the preview card people see when the
+// link is shared (iMessage, WhatsApp, social). None of the public pages
+// override these, so this is what every shared link shows.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://mealmatedining.app";
+const SHARE_TITLE = "Mealmate";
+const SHARE_DESCRIPTION = "Your favorite food, for less";
+
 export const metadata: Metadata = {
-  title: "Mealmate",
-  description: "Restaurant discounts in Dallas — diners pay, restaurants pay nothing.",
+  metadataBase: new URL(APP_URL),
+  title: SHARE_TITLE,
+  description: SHARE_DESCRIPTION,
+  openGraph: {
+    title: SHARE_TITLE,
+    description: SHARE_DESCRIPTION,
+    siteName: SHARE_TITLE,
+    url: APP_URL,
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: SHARE_TITLE,
+    description: SHARE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
