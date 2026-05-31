@@ -18,7 +18,7 @@ import {
   getClaimByIdForDiner,
   isClaimActive,
 } from "@/lib/db/claims";
-import { dinerDisplayPct } from "@/lib/pricing";
+import { dinerDisplayPct, netifyDiscountCopy } from "@/lib/pricing";
 
 import { cancelClaim } from "../actions";
 
@@ -139,7 +139,7 @@ export default async function DinerClaimDetail({
         <div className="space-y-2">
           <Eyebrow>{name}</Eyebrow>
           <Heading as="h1" size="page">
-            {claim.offer.title}
+            {netifyDiscountCopy(claim.offer.title, claim.offer.discount_pct)}
           </Heading>
           <p className="text-xs text-muted-foreground">
             Activated {formatDateTime(claim.claimed_at)}

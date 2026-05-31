@@ -5,6 +5,7 @@ import {
   computeRebate,
   dinerDisplayPct,
   effectiveCashBackPct,
+  netifyDiscountCopy,
   PLATFORM_FEE_MAX_CENTS,
   PLATFORM_FEE_MIN_CENTS,
   PLATFORM_FEE_RATE,
@@ -146,6 +147,34 @@ describe("dinerDisplayPct (the rate diners actually see)", () => {
     for (const pct of [15, 20, 25, 30, 40, 50]) {
       expect(dinerDisplayPct(pct)).toBeLessThan(pct);
     }
+  });
+});
+
+describe("netifyDiscountCopy (rewrite gross % to net in diner copy)", () => {
+  it("swaps the offer's gross rate for the net rate", () => {
+    expect(netifyDiscountCopy("25% off dinner", 25)).toBe("20% off dinner");
+    expect(
+      netifyDiscountCopy("Enjoy 25% off your check, Tue–Thu.", 25),
+    ).toBe("Enjoy 20% off your check, Tue–Thu.");
+    expect(netifyDiscountCopy("30% off Sunday BBQ", 30)).toBe(
+      "24% off Sunday BBQ",
+    );
+  });
+
+  it("handles a space before the percent sign", () => {
+    expect(netifyDiscountCopy("25 % off", 25)).toBe("20% off");
+  });
+
+  it("leaves other numbers (min check, etc.) untouched", () => {
+    expect(netifyDiscountCopy("25% off, $40 minimum", 25)).toBe(
+      "20% off, $40 minimum",
+    );
+  });
+
+  it("is a no-op when gross already equals net or text is empty", () => {
+    // No whole-percent offer maps to itself except via rounding edges;
+    // empty text always passes through.
+    expect(netifyDiscountCopy("", 25)).toBe("");
   });
 });
 

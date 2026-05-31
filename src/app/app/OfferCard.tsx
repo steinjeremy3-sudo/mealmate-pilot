@@ -10,7 +10,7 @@ import Link from "next/link";
 
 import { Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
-import { dinerDisplayPct } from "@/lib/pricing";
+import { dinerDisplayPct, netifyDiscountCopy } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 export type OfferCardData = {
@@ -84,7 +84,7 @@ export function OfferCard({
             {r?.cuisine ?? "—"} · {r?.neighborhood ?? "—"}
           </p>
           <p className="mt-1.5 truncate text-sm text-foreground/75">
-            {offer.title}
+            {netifyDiscountCopy(offer.title, offer.discount_pct)}
           </p>
           <LeftNote remaining={offer.remaining} className="mt-1 block" />
         </div>

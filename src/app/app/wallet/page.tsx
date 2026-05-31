@@ -15,7 +15,7 @@ import {
 } from "@/lib/db/claims";
 import { getRebatesForDiner, type RebateStatus } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
-import { dinerDisplayPct } from "@/lib/pricing";
+import { dinerDisplayPct, netifyDiscountCopy } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 type Tab = "active" | "pending" | "completed";
@@ -202,7 +202,13 @@ export default async function WalletPage({
                                 {c.offer?.restaurant?.name ?? "Restaurant"}
                               </p>
                               <p className="truncate text-xs text-muted-foreground">
-                                {c.offer?.title ?? "Offer"} ·{" "}
+                                {c.offer
+                                  ? netifyDiscountCopy(
+                                      c.offer.title,
+                                      c.offer.discount_pct,
+                                    )
+                                  : "Offer"}{" "}
+                                ·{" "}
                                 {new Date(c.claimed_at).toLocaleDateString()}
                               </p>
                             </div>

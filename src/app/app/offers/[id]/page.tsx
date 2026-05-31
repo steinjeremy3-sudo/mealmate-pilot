@@ -25,7 +25,7 @@ import {
   formatDays,
   formatTimeRange,
 } from "@/lib/offers/format";
-import { dinerDisplayPct } from "@/lib/pricing";
+import { dinerDisplayPct, netifyDiscountCopy } from "@/lib/pricing";
 
 import { cancelClaim } from "../../claims/actions";
 
@@ -96,7 +96,7 @@ export default async function DinerOfferDetail({
           </h1>
           {offer.description ? (
             <p className="text-base text-foreground/80">
-              {offer.description}
+              {netifyDiscountCopy(offer.description, offer.discount_pct)}
             </p>
           ) : null}
         </div>

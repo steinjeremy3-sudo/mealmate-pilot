@@ -100,6 +100,30 @@ export function dinerDisplayPct(grossDiscountPct: number): number {
 }
 
 /**
+ * Rewrite the gross discount rate to the diner-facing net rate inside an
+ * offer's free-text copy (title/description). Merchants author copy like
+ * "25% off dinner" using the gross rate they fund; diners must see the
+ * net ("20% off dinner"). Because we know THIS offer's gross rate, we
+ * only swap that exact number — e.g. with grossPct=25 we turn "25%" into
+ * "20%" and leave everything else untouched.
+ *
+ * Apply ONLY on diner-facing surfaces. Merchant/admin views keep the
+ * authored gross copy. (Caveat: if a description coincidentally mentions
+ * the same number as a non-discount "N%", it'd be rewritten too — rare
+ * in offer copy, where the % is the discount.)
+ */
+export function netifyDiscountCopy(
+  text: string,
+  grossDiscountPct: number,
+): string {
+  if (!text) return text;
+  const net = dinerDisplayPct(grossDiscountPct);
+  if (net === grossDiscountPct) return text;
+  const re = new RegExp(`\\b${grossDiscountPct}\\s*%`, "g");
+  return text.replace(re, `${net}%`);
+}
+
+/**
  * Compute the full breakdown for a matched transaction.
  *
  *   discount = total * discount_pct / 100

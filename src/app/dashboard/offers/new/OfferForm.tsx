@@ -5,6 +5,7 @@
 // editing (action=updateOffer + offerId + initial values).
 
 import { useState } from "react";
+import { Info } from "lucide-react";
 
 import { Button, Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
@@ -101,8 +102,17 @@ export function OfferForm({
         ) : null}
         <Card className="space-y-5 p-6">
           <div>
-            <label className={labelClass} htmlFor="discount_pct">
+            <label
+              className={cn(labelClass, "flex items-center gap-1.5")}
+              htmlFor="discount_pct"
+            >
               Discount · {discount}% off
+              <span
+                className="cursor-help text-muted-foreground"
+                title={`Appears as ~${dinerPct}% to diners to account for Mealmate's service fee.`}
+              >
+                <Info className="size-3" aria-hidden />
+              </span>
             </label>
             <input
               id="discount_pct"
@@ -118,18 +128,6 @@ export function OfferForm({
               <span>15%</span>
               <span>50%</span>
             </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              <span
-                className="cursor-help underline decoration-dotted underline-offset-2"
-                title="Mealmate's service fee comes out of the discount, so diners see the net rate. You still fund the full discount you set here."
-              >
-                Appears as ~{dinerPct}% to diners
-              </span>{" "}
-              to account for Mealmate&apos;s service fee. If you promote this
-              deal on your own channels, use{" "}
-              <span className="font-medium text-ink">{dinerPct}%</span> so it
-              matches what diners see in the app.
-            </p>
           </div>
 
           <div>
