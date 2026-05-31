@@ -107,11 +107,15 @@ export function OfferForm({
               htmlFor="discount_pct"
             >
               Discount · {discount}% off
-              <span
-                className="cursor-help text-muted-foreground"
-                title={`Appears as ~${dinerPct}% to diners to account for Mealmate's service fee.`}
-              >
-                <Info className="size-3" aria-hidden />
+              <span className="group relative inline-flex cursor-help text-muted-foreground">
+                <Info className="size-3.5" aria-hidden />
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-52 -translate-x-1/2 rounded-md bg-ink px-3 py-2 text-[11px] font-normal normal-case leading-snug tracking-normal text-bone shadow-lg group-hover:block"
+                >
+                  Appears as ~{dinerPct}% to diners to account for Mealmate&apos;s
+                  service fee.
+                </span>
               </span>
             </label>
             <input
