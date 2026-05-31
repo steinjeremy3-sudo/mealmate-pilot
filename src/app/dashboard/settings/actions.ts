@@ -85,6 +85,62 @@ export async function uploadRestaurantPhoto(formData: FormData): Promise<void> {
   redirect("/dashboard/settings?photo=updated");
 }
 
+/**
+ * Save the restaurant's card-statement descriptors (one per line). These
+ * seed the matcher's high-precision fast-path (see
+ * src/lib/matching/descriptors.ts). Unlike name/address — which change a
+ * restaurant's identity and route through ops — descriptors are additive
+ * and self-correcting (the matcher also learns them from confirmed
+ * visits), so the merchant can edit them directly.
+ *
+ * Service-role write: restaurants.UPDATE is revoked from `authenticated`
+ * (users-restaurants-lockdown.sql). Ownership is verified first via
+ * getRestaurantForOwner, then we only touch that restaurant's row.
+ */
+const MAX_DESCRIPTORS = 10;
+const MAX_DESCRIPTOR_LEN = 80;
+
+export async function saveStatementDescriptors(formData: FormData): Promise<void> {
+  const profile = await requireRole("merchant");
+  const restaurant = await getRestaurantForOwner(profile.id);
+  if (!restaurant) redirect("/dashboard/onboarding");
+
+  const raw = String(formData.get("descriptors") ?? "");
+  // One descriptor per line; trim, collapse whitespace, drop empties,
+  // dedupe case-insensitively, cap count + length.
+  const seen = new Set<string>();
+  const descriptors: string[] = [];
+  for (const line of raw.split("\n")) {
+    const v = line.trim().replace(/\s+/g, " ").slice(0, MAX_DESCRIPTOR_LEN);
+    if (!v) continue;
+    const key = v.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    descriptors.push(v);
+    if (descriptors.length >= MAX_DESCRIPTORS) break;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("restaurants")
+    .update({ statement_descriptors: descriptors })
+    .eq("id", restaurant.id);
+  if (error) {
+    redirect(errParam(`Couldn't save statement names: ${error.message}`));
+  }
+
+  await logAuditEvent({
+    actor: { id: profile.id, role: profile.role },
+    action: "restaurant.descriptors_updated",
+    subjectType: "restaurant",
+    subjectId: restaurant.id,
+    metadata: { count: descriptors.length },
+  });
+
+  revalidatePath("/dashboard/settings");
+  redirect("/dashboard/settings?descriptors=saved");
+}
+
 export async function removeRestaurantPhoto(): Promise<void> {
   const profile = await requireRole("merchant");
   const restaurant = await getRestaurantForOwner(profile.id);

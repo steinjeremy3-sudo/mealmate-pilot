@@ -20,6 +20,7 @@ export type Restaurant = {
   cuisine: string;
   mcc: string;
   photo_url: string | null;
+  statement_descriptors: string[];
   status: RestaurantStatus;
   created_at: string;
   updated_at: string;

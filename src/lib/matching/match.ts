@@ -22,7 +22,7 @@ import "server-only";
 import { logAuditEvent } from "@/lib/db/audit-log";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-import { normalizeMerchantName } from "./normalize";
+import { descriptorMatches, normalizeMerchantName } from "./normalize";
 import {
   nameSimilarity,
   scoreMatch,
@@ -96,6 +96,8 @@ type ActiveRestaurant = {
   nameNormalized: string;
   city: string;
   mcc: string;
+  /** Known statement descriptors, pre-normalized for matching. */
+  descriptorsNormalized: string[];
 };
 
 type PendingRow = {
@@ -123,23 +125,43 @@ async function matchOne(
   const merchantNorm =
     row.merchant_name_normalized ?? normalizeMerchantName(row.merchant_name_raw);
 
-  // 1. Pick the highest-similarity restaurant candidate (cheap, brute).
-  let best: { restaurant: ActiveRestaurant; nameScore: number } | null = null;
+  // 1a. Descriptor fast-path: if the Plaid string matches a known
+  //     statement descriptor, that's ground truth — pin the restaurant
+  //     and skip the fuzzy guess entirely. When several restaurants
+  //     could match, prefer the longest (most specific) descriptor.
+  let candidate: ActiveRestaurant | null = null;
+  let descriptorMatched = false;
+  let bestDescLen = -1;
   for (const r of restaurants) {
-    const score = nameSimilarity(merchantNorm, r.nameNormalized);
-    if (!best || score > best.nameScore) {
-      best = { restaurant: r, nameScore: score };
+    for (const d of r.descriptorsNormalized) {
+      if (descriptorMatches(merchantNorm, d) && d.length > bestDescLen) {
+        candidate = r;
+        descriptorMatched = true;
+        bestDescLen = d.length;
+      }
     }
   }
 
-  if (!best || best.nameScore < 0.35) {
-    // No candidate clears the floor — record the normalized name so
-    // a future ops session can spot near-misses, but leave it 'none'.
-    await admin
-      .from("matched_transactions")
-      .update({ merchant_name_normalized: merchantNorm })
-      .eq("id", row.id);
-    return { confidence: "none", restaurantId: null, claimId: null };
+  // 1b. Fuzzy fallback: highest name-similarity restaurant (cheap, brute).
+  if (!candidate) {
+    let best: { restaurant: ActiveRestaurant; nameScore: number } | null = null;
+    for (const r of restaurants) {
+      const score = nameSimilarity(merchantNorm, r.nameNormalized);
+      if (!best || score > best.nameScore) {
+        best = { restaurant: r, nameScore: score };
+      }
+    }
+
+    if (!best || best.nameScore < 0.35) {
+      // No candidate clears the floor — record the normalized name so
+      // a future ops session can spot near-misses, but leave it 'none'.
+      await admin
+        .from("matched_transactions")
+        .update({ merchant_name_normalized: merchantNorm })
+        .eq("id", row.id);
+      return { confidence: "none", restaurantId: null, claimId: null };
+    }
+    candidate = best.restaurant;
   }
 
   // 2. Find the most recent open claim by this diner at this restaurant
@@ -147,19 +169,20 @@ async function matchOne(
   const dinerUserId = await dinerForCard(row.plaid_card_account_id);
   const txnDate = new Date(`${row.transaction_date}T00:00:00Z`);
   const claim = dinerUserId
-    ? await findOpenClaim(dinerUserId, best.restaurant.id, txnDate)
+    ? await findOpenClaim(dinerUserId, candidate.id, txnDate)
     : null;
 
-  // 3. Score the candidate fully.
+  // 3. Score the candidate fully. A descriptor hit forces name=1.0.
   const result: ScoreResult = scoreMatch({
     merchantNameNormalized: merchantNorm,
-    restaurantNameNormalized: best.restaurant.nameNormalized,
+    restaurantNameNormalized: candidate.nameNormalized,
+    descriptorMatch: descriptorMatched,
     transactionDate: txnDate,
     claimCreatedAt: claim?.claimedAt ?? null,
     amountCents: row.amount_cents,
     offerMinCheckCents: claim?.offerMinCheckCents ?? null,
     merchantCity: null, // Plaid location.city not yet stored; future column.
-    restaurantCity: best.restaurant.city.toLowerCase(),
+    restaurantCity: candidate.city.toLowerCase(),
   });
 
   // 4. Write back. 'none' still gets normalized name written so the
@@ -169,7 +192,7 @@ async function matchOne(
     match_confidence: result.confidence,
   };
   if (result.confidence !== "none") {
-    update.restaurant_id = best.restaurant.id;
+    update.restaurant_id = candidate.id;
     if (claim) update.claim_id = claim.id;
   }
 
@@ -191,7 +214,8 @@ async function matchOne(
         confidence: result.confidence,
         combined_score: result.combinedScore,
         dimensions: result.dimensions,
-        restaurant_id: best.restaurant.id,
+        descriptor_match: descriptorMatched,
+        restaurant_id: candidate.id,
         claim_id: claim?.id ?? null,
       },
     });
@@ -199,7 +223,7 @@ async function matchOne(
 
   return {
     confidence: result.confidence,
-    restaurantId: result.confidence !== "none" ? best.restaurant.id : null,
+    restaurantId: result.confidence !== "none" ? candidate.id : null,
     claimId: claim?.id ?? null,
   };
 }
@@ -208,7 +232,7 @@ async function loadActiveRestaurants(): Promise<ActiveRestaurant[]> {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("restaurants")
-    .select("id, name, city, mcc")
+    .select("id, name, city, mcc, statement_descriptors")
     .eq("status", "approved");
   if (error) {
     console.error("loadActiveRestaurants:", error);
@@ -220,6 +244,9 @@ async function loadActiveRestaurants(): Promise<ActiveRestaurant[]> {
     nameNormalized: normalizeMerchantName(r.name),
     city: r.city,
     mcc: r.mcc,
+    descriptorsNormalized: ((r.statement_descriptors as string[] | null) ?? [])
+      .map(normalizeMerchantName)
+      .filter(Boolean),
   }));
 }
 

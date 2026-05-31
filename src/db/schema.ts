@@ -175,6 +175,18 @@ export const restaurants = pgTable("restaurants", {
   // falls back to a generated placeholder.
   photoUrl: text("photo_url"),
 
+  // How this restaurant appears on a diner's card statement, e.g.
+  // "La Playa Cafe Bar Bsp Ar". Seeded by the merchant at onboarding
+  // and GROWN automatically from confirmed matches (see
+  // lib/matching/descriptors.ts). The matcher uses these as a
+  // high-precision fast-path before falling back to fuzzy name
+  // similarity — bank descriptors abbreviate ("Bsp Ar" = Bishop Arts)
+  // in ways the marketing name never matches. Empty until seeded.
+  statementDescriptors: text("statement_descriptors")
+    .array()
+    .notNull()
+    .default([]),
+
   status: restaurantStatusEnum("status").notNull().default("pending"),
   ...timestamps,
 });

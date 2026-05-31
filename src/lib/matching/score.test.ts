@@ -225,4 +225,30 @@ describe("scoreMatch (combined)", () => {
     expect(r.dimensions.amount).toBe(1.0);
     expect(r.dimensions.geography).toBe(1.0);
   });
+
+  it("forces name=1.0 on a descriptor match, even when the names look nothing alike", () => {
+    // The Plaid string "la playa bsp" would never fuzzy-match the
+    // restaurant name "lucia" — but a descriptor hit is ground truth.
+    const r = scoreMatch({
+      ...base,
+      merchantNameNormalized: "la playa bsp",
+      restaurantNameNormalized: NAME.lucia,
+      descriptorMatch: true,
+    });
+    expect(r.dimensions.name).toBe(1.0);
+    expect(r.confidence).toBe("high");
+  });
+
+  it("descriptor match still requires a claim to reach 'high'", () => {
+    const r = scoreMatch({
+      ...base,
+      claimCreatedAt: null,
+      merchantNameNormalized: "la playa bsp",
+      restaurantNameNormalized: NAME.lucia,
+      descriptorMatch: true,
+    });
+    // Descriptor pins the restaurant, but with no claim there's nothing
+    // to rebate — drops to the review queue rather than auto-approving.
+    expect(r.confidence).not.toBe("high");
+  });
 });

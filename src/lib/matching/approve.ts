@@ -20,6 +20,8 @@ import { computeRebate } from "@/lib/pricing";
 import { createRebateForMatch } from "@/lib/rebates/issue";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
+import { learnDescriptorFromMatch } from "./descriptors";
+
 export type ApprovalKind = "auto_approved" | "manual_approved";
 
 export type ApprovalInputs = {
@@ -127,6 +129,19 @@ export async function applyApprovedSnapshot(
         monthly_budget_cents: o.monthly_budget_cents,
       },
     });
+  }
+
+  // Grow the restaurant's statement-descriptor set from this confirmed
+  // match so future visits get the high-precision fast-path. Best-effort:
+  // learnDescriptorFromMatch swallows its own errors and never blocks
+  // approval. See descriptors.ts.
+  const { data: txn } = await admin
+    .from("matched_transactions")
+    .select("restaurant_id, merchant_name_raw")
+    .eq("id", input.matchedTransactionId)
+    .maybeSingle();
+  if (txn?.restaurant_id && txn.merchant_name_raw) {
+    await learnDescriptorFromMatch(txn.restaurant_id, txn.merchant_name_raw);
   }
 
   // Kick off the rebate state machine. createRebateForMatch is

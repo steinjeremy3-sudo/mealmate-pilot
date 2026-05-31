@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeMerchantName } from "./normalize";
+import { descriptorMatches, normalizeMerchantName } from "./normalize";
 
 describe("normalizeMerchantName", () => {
   it("returns empty for empty input", () => {
@@ -101,5 +101,50 @@ describe("normalizeMerchantName", () => {
       const twice = normalizeMerchantName(once);
       expect(twice).toBe(once);
     }
+  });
+});
+
+describe("descriptorMatches", () => {
+  // Helper: compare the way the matcher does — normalize both sides.
+  const matches = (merchant: string, descriptor: string) =>
+    descriptorMatches(
+      normalizeMerchantName(merchant),
+      normalizeMerchantName(descriptor),
+    );
+
+  it("matches the exact statement string", () => {
+    expect(matches("La Playa Cafe Bar Bsp Ar", "La Playa Cafe Bar Bsp Ar")).toBe(
+      true,
+    );
+  });
+
+  it("matches across processor prefixes (normalizer strips them)", () => {
+    expect(matches("TST* La Playa Cafe Bar", "La Playa Cafe Bar")).toBe(true);
+    expect(matches("SQ *LA PLAYA CAFE BAR", "La Playa Cafe Bar")).toBe(true);
+  });
+
+  it("survives bank truncation (one side is a prefix of the other)", () => {
+    // A harsher-truncating bank shows fewer chars; still the same merchant.
+    expect(matches("La Playa Cafe B", "La Playa Cafe Bar Bsp")).toBe(true);
+    expect(matches("La Playa Cafe Bar Bsp", "La Playa Cafe B")).toBe(true);
+  });
+
+  it("matches when location tokens are present on one side only", () => {
+    expect(matches("La Playa Cafe Bar Dallas", "La Playa Cafe Bar")).toBe(true);
+  });
+
+  it("does NOT match a different restaurant", () => {
+    expect(matches("Lucia Bishop Arts", "La Playa Cafe Bar")).toBe(false);
+    expect(matches("Wendigo Cellar", "La Playa Cafe Bar Bsp Ar")).toBe(false);
+  });
+
+  it("does NOT match on a tiny shared prefix", () => {
+    // "la" is too short to be a meaningful prefix.
+    expect(matches("La Bamba Taqueria", "La Playa Cafe Bar")).toBe(false);
+  });
+
+  it("is false when either side is empty", () => {
+    expect(descriptorMatches("", "la playa")).toBe(false);
+    expect(descriptorMatches("la playa", "")).toBe(false);
   });
 });

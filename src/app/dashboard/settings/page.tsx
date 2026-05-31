@@ -22,9 +22,17 @@ import {
   refreshStripeAccountStatus,
   startStripeOnboarding,
 } from "../onboarding/stripe/actions";
-import { removeRestaurantPhoto, uploadRestaurantPhoto } from "./actions";
+import {
+  removeRestaurantPhoto,
+  saveStatementDescriptors,
+  uploadRestaurantPhoto,
+} from "./actions";
 
-type SearchParams = Promise<{ error?: string; photo?: string }>;
+type SearchParams = Promise<{
+  error?: string;
+  photo?: string;
+  descriptors?: string;
+}>;
 
 type BadgeTone = "positive" | "warning" | "negative";
 
@@ -77,7 +85,8 @@ export default async function MerchantSettingsPage({
   const restaurant = await getRestaurantForOwner(profile.id);
   if (!restaurant) redirect("/dashboard/onboarding");
 
-  const { error: photoError } = await searchParams;
+  const { error: photoError, descriptors: descriptorsSaved } =
+    await searchParams;
 
   let stripeAccount =
     restaurant.status === "approved"
@@ -242,6 +251,42 @@ export default async function MerchantSettingsPage({
             )}
           </Card>
         </div>
+
+        {/* Card-statement names — seeds the visit matcher */}
+        <Card className="mt-6 max-w-3xl p-6">
+          <Eyebrow>Matching</Eyebrow>
+          <h2 className="mt-1 font-display text-xl tracking-tight">
+            How you appear on card statements
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We confirm a diner&apos;s visit by spotting your charge on their
+            linked card. Banks abbreviate the name — e.g.{" "}
+            <span className="font-mono text-xs text-ink">
+              La Playa Cafe Bar Bsp Ar
+            </span>{" "}
+            — so telling us exactly how you show up makes matches faster and
+            more reliable. Check a recent payout statement from your card
+            processor (Toast, Square, Clover…). One per line; add more if it
+            varies.
+          </p>
+          <form action={saveStatementDescriptors} className="mt-4">
+            <textarea
+              name="descriptors"
+              rows={4}
+              defaultValue={restaurant.statement_descriptors.join("\n")}
+              placeholder="La Playa Cafe Bar Bsp Ar"
+              className="w-full rounded-lg border border-border bg-bone px-3 py-2 font-mono text-sm text-ink placeholder:text-muted-foreground/60 focus:border-paprika focus:outline-none"
+            />
+            <div className="mt-3 flex items-center gap-3">
+              <Button type="submit" size="sm">
+                Save statement names
+              </Button>
+              {descriptorsSaved === "saved" ? (
+                <span className="text-xs text-muted-foreground">Saved.</span>
+              ) : null}
+            </div>
+          </form>
+        </Card>
       </div>
     </>
   );

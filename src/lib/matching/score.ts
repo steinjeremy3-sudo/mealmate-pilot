@@ -37,6 +37,16 @@ export type ScoreInputs = {
   /** Pre-normalized restaurant name. */
   restaurantNameNormalized: string;
 
+  /**
+   * The candidate was selected because the Plaid descriptor matched a
+   * known statement descriptor on file (the high-precision fast-path).
+   * When true, the name dimension is forced to 1.0 — a descriptor hit
+   * is ground truth, not a fuzzy resemblance — and the name floor is
+   * bypassed. The rest of the rubric (claim/timing/amount) still gates
+   * whether this rises to `high`.
+   */
+  descriptorMatch?: boolean;
+
   /** Transaction date (date-only, no tz). */
   transactionDate: Date;
   /** Diner's most recent open claim at this restaurant, if any. */
@@ -85,10 +95,13 @@ const CUTOFFS = { high: 0.85, medium: 0.65, low: 0.4 };
 const NAME_FLOOR_FOR_ANY_MATCH = 0.55;
 
 export function scoreMatch(input: ScoreInputs): ScoreResult {
-  const name = nameSimilarity(
-    input.merchantNameNormalized,
-    input.restaurantNameNormalized,
-  );
+  // A descriptor hit is ground truth — treat name as a perfect match.
+  const name = input.descriptorMatch
+    ? 1.0
+    : nameSimilarity(
+        input.merchantNameNormalized,
+        input.restaurantNameNormalized,
+      );
 
   const timing = timingScore(input.claimCreatedAt, input.transactionDate);
   const amount = amountScore(input.amountCents, input.offerMinCheckCents);

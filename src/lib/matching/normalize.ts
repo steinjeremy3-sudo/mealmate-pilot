@@ -112,3 +112,51 @@ export function normalizeMerchantName(raw: string): string {
 
   return s.trim();
 }
+
+/**
+ * Does an incoming (normalized) Plaid merchant string match a known
+ * (normalized) statement descriptor for a restaurant?
+ *
+ * BOTH inputs must already be normalized via normalizeMerchantName.
+ *
+ * Bank descriptors are unstable in one specific way: card networks
+ * truncate the merchant field (~22–25 chars), and different banks
+ * truncate at different points. So "la playa cafe bar bsp" and
+ * "la playa cafe b" are the same merchant seen through two banks. We
+ * therefore match on three truncation-tolerant rules, not equality:
+ *
+ *   1. exact equality
+ *   2. one string is a character-prefix of the other (truncation), as
+ *      long as the shorter side is substantial (>= MIN_PREFIX chars) so
+ *      "la" doesn't match everything
+ *   3. all meaningful (len > 1) tokens of the shorter side are present
+ *      in the longer side's token set (handles reordering / extra
+ *      location tokens)
+ *
+ * This is deliberately stricter than the fuzzy `nameSimilarity` scorer:
+ * a descriptor is ground truth, so a hit should be a near-certainty,
+ * not a "looks similar".
+ */
+const MIN_PREFIX = 6;
+
+export function descriptorMatches(
+  merchantNorm: string,
+  descriptorNorm: string,
+): boolean {
+  if (!merchantNorm || !descriptorNorm) return false;
+  if (merchantNorm === descriptorNorm) return true;
+
+  const [shorter, longer] =
+    merchantNorm.length <= descriptorNorm.length
+      ? [merchantNorm, descriptorNorm]
+      : [descriptorNorm, merchantNorm];
+
+  // 2. Truncation: shorter is a leading prefix of longer.
+  if (shorter.length >= MIN_PREFIX && longer.startsWith(shorter)) return true;
+
+  // 3. Meaningful-token containment (shorter ⊆ longer).
+  const shortTokens = shorter.split(/\s+/).filter((t) => t.length > 1);
+  if (shortTokens.length === 0) return false;
+  const longTokens = new Set(longer.split(/\s+/).filter(Boolean));
+  return shortTokens.every((t) => longTokens.has(t));
+}

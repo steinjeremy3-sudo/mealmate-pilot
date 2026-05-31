@@ -120,6 +120,13 @@
       "when": 1779339600000,
       "tag": "0016_users_email_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1779346800000,
+      "tag": "0017_restaurants_statement_descriptors",
+      "breakpoints": true
     }
   ]
 }
