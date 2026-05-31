@@ -139,8 +139,8 @@ export default async function ClaimConfirm({
         </Card>
 
         <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
-          A small platform fee of 6% of the discounted total (capped at
-          $10) is deducted from the discount before cash back is sent.
+          A small platform fee of 20% of the discount (capped at $10) is
+          deducted before your cash back is sent.
         </p>
 
         {error ? (

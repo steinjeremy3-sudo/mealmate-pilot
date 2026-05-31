@@ -98,8 +98,8 @@ For each transaction, the lifecycle is:
 **2. Claim (just before / when planning the meal):**
 - Diner sees an offer (e.g. "Lucia 25% off tonight"), taps **Claim**.
 - The Claim screen **explicitly discloses the fee** before they
-  confirm: "MealMate keeps a 6% service fee (capped at $10) out of
-  your rebate."
+  confirm: "MealMate keeps a 20% fee on the discount (capped at $10)
+  out of your cash back."
 
 **3. Dining:**
 - Diner goes to the restaurant, eats, pays at the POS with their
@@ -118,10 +118,11 @@ For each transaction, the lifecycle is:
 **5. Calculate rebate:**
 ```
 discount_cents      = round(total_cents * offer.discount_pct / 100)
-platform_fee_cents  = max(MIN, min(MAX, total_cents * 0.06))
-rebate_cents        = discount_cents - platform_fee_cents
+platform_fee_cents  = max(MIN, min(MAX, discount_cents * 0.20))
+rebate_cents        = max(0, discount_cents - platform_fee_cents)
 ```
-where `MIN = 50` cents and `MAX = 1000` cents (env-driven).
+where `MIN = 50` cents and `MAX = 1000` cents (env-driven). The fee is
+20% of the discount the restaurant funds — not the check.
 
 **6. Issue rebate to diner:**
 - Visa Direct / Mastercard Send push for `rebate_cents` to the
@@ -141,23 +142,28 @@ where `MIN = 50` cents and `MAX = 1000` cents (env-driven).
 
 ---
 
-## Fee model (LOCKED — env-var driven, do not change in code)
+## Fee model (env-var driven)
 
 ```
-PLATFORM_FEE_PERCENT_OF_TOTAL = 0.06    (6% of total check)
-PLATFORM_FEE_MIN_CENTS        = 50      ($0.50 floor)
-PLATFORM_FEE_MAX_CENTS        = 1000    ($10.00 cap)
+PLATFORM_FEE_RATE      = 0.20    (20% of the discount)
+PLATFORM_FEE_MIN_CENTS = 50      ($0.50 floor)
+PLATFORM_FEE_MAX_CENTS = 1000    ($10.00 cap)
 
-fee_cents = max(MIN, min(MAX, total_cents * PERCENT))
+fee_cents    = max(MIN, min(MAX, discount_cents * PLATFORM_FEE_RATE))
+rebate_cents = max(0, discount_cents - fee_cents)
 ```
+
+The fee is a share of the discount (the pool the restaurant funds), not
+the check. The restaurant settlement is unchanged: they still pay the
+full `discount_cents`.
 
 Sample math:
-- **$148 check, 25% discount:** discount = $37, fee = $8.88
-  (6% of $148, within cap), rebate = $28.12
-- **$50 check, 15% discount:** discount = $7.50, fee = $3.00,
-  rebate = $4.50
-- **$500 check, 20% discount:** discount = $100, fee capped at
-  $10, rebate = $90
+- **$148 check, 25% discount:** discount = $37, fee = $7.40
+  (20% of $37, within cap), cash back = $29.60
+- **$10 check, 15% discount:** discount = $1.50, fee = $0.50
+  (floored), cash back = $1.00
+- **$400 check, 30% discount:** discount = $120, fee capped at
+  $10, cash back = $110
 
 Tunable in production via env vars without a deploy.
 

@@ -17,7 +17,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What's the Mealmate fee?",
-    a: "Mealmate keeps 6% of the discounted total as a platform fee, capped at $10. Your cash back is the discount minus that fee — the full breakdown shows on every cash-back detail page.",
+    a: "Mealmate keeps 20% of the discount as a platform fee, capped at $10. Your cash back is the discount minus that fee — the full breakdown shows on every cash-back detail page.",
   },
   {
     q: "Does the discount apply to specific menu items?",

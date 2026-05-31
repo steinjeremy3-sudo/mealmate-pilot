@@ -71,9 +71,9 @@ export default function TermsPage() {
           <li>
             <strong>Cash back &amp; our fee.</strong> After a qualifying
             visit is recognized, we send you cash back equal to the offer
-            discount, less a platform fee. The fee is 6% of the discounted
-            total, with a $0.50 minimum and a $10.00 maximum. The fee is
-            disclosed before you activate.
+            discount, less a platform fee. The fee is 20% of the discount,
+            with a $0.50 minimum and a $10.00 maximum. The fee is disclosed
+            before you activate.
           </li>
           <li>
             <strong>Payout.</strong> Cash back is paid to the destination

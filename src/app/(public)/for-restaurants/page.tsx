@@ -34,7 +34,7 @@ const RESTAURANT_BULLETS = [
   },
   {
     title: "You pay no fees.",
-    body: "No subscription, no take-rate, no fee charged to you — you fund only the discounts you set. The diner absorbs a small platform fee on the discounted total.",
+    body: "No subscription, no take-rate, no fee charged to you — you fund only the discounts you set. The diner absorbs a small platform fee taken out of the discount.",
   },
 ];
 
