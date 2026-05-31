@@ -18,17 +18,12 @@ import { getPayoutMethod } from "@/lib/db/users-payout";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { centsToUsd } from "@/lib/money";
 import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
-import { effectiveCashBackPct } from "@/lib/pricing";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 import { claimOffer } from "../actions";
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
-
-/** "20" or "17.6" — trims the trailing .0 on whole percentages. */
-function pctLabel(pct: number): string {
-  return Number.isInteger(pct) ? String(pct) : pct.toFixed(1);
-}
 
 function TermsRow({ k, v }: { k: string; v: string }) {
   return (
@@ -116,18 +111,14 @@ export default async function ClaimConfirm({
         <div className="space-y-1.5">
           <Eyebrow>Activate offer</Eyebrow>
           <Heading as="h1" size="page">
-            {offer.discount_pct}% off at {name}
+            {dinerDisplayPct(offer.discount_pct)}% off at {name}
           </Heading>
         </div>
 
         <Card flush>
           <TermsRow
-            k="Restaurant discount"
-            v={`${offer.discount_pct}% off your check`}
-          />
-          <TermsRow
-            k="Your cash back"
-            v={`~${pctLabel(effectiveCashBackPct(offer.discount_pct))}% of your check`}
+            k="Discount"
+            v={`${dinerDisplayPct(offer.discount_pct)}% off your check`}
           />
           <TermsRow
             k="Window"
@@ -150,11 +141,6 @@ export default async function ClaimConfirm({
             />
           ) : null}
         </Card>
-
-        <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
-          A small platform fee of 20% of the discount (capped at $10) is
-          deducted before your cash back is sent.
-        </p>
 
         {error ? (
           <p className="text-sm text-destructive" role="alert">

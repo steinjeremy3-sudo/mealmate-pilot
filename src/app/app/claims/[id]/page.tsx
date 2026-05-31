@@ -18,6 +18,7 @@ import {
   getClaimByIdForDiner,
   isClaimActive,
 } from "@/lib/db/claims";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 import { cancelClaim } from "../actions";
 
@@ -89,7 +90,7 @@ export default async function DinerClaimDetail({
                 {name}
               </p>
               <p className="truncate text-xs text-bone/60">
-                {claim.offer.discount_pct}% off
+                {dinerDisplayPct(claim.offer.discount_pct)}% off
                 {r?.neighborhood ? ` · ${r.neighborhood}` : ""}
               </p>
             </div>
@@ -232,7 +233,7 @@ export default async function DinerClaimDetail({
               {r?.address ?? "—"}
               {r?.neighborhood ? ` · ${r.neighborhood}` : ""}
             </p>
-            <p>{claim.offer.discount_pct}% off</p>
+            <p>{dinerDisplayPct(claim.offer.discount_pct)}% off</p>
           </div>
         </Card>
       </div>

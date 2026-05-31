@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeFeeCents,
   computeRebate,
+  dinerDisplayPct,
   effectiveCashBackPct,
   PLATFORM_FEE_MAX_CENTS,
   PLATFORM_FEE_MIN_CENTS,
@@ -129,6 +130,21 @@ describe("effectiveCashBackPct (diner-facing net rate)", () => {
   it("never claims the diner gets the full gross discount", () => {
     for (const pct of [15, 20, 25, 30, 40, 50]) {
       expect(effectiveCashBackPct(pct)).toBeLessThan(pct);
+    }
+  });
+});
+
+describe("dinerDisplayPct (the rate diners actually see)", () => {
+  it("rounds the net rate to a whole percent", () => {
+    expect(dinerDisplayPct(25)).toBe(20); // clean round numbers
+    expect(dinerDisplayPct(30)).toBe(24);
+    expect(dinerDisplayPct(15)).toBe(12);
+    expect(dinerDisplayPct(22)).toBe(18); // 17.6 → 18
+  });
+
+  it("is always strictly below the gross rate the merchant set", () => {
+    for (const pct of [15, 20, 25, 30, 40, 50]) {
+      expect(dinerDisplayPct(pct)).toBeLessThan(pct);
     }
   });
 });

@@ -25,6 +25,7 @@ import {
   formatDays,
   formatTimeRange,
 } from "@/lib/offers/format";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 import { cancelClaim } from "../../claims/actions";
 
@@ -108,7 +109,7 @@ export default async function DinerOfferDetail({
                 Active offer
               </Eyebrow>
               <p className="mt-1.5 font-display text-3xl text-paprika">
-                {offer.discount_pct}% off
+                {dinerDisplayPct(offer.discount_pct)}% off
               </p>
             </div>
             {dayRange ? (
@@ -155,7 +156,8 @@ export default async function DinerOfferDetail({
             <Card flush>
               {menu.slice(0, 4).map((item) => {
                 const discountedCents = Math.round(
-                  item.priceCents * (1 - offer.discount_pct / 100),
+                  item.priceCents *
+                    (1 - dinerDisplayPct(offer.discount_pct) / 100),
                 );
                 return (
                   <div
@@ -236,7 +238,7 @@ export default async function DinerOfferDetail({
               href={`/app/offers/${offer.id}/claim`}
               className={buttonVariants({ size: "lg", className: "w-full" })}
             >
-              Activate {offer.discount_pct}% off
+              Activate {dinerDisplayPct(offer.discount_pct)}% off
             </Link>
             <p className="text-center text-xs text-muted-foreground">
               An activated offer holds for an hour. Eat, pay at the

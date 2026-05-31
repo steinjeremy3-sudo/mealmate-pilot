@@ -85,6 +85,21 @@ export function effectiveCashBackPct(discountPct: number): number {
 }
 
 /**
+ * The discount rate shown to DINERS — the net rate after our fee, rounded
+ * to a whole percent. Diners see this as "the discount" everywhere in the
+ * diner app; they never see the restaurant's gross rate or the fee.
+ * Merchants set and see the gross rate (with a "appears as ~X% to diners"
+ * note). e.g. a 25% offer → diners see 20%.
+ *
+ * Use this for every diner-facing percentage. For exact cash-back dollars
+ * use computeRebate (the floor/cap can make actual dollars diverge from
+ * this nominal rate on very small / very large checks).
+ */
+export function dinerDisplayPct(grossDiscountPct: number): number {
+  return Math.round(effectiveCashBackPct(grossDiscountPct));
+}
+
+/**
  * Compute the full breakdown for a matched transaction.
  *
  *   discount = total * discount_pct / 100

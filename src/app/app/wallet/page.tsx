@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/claims";
 import { getRebatesForDiner, type RebateStatus } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
+import { dinerDisplayPct } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 type Tab = "active" | "pending" | "completed";
@@ -174,7 +175,10 @@ export default async function WalletPage({
                                 Expires in {expiresInMinutes(c)} min
                               </p>
                               <span className="mt-2 inline-flex items-center rounded-full bg-paprika px-3 py-1 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
-                                {c.offer?.discount_pct ?? 0}% off
+                                {c.offer
+                                  ? dinerDisplayPct(c.offer.discount_pct)
+                                  : 0}
+                                % off
                               </span>
                             </div>
                           </div>

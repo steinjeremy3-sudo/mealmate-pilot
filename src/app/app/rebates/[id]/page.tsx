@@ -9,6 +9,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getRebateDetailForDiner } from "@/lib/db/rebates";
 import { centsToUsd } from "@/lib/money";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 export default async function DinerRebateDetail({
   params,
@@ -19,6 +20,17 @@ export default async function DinerRebateDetail({
   const { id } = await params;
   const r = await getRebateDetailForDiner(id, profile.id);
   if (!r) notFound();
+
+  // The ACTUAL rate the diner got, from real dollars — cash back ÷ check.
+  // Computed from the settled numbers so the % can never overstate what
+  // landed (the fee floor on tiny checks would make a nominal rate lie).
+  // Falls back to the nominal net rate for older rows missing the check.
+  const effectivePct =
+    r.checkAmountCents && r.checkAmountCents > 0
+      ? Math.round((r.amountCents / r.checkAmountCents) * 100)
+      : r.discountPct != null
+        ? dinerDisplayPct(r.discountPct)
+        : null;
 
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-8">
@@ -89,22 +101,11 @@ export default async function DinerRebateDetail({
               <span>{centsToUsd(r.checkAmountCents)}</span>
             </div>
           ) : null}
-          {r.discountCents != null ? (
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Discount{r.discountPct != null ? ` (${r.discountPct}%)` : ""}
-              </span>
-              <span>{centsToUsd(r.discountCents)}</span>
-            </div>
-          ) : null}
-          {r.platformFeeCents != null ? (
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Mealmate fee</span>
-              <span>−{centsToUsd(r.platformFeeCents)}</span>
-            </div>
-          ) : null}
           <div className="flex justify-between gap-4 border-t border-border pt-1 font-medium">
-            <span>Your cash back</span>
+            <span>
+              Your cash back
+              {effectivePct != null ? ` (${effectivePct}%)` : ""}
+            </span>
             <span className="text-paprika-deep">
               {centsToUsd(r.amountCents)}
             </span>

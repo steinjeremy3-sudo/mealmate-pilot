@@ -12,6 +12,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getLiveOffers } from "@/lib/db/offers";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 import { OfferCard, type OfferCardData } from "../OfferCard";
 
@@ -108,7 +109,7 @@ export default async function DinerMapPage() {
                 title={o.restaurant?.name ?? "Offer"}
               >
                 <span className="flex size-9 items-center justify-center rounded-full border-2 border-bone bg-paprika text-[11px] font-semibold text-white shadow-md">
-                  {o.discount_pct}%
+                  {dinerDisplayPct(o.discount_pct)}%
                 </span>
               </Link>
             );

@@ -10,6 +10,7 @@ import Link from "next/link";
 
 import { Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
+import { dinerDisplayPct } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 export type OfferCardData = {
@@ -87,7 +88,7 @@ export function OfferCard({
           </p>
           <LeftNote remaining={offer.remaining} className="mt-1 block" />
         </div>
-        <DiscountPill pct={offer.discount_pct} />
+        <DiscountPill pct={dinerDisplayPct(offer.discount_pct)} />
       </div>
     </Link>
   );
@@ -114,7 +115,7 @@ export function OfferTile({
           </p>
           <span className="mt-auto flex items-center gap-2">
             <span className="inline-flex w-fit items-center rounded-full bg-paprika-tint px-2.5 py-1 text-[11px] font-semibold text-paprika-deep">
-              {offer.discount_pct}% off
+              {dinerDisplayPct(offer.discount_pct)}% off
             </span>
             <LeftNote remaining={offer.remaining} />
           </span>
@@ -138,7 +139,7 @@ export function HeroOffer({
       <div className="relative overflow-hidden rounded-2xl bg-ink p-5 text-bone transition-transform active:scale-[0.99]">
         <PlaceholderImg name={r?.name ?? "Restaurant"} src={r?.photo_url} className="h-36 rounded-xl" />
         <span className="absolute right-7 top-7">
-          <DiscountPill pct={offer.discount_pct} />
+          <DiscountPill pct={dinerDisplayPct(offer.discount_pct)} />
         </span>
         <div className="mt-3.5 space-y-1.5">
           <Eyebrow>{dayRange ? `Tonight only · ${dayRange}` : "Tonight only"}</Eyebrow>

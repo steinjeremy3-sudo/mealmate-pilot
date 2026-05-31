@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { Button, Card, Eyebrow, PlaceholderImg } from "@/components/brand";
 import { formatDayRange } from "@/lib/offers/format";
+import { dinerDisplayPct } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 const DAYS: [string, string][] = [
@@ -87,6 +88,9 @@ export function OfferForm({
     });
 
   const dayRange = formatDayRange([...days]);
+  // What the diner sees — net of Mealmate's service fee. Merchants fund
+  // the full gross discount they set; diners see (and we display) the net.
+  const dinerPct = dinerDisplayPct(discount);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
@@ -114,6 +118,18 @@ export function OfferForm({
               <span>15%</span>
               <span>50%</span>
             </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              <span
+                className="cursor-help underline decoration-dotted underline-offset-2"
+                title="Mealmate's service fee comes out of the discount, so diners see the net rate. You still fund the full discount you set here."
+              >
+                Appears as ~{dinerPct}% to diners
+              </span>{" "}
+              to account for Mealmate&apos;s service fee. If you promote this
+              deal on your own channels, use{" "}
+              <span className="font-medium text-ink">{dinerPct}%</span> so it
+              matches what diners see in the app.
+            </p>
           </div>
 
           <div>
@@ -281,7 +297,7 @@ export function OfferForm({
               className="h-32 rounded-xl"
             />
             <span className="absolute right-2.5 top-2.5 rounded-full bg-paprika px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.05em] text-white">
-              {discount}% OFF
+              {dinerPct}% OFF
             </span>
           </div>
           <div className="mt-3.5 space-y-1.5">

@@ -125,7 +125,7 @@ export function OfferBrowse({
           {bigDiscount.length > 0 ? (
             <section className="space-y-3">
               <SectionHead>
-                20%+ off tonight
+                Biggest discounts tonight
               </SectionHead>
               <ul className="space-y-3">
                 {bigDiscount.map((o) => (

@@ -8,6 +8,7 @@ import { Card, Eyebrow, Heading } from "@/components/brand";
 import { getMenuForRestaurant, groupBySection } from "@/lib/db/menu";
 import { getOfferById } from "@/lib/db/offers";
 import { centsToUsd } from "@/lib/money";
+import { dinerDisplayPct } from "@/lib/pricing";
 
 type Params = Promise<{ id: string }>;
 
@@ -43,8 +44,8 @@ export default async function OfferMenuPage({
         </div>
 
         <Card className="bg-paprika-tint text-sm text-paprika-deep">
-          {offer.discount_pct}% off your whole check when you activate
-          this offer
+          {dinerDisplayPct(offer.discount_pct)}% off your whole check when
+          you activate this offer
         </Card>
 
         {sections.length === 0 ? (
@@ -61,7 +62,8 @@ export default async function OfferMenuPage({
                 <ul>
                   {s.items.map((it) => {
                     const discountedCents = Math.round(
-                      it.priceCents * (1 - offer.discount_pct / 100),
+                      it.priceCents *
+                        (1 - dinerDisplayPct(offer.discount_pct) / 100),
                     );
                     return (
                       <li
