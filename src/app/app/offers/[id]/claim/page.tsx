@@ -18,11 +18,17 @@ import { getPayoutMethod } from "@/lib/db/users-payout";
 import { getDinerDwollaAccount } from "@/lib/db/diner-dwolla";
 import { centsToUsd } from "@/lib/money";
 import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
+import { effectiveCashBackPct } from "@/lib/pricing";
 
 import { claimOffer } from "../actions";
 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ error?: string }>;
+
+/** "20" or "17.6" — trims the trailing .0 on whole percentages. */
+function pctLabel(pct: number): string {
+  return Number.isInteger(pct) ? String(pct) : pct.toFixed(1);
+}
 
 function TermsRow({ k, v }: { k: string; v: string }) {
   return (
@@ -115,7 +121,14 @@ export default async function ClaimConfirm({
         </div>
 
         <Card flush>
-          <TermsRow k="Discount" v={`${offer.discount_pct}% off your check`} />
+          <TermsRow
+            k="Restaurant discount"
+            v={`${offer.discount_pct}% off your check`}
+          />
+          <TermsRow
+            k="Your cash back"
+            v={`~${pctLabel(effectiveCashBackPct(offer.discount_pct))}% of your check`}
+          />
           <TermsRow
             k="Window"
             v={formatDayRange(offer.valid_days) || "See offer"}

@@ -67,6 +67,24 @@ export function computeFeeCents(discountCents: number): number {
 }
 
 /**
+ * The diner's effective cash-back rate, as a percentage of the check,
+ * once the platform fee is taken out of the discount.
+ *
+ *   effective = discount_pct × (1 − PLATFORM_FEE_RATE)
+ *
+ * e.g. a 25% offer nets the diner ~20% of the check (25% less our 20%
+ * cut of the discount). This is the honest "what you actually get back"
+ * figure to show diners alongside the headline offer rate.
+ *
+ * NOTE: this ignores the floor/cap, which only bite on very small or
+ * very large discounts — so it's an approximation at the extremes.
+ * Display it with a "~" and use computeRebate for exact dollars.
+ */
+export function effectiveCashBackPct(discountPct: number): number {
+  return discountPct * (1 - PLATFORM_FEE_RATE);
+}
+
+/**
  * Compute the full breakdown for a matched transaction.
  *
  *   discount = total * discount_pct / 100

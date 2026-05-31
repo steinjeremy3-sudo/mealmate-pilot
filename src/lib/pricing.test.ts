@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeFeeCents,
   computeRebate,
+  effectiveCashBackPct,
   PLATFORM_FEE_MAX_CENTS,
   PLATFORM_FEE_MIN_CENTS,
   PLATFORM_FEE_RATE,
@@ -113,6 +114,22 @@ describe("computeRebate — invariants", () => {
     expect(r.platformFeeCents).toBe(50);
     expect(r.rebateCents).toBe(0); // clamped, not −20¢
     expect(r.cashBackFloored).toBe(true);
+  });
+});
+
+describe("effectiveCashBackPct (diner-facing net rate)", () => {
+  it("nets the discount minus our 20% cut of it", () => {
+    // A 25% offer nets the diner ~20% of the check.
+    expect(effectiveCashBackPct(25)).toBe(20);
+    expect(effectiveCashBackPct(30)).toBe(24);
+    expect(effectiveCashBackPct(15)).toBe(12);
+    expect(effectiveCashBackPct(22)).toBeCloseTo(17.6, 5);
+  });
+
+  it("never claims the diner gets the full gross discount", () => {
+    for (const pct of [15, 20, 25, 30, 40, 50]) {
+      expect(effectiveCashBackPct(pct)).toBeLessThan(pct);
+    }
   });
 });
 
