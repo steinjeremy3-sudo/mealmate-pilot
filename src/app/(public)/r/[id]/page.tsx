@@ -11,6 +11,7 @@ import { getMenuForRestaurant, groupBySection } from "@/lib/db/menu";
 import { getLiveOffers } from "@/lib/db/offers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { centsToUsd } from "@/lib/money";
+import { dinerDisplayPct } from "@/lib/pricing";
 import { formatDayRange, formatTimeRange } from "@/lib/offers/format";
 
 type Params = Promise<{ id: string }>;
@@ -69,7 +70,7 @@ export default async function PublicRestaurantPage({
             Live offer
           </Eyebrow>
           <p className="mt-2 font-display text-3xl text-paprika">
-            {offer.discount_pct}% off your whole check
+            {dinerDisplayPct(offer.discount_pct)}% off your whole check
           </p>
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-bone/70">
             <div>
@@ -131,7 +132,8 @@ export default async function PublicRestaurantPage({
                   <ul>
                     {s.items.map((it) => {
                       const discountedCents = Math.round(
-                        it.priceCents * (1 - offer.discount_pct / 100),
+                        it.priceCents *
+                          (1 - dinerDisplayPct(offer.discount_pct) / 100),
                       );
                       return (
                         <li
